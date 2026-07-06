@@ -87,7 +87,7 @@ Dieses Repository ist das **standalone Gesetzbuch** — kein Teil des Produktcod
 1. **Hosten:** `agent-rules` auf GitHub als eigenes Repository versionieren und pflegen.
 2. **Beziehen:** Im Zielprojekt klonen oder aktualisieren (Pfad frei wählbar):
    ```bash
-   git clone https://github.com/<org>/agent-rules.git .agent-rules
+   git clone https://github.com/src-dbgr/agent-rules.git .agent-rules
    # Alternativen: vendor/agent-rules/, tools/agent-rules/ — nicht vorgeschrieben
    ```
 3. **Bootstrap (CFG N1):** Orchestrator liest vom Vendor-Pfad:

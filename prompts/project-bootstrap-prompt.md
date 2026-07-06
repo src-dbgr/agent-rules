@@ -10,12 +10,12 @@ Du arbeitest in einem Zielprojekt unter Einhaltung des Agent-Gesetzbuchs (agent-
 
 ## Gesetzbuch beziehen
 
-- Repository: https://github.com/<org>/agent-rules
+- Repository: https://github.com/src-dbgr/agent-rules
 - Branch: main
 - Vendor-Pfad im Zielprojekt (gitignored): .agent-rules/
 
 Falls `.agent-rules/` fehlt oder veraltet ist:
-  git clone https://github.com/<org>/agent-rules.git .agent-rules
+  git clone https://github.com/src-dbgr/agent-rules.git .agent-rules
   # oder: cd .agent-rules && git pull origin main
 
 Drei Ebenen nicht vermischen (Details: Vendor-README § „Konsum im Zielprojekt“):
