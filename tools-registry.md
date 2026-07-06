@@ -44,7 +44,7 @@ Legende: ✅ erlaubt | ⚠️ eingeschränkt | ❌ verboten
 
 | Zweck | Befehl (Beispiel) | Erfolg | Rolle |
 |-------|-------------------|--------|-------|
-| JSON Schema validieren | `npx ajv-cli validate -s schemas/agent-state.schema.json -d .agent-state.json` | Exit 0 | Orchestrator |
+| JSON Schema validieren | `npx -p ajv-cli@5 -p ajv-formats ajv validate -s schemas/agent-state.schema.json -d .agent-state.json --spec=draft2020 -c ajv-formats` | Exit 0 | Orchestrator |
 | Secret Scan | `gitleaks detect --source . --no-git` | Exit 0 | Security |
 | License Check | `npx license-checker --summary` | Exit 0 | Compliance |
 
@@ -91,9 +91,18 @@ Legende: ✅ erlaubt | ⚠️ eingeschränkt | ❌ verboten
 
 | Zweck | Befehl | Erfolg | Rolle |
 |-------|--------|--------|-------|
-| TLA+ Model Check | `java -jar tla2tools.jar -config specs/workflow.cfg specs/workflow.tla` | Exit 0, keine Violation | Architect |
-| TLC direkt | `java -cp tla2tools.jar tlc2.TLC -config specs/workflow.cfg specs/workflow.tla` | Exit 0 | Architect |
+| **Alle Bibel-Beweise** | `./scripts/verify-proofs.sh` | Exit 0 | Architect, Orchestrator |
+| TLA+ Model Check | `java -XX:+UseParallelGC -cp lib/tla2tools.jar tlc2.TLC -config specs/workflow.cfg specs/workflow.tla` | Exit 0, keine Violation | Architect |
+| TLC direkt (Alias) | identisch zu oben | Exit 0 | Architect |
 | Apalache (optional) | `apalache-mc check --init=Init --next=Next specs/workflow.tla` | Exit 0 | Architect |
+
+**Setup (einmalig):**
+
+1. **Java 17+** (z. B. Eclipse Temurin). macOS: `/usr/bin/java` ist oft nur ein Stub — `JAVA_HOME` setzen oder `export JAVA_HOME=$(/usr/libexec/java_home)`.
+2. **tla2tools.jar** — wird von `scripts/verify-proofs.sh` bei Bedarf nach `lib/tla2tools.jar` geladen (nicht versioniert; siehe `.gitignore`).
+3. **Kanonische TLC-Konfiguration:** `specs/workflow.cfg` (nicht `MC.cfg` — entfernt; war veraltetes, inkompatibles Modell).
+4. **gitleaks** — `brew install gitleaks` oder Binary auf `PATH`; optional `lib/gitleaks`.
+5. **ajv** — via `npx -p ajv-cli@5 -p ajv-formats` (Draft 2020-12 + `uuid`-Format).
 
 **Anti-Halluzination:** Ein in Chat generiertes „TLA+ sieht gut aus" ist **kein** Nachweis. Nur CLI-Exit 0 + gespeichertes TLC-Log unter `proof-artifacts/`.
 
@@ -129,7 +138,7 @@ dieser Funktion) darf persistentes Gedächtnis schreiben.
 | Geteiltes Gedächtnis | MCP Memory-Server (z. B. Mnemosyne) | semantic/episodic | Memory Curator |
 | **Poisoning-Abwehr (ASI06)** | OWASP Agent Memory Guard (YAML-Policy `allow/redact/quarantine/block`, SHA-256-Baselines, Snapshots) | Ingestion/Write-Gate | Memory Curator, Security |
 | Secret/PII-Scan vor Write | `gitleaks detect --source runtime/handovers --no-git` | alle | Memory Curator, Security |
-| Memory-State schema-valide | `npx ajv-cli validate -s schemas/agent-state.schema.json -d .agent-state.json` | — | Orchestrator |
+| Memory-State schema-valide | `npx -p ajv-cli@5 -p ajv-formats ajv validate -s schemas/agent-state.schema.json -d .agent-state.json --spec=draft2020 -c ajv-formats` | — | Orchestrator |
 
 **Anti-Halluzination (analog TLA+):** „Memory sieht sauber aus" ist **kein**
 Nachweis. Nur Scan-Exit-0 (gitleaks/Injection-Policy) + dokumentierte

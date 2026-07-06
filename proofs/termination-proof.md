@@ -84,11 +84,16 @@ Sei `W` der Wartegraph aktiver Agenten:
 ## 6. Ausführung des formalen Checks
 
 ```bash
-# Voraussetzung: Java, tla2tools.jar
-java -cp tla2tools.jar tlc2.TLC -config specs/workflow.cfg specs/workflow.tla
+# Voraussetzung: Java (JAVA_HOME), lib/tla2tools.jar (siehe scripts/verify-proofs.sh)
+export JAVA_HOME="${JAVA_HOME:-$(/usr/libexec/java_home 2>/dev/null)}"
+java -XX:+UseParallelGC -cp lib/tla2tools.jar tlc2.TLC -config specs/workflow.cfg specs/workflow.tla
 ```
 
-Erfolg: `Model checking completed. No error found.`
+Oder alle Bibel-Beweise gebündelt: `./scripts/verify-proofs.sh`
+
+Erfolg: `Model checking completed. No error has been found.`
+
+`specs/workflow.cfg` setzt `CHECK_DEADLOCK FALSE`, weil Terminalzustände (`terminal = TRUE`) keine weiteren Transitionen haben — das ist erwartetes Verhalten, kein CFG-Deadlock.
 
 Ergebnis loggen nach `proof-artifacts/tlc_termination.log` und in `dod_gates.N3c_concurrent` eintragen.
 

@@ -1,7 +1,8 @@
 ---- MODULE workflow ----
 (*
   Abstraktes CFG-Modell für agent-rules Terminierungsbeweis.
-  Prüfung: java -cp tla2tools.jar tlc2.TLC -config specs/workflow.cfg specs/workflow.tla
+  Prüfung: ./scripts/verify-proofs.sh
+  oder: java -XX:+UseParallelGC -cp lib/tla2tools.jar tlc2.TLC -config specs/workflow.cfg specs/workflow.tla
 *)
 
 EXTENDS Naturals, FiniteSets

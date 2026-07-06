@@ -21,6 +21,9 @@ tmp/
 # Test & proof artifacts (generated at runtime in target projects)
 proof-artifacts/
 .tla-checkpoints/
+specs/workflow_TTrace_*
+states/
+lib/tla2tools.jar
 coverage/
 htmlcov/
 .pytest_cache/

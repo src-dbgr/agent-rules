@@ -97,8 +97,8 @@ Jeder Knotenwechsel erfordert **ausführbare Nachweise** (Gesetz 6). Prosa allei
   "N4": { "proof_type": "unit_test", "proof_command": "pytest -q", "proof_exit_code": 0 },
   "N5": { "proof_type": "integration_test", "proof_command": "npm run test:e2e", "proof_exit_code": 0 },
   "N5_ui": { "proof_type": "visual_regression", "proof_command": "npx playwright test --grep @visual", "proof_exit_code": 0 },
-  "N3c_concurrent": { "proof_type": "tla_verify", "proof_command": "java -cp tla2tools.jar tlc2.TLC -config workflow.cfg specs/workflow.tla", "proof_exit_code": 0 },
-  "N1_memory_ingest": { "proof_type": "memory_scan", "proof_command": "gitleaks detect --source runtime/handovers --no-git && npx ajv-cli validate -s schemas/agent-state.schema.json -d .agent-state.json", "proof_exit_code": 0 },
+  "N3c_concurrent": { "proof_type": "tla_verify", "proof_command": "./scripts/verify-proofs.sh", "proof_exit_code": 0 },
+  "N1_memory_ingest": { "proof_type": "memory_scan", "proof_command": "gitleaks detect --source runtime/handovers --no-git && npx -p ajv-cli@5 -p ajv-formats ajv validate -s schemas/agent-state.schema.json -d .agent-state.json --spec=draft2020 -c ajv-formats", "proof_exit_code": 0 },
   "N7_memory_consolidate": { "proof_type": "memory_scan", "proof_command": "gitleaks detect --source runtime/handovers --no-git", "proof_exit_code": 0 }
 }
 ```

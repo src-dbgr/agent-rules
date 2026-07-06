@@ -45,9 +45,11 @@ agent-rules/
 │   └── agent-state.schema.json  # JSON Schema für Maschinenlesbarkeit
 ├── proofs/
 │   └── termination-proof.md     # Formale Ergänzung zum CFG-Beweis
+├── scripts/
+│   └── verify-proofs.sh         # Ausführbare DoD-Beweise (ajv, gitleaks, TLC)
 ├── specs/
 │   ├── workflow.tla             # TLA+-Spezifikation (Referenz für Deep-Track)
-│   └── MC.cfg                   # Model-Checker-Konfiguration
+│   └── workflow.cfg             # TLC Model-Checker-Konfiguration (kanonisch)
 ├── workflows/
 │   └── triage-decision-matrix.md  # Entscheidungsmatrix für Triage (N2)
 └── templates/
