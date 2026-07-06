@@ -1,6 +1,6 @@
 # AGENTS.md — Rollen- und Regelwerk für Multi-Agenten-Software-Entwicklung
 
-> Version: 1.3.0
+> Version: 1.3.1
 > Status: Verbindlich (normativ) für alle Agenten, die in diesem Repository oder unter Bezugnahme auf dieses Repository operieren.
 > Geltungsbereich: Jeder Orchestrator-Agent, jeder Sub-Agent, jede Rolle, jeder Cognitive-Framework-Graph-Knoten (CFG-Knoten, siehe `workflow-cfg.md`).
 
@@ -251,9 +251,15 @@ bestehender Testabdeckung) verändert die Architektur definitionsgemäß nicht.
   Konkret: `cfg.track` ≠ `undecided` und `triage.decision` ≠ `pending`.
 
 **Zykluslimit (Gesetz 2):** Test-/Review-Schleifen (N8 → N6) sind auf **max. 3
-Versuche** begrenzt. Die Architektur-Eskalation (N8 → N5 / CFG-Kern N5 → N3c) ist
-auf **max. 1×** begrenzt (danach reguläre Eskalation an den Nutzer). Danach: Terminal
-Blocked, Abort oder Eskalation an den Nutzer — kein stiller 4. Versuch.
+Versuche** begrenzt. Die One-shot-Eskalationen **N5 → N3b** (Anforderungslücke)
+und **N5 → N3c** (Architektur-Drift) sind jeweils auf **max. 1×** begrenzt
+(danach reguläre Eskalation an den Nutzer). Der Orchestrator **muss** vor jeder
+Transition prüfen, ob das zugehörige Flag in
+`cycles.one_shot_escalations` bereits `true` ist — bei erneutem Auslöser:
+`phase: blocked` oder Nutzer-Eskalation, **kein** zweiter One-shot-Rückkanal.
+Begrenzte Fix-Zyklen (N5→N4, N6→N4) nutzen `cycles.current_attempt` /
+`cycles.max_attempts`; danach: Terminal Blocked, Abort oder Eskalation an den
+Nutzer — kein stiller 4. Versuch.
 
 ---
 
@@ -662,6 +668,7 @@ sind endlich und begrenzt; sie erzeugen keine neuen Zyklen und erhöhen weder
 | Laufende Sub-Agenten | `running_sub_agents[]` |
 | Baumtiefe | `tree.current_depth` (max. `tree.max_depth` = 4) |
 | Zykluszähler | `cycles.current_attempt` von `cycles.max_attempts` (3) |
+| One-shot-Eskalationen | `cycles.one_shot_escalations.requirements_gap_n5_n3b`, `cycles.one_shot_escalations.architecture_drift_n5_n3c` (je max. 1×) |
 | Original-Prompt | `original_user_prompt` |
 | Gedächtnis (Gesetz 9) | `memory.active[]`, `memory.pending_writes[]`, `memory.poisoning_checks` |
 

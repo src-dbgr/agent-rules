@@ -1,6 +1,6 @@
 # Handover-Protokoll — Hochleistungs-Kontextübergabe
 
-> **Version:** 1.3.0  
+> **Version:** 1.3.1  
 > **Status:** Verbindlich (Gesetz 5 & Gesetz 9)  
 > **Zweck:** Strukturierte Übergabe zwischen Agenten ohne Kontext-Überlauf, ohne implizite Annahmen und mit expliziter Gedächtnis-Übergabe
 
@@ -28,7 +28,7 @@ token_budget_remaining: 120000
 active_memory_count: 3            # Anzahl aktiver Memory-Einträge (Gesetz 9)
 pending_memory_writes: 1         # ausstehende Consolidation-Kandidaten
 created_at: "2026-07-06T10:00:00Z"
-schema_version: "1.3.0"
+schema_version: "1.3.1"
 ---
 ```
 

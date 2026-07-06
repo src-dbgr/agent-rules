@@ -13,7 +13,7 @@ token_budget_remaining: 180000
 active_memory_count: 2
 pending_memory_writes: 1
 created_at: "2026-07-06T10:30:00Z"
-schema_version: "1.3.0"
+schema_version: "1.3.1"
 ---
 
 # Handover-Beispiel (ausgefüllt)

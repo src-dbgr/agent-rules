@@ -1,6 +1,6 @@
 # Terminierungs- und Deadlock-Freiheitsbeweis (Erweiterung)
 
-> **Version:** 1.3.0  
+> **Version:** 1.3.1  
 > **Bezug:** `workflow-cfg.md` §6–7, `specs/workflow.tla`, `memory-policy.md` §9 (Memory-Gates)
 
 Dieses Dokument ergänzt den strukturellen Beweis in `workflow-cfg.md` um eine **formale TLA+-Skizze** und prüfbare Invarianten.
@@ -108,10 +108,12 @@ Das TLA+-Modell abstrahiert:
 - **Einmalige Eskalations-Rückkanäle (N5→N3b Anforderungslücke, N5→N3c
   Architektur-Drift)** — jeweils **one-shot** (Limit max 1, `workflow-cfg.md` §5.1).
   Sie feuern höchstens einmal, stufen den Track hoch und kehren auf den Hauptpfad
-  zurück; ein zweiter Anlauf ist verboten (sonst reguläre Nutzer-Eskalation). Da sie
-  nicht wiederholbar sind, erzeugen sie keinen unbegrenzten Zyklus und lassen die
-  Schranken `cycle ≤ 3` / `depth ≤ 4` unberührt. Sie sind daher — wie die
-  Memory-Operationen — als knoten-lokale, endliche Aktionen subsumiert und
+  zurück; ein zweiter Anlauf ist verboten (sonst reguläre Nutzer-Eskalation). Ab
+  v1.3.1 erzwingt `cycles.one_shot_escalations` in `.agent-state.json` dies
+  laufzeitseitig (Schema-Guard); das TLA+-Modell abstrahiert sie weiterhin als
+  knoten-lokale, endliche Aktion. Da sie nicht wiederholbar sind, erzeugen sie
+  keinen unbegrenzten Zyklus und lassen die Schranken `cycle ≤ 3` / `depth ≤ 4`
+  unberührt. Sie sind daher — wie die Memory-Operationen — subsumiert und
   **erfordern keine Änderung** von `specs/workflow.tla`/`specs/workflow.cfg`. Die
   Rank-Funktion `R = ⟨terminal, −cfg_node_on_fail, cycle, depth⟩` bleibt
   wohlfundiert.

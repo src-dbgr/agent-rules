@@ -1,6 +1,6 @@
 # Control-Flow-Graph (CFG) — Triage, Rollenpfade & Terminierungsbeweis
 
-> **Version:** 1.3.0  
+> **Version:** 1.3.1  
 > **Status:** Verbindlich  
 > **Bezug:** Gesetz 2 (CFG & Triage-Routing), Gesetz 6 (DoD & ausführbare Beweise), Gesetz 9 (Memory-Gates N1/N7)
 
@@ -227,6 +227,32 @@ solange die Änderung driftfrei in die bestehende Architektur passt).
 
 **Kein stiller vierter Versuch.**
 
+### 5.3 One-shot-Eskalations-Tracking (maschinenlesbar)
+
+Die Rückkanäle **N5 → N3b** und **N5 → N3c** (§5.1) sind **one-shot** — sie
+dürfen je Ausführung höchstens **einmal** feuern. Der Orchestrator erzwingt das
+über `cycles.one_shot_escalations` in `.agent-state.json`:
+
+| Flag | Transition | Initial | Bei Feuern |
+|------|------------|---------|------------|
+| `requirements_gap_n5_n3b` | N5 → N3b | `false` | `true` setzen; `cfg.track` ggf. anpassen |
+| `architecture_drift_n5_n3c` | N5 → N3c | `false` | `true` setzen; auf Deep hochstufen, Architect spawnen |
+
+**Guard-Regel:** Vor jeder Transition prüft der Orchestrator das Ziel-Flag.
+Ist es bereits `true` und der Auslöser tritt erneut auf → **kein** zweiter
+One-shot-Rückkanal; stattdessen reguläre Nutzer-Eskalation (`phase: blocked` oder
+explizite Nutzerentscheidung). Dies verhindert unendliche N5↔N3b/N3c-Schleifen,
+die ein LLM-Orchestrator sonst „vergessen“ könnte.
+
+**Audit-Trail:** Jede One-shot-Eskalation wird in `cycles.loop_history` mit
+`loop` ∈ `{requirements_escalation, architecture_escalation}`, `attempt: 1`,
+`outcome: escalate` und optional `from_node`/`to_node` protokolliert.
+
+**TLA+-Bezug:** Das formale Modell (`specs/workflow.tla`) abstrahiert diese
+Transitions weiterhin als knoten-lokale, endliche Aktionen — die Schema-Flags
+sind die **Laufzeit-Enforcement-Schicht** für Orchestrator/Engine, nicht eine
+Änderung der CFG-Topologie (siehe `proofs/termination-proof.md` §7).
+
 ---
 
 ## 6. Terminierungsbeweis (strukturell)
@@ -347,6 +373,7 @@ Der Wartegraph ist ein **DAG mit maximaler Tiefe 4** plus endlich begrenzte Rüc
 | Sub-Agent läuft | `running_sub_agents[].status = running` |
 | DoD erfüllt | `dod_gates` mit `proof_exit_code`; `completed_nodes` erweitern |
 | Zyklus FAIL | `cycles.current_attempt++`; bei 3 → Terminal-Policy |
+| One-shot-Eskalation N5→N3b/N3c | Ziel-Flag in `cycles.one_shot_escalations` prüfen; bei `false`: Transition, Flag `true`, `loop_history`-Eintrag; bei `true`: Nutzer-Eskalation |
 | Kontext ≥ 80 % | Handover-Rotation; `phase: handover_pending` |
 
 ---

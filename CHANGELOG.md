@@ -8,6 +8,34 @@ Das Regelwerk verlangt für jede Änderung eine **bewusste Versionserhöhung**
 Format angelehnt an [Keep a Changelog](https://keepachangelog.com/);
 Versionierung semantisch (MAJOR.MINOR.PATCH) auf das Gesetzbuch als Ganzes.
 
+## [1.3.1] — 2026-07-06
+
+### Added
+- **`cycles.one_shot_escalations`** in `schemas/agent-state.schema.json`: maschinenlesbare
+  Boolean-Flags für die One-shot-Rückkanäle **N5 → N3b** (`requirements_gap_n5_n3b`)
+  und **N5 → N3c** (`architecture_drift_n5_n3c`), die in v1.3.0 als Gesetz definiert,
+  aber nicht schema-seitig erzwungen waren.
+- **`cycles.loop_history`** erweitert: `loop`-Enum um `requirements_escalation` und
+  `architecture_escalation`; optionale Felder `from_node`/`to_node` für Audit-Trail.
+
+### Changed
+- `workflow-cfg.md` §5.3 (One-shot-Eskalations-Tracking), §8 Orchestrator-Pflichten;
+  `AGENTS.md` Gesetz-2-Zykluslimit und Gesetz-4-Zustandsfeld-Tabelle;
+  `proofs/termination-proof.md` §7 (Laufzeit-Enforcement-Hinweis).
+- Versions-Bump aller Kerndokumente auf **1.3.1** (`AGENTS.md`, `README.md`,
+  `workflow-cfg.md`, `memory-policy.md`, `skills-policy.md`, `tools-registry.md`,
+  `handover-template.md`, `workflows/triage-decision-matrix.md`,
+  `proofs/termination-proof.md`).
+- `schemas/agent-state.schema.json` (`schema_version` const) und alle Instanzen/Beispiele
+  (`.agent-state.json`, `handover-template.md`, `templates/handover-filled-example.md`) auf
+  `1.3.1` gehoben.
+
+### Unchanged (bewusst)
+- **`specs/workflow.tla` / `specs/workflow.cfg` nicht geändert:** One-shot-Eskalationen
+  bleiben im TLA+-Modell als knoten-lokale, endliche Aktionen abstrahiert; die neuen
+  Schema-Flags sind Laufzeit-Enforcement für Orchestrator/Engine, keine Topologieänderung
+  (`proofs/termination-proof.md` §7).
+
 ## [1.3.0] — 2026-07-06
 
 ### Added
