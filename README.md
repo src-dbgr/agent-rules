@@ -54,9 +54,9 @@ agent-rules/
 │   └── workflow.cfg             # TLC Model-Checker-Konfiguration (kanonisch)
 ├── workflows/
 │   └── triage-decision-matrix.md  # Entscheidungsmatrix für Triage (N2)
-├── prompts/                         # Nicht-Gesetzbuch: copy-paste Prompt-Vorlagen
-│   ├── README.md
-│   └── project-bootstrap-prompt.md  # Standard-Bootstrap + Feature-Request-Slot
+├── prompts/                       # Verbraucher-Vorlagen (Nicht-Gesetzbuch)
+│   ├── README.md                    # Hinweis: keine normativen Regeln
+│   └── project-bootstrap-prompt.md  # Copy-paste Prompt fürs Zielprojekt
 └── templates/
     ├── handover-example.md          # Beispiel-Handover
     ├── handover-filled-example.md   # Ausgefülltes Referenz-Handover
