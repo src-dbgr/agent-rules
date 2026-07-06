@@ -99,6 +99,7 @@ Dieses Repository ist das **standalone Gesetzbuch** — kein Teil des Produktcod
 ```gitignore
 # Agent-Gesetzbuch (Vendor, regelmäßig pullen)
 .agent-rules/
+# vendor/agent-rules/   # alternative, frei wählbar
 
 # Agent-Laufzeit (projektspezifisch, nicht committen)
 runtime/
@@ -108,7 +109,7 @@ runtime/
 
 ```
 Bootstrap (CFG N1): Lies das Gesetzbuch aus dem Vendor-Pfad (z. B. .agent-rules/):
-AGENTS.md → workflow-cfg.md → tools-registry.md → memory-policy.md.
+AGENTS.md → workflow-cfg.md → tools-registry.md → handover-template.md → memory-policy.md.
 Runtime-State liegt in runtime/.agent-state.json — getrennt vom Vendor-Clone.
 Die AGENTS.md des Zielprojekts ergänzt das Gesetzbuch, ersetzt es nicht.
 ```
