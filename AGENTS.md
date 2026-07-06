@@ -18,9 +18,31 @@ OWASP (ASVS, Top 10, LLM Top 10) und NIST SP 800-53 / SSDF ergänzt.
 
 ## 0. Bootstrap-Pflicht
 
+### 0.1 Gesetzbuch, Vendor-Pfad und Laufzeit (Zielprojekt)
+
+Dieses Repository ist die **normative Verfassung** (Gesetzbuch). In einem
+Zielprojekt wird es typischerweise als **Vendor-Clone** in einen gitignorierten
+Pfad gelegt (z. B. `.agent-rules/` oder `vendor/agent-rules/` — frei wählbar,
+nicht vorgeschrieben). Der Orchestrator liest beim Bootstrap **vom Vendor-Pfad**,
+nicht vom Projekt-Root.
+
+Drei Ebenen strikt trennen:
+
+| Ebene | Ort | Rolle |
+|-------|-----|-------|
+| **Gesetzbuch** | Vendor-Clone (aus GitHub `agent-rules`) | `AGENTS.md`, `workflow-cfg.md`, `tools-registry.md`, `memory-policy.md` |
+| **Laufzeit** | `runtime/` im Zielprojekt (gitignored) | `.agent-state.json`, `handover-*.md` — projektspezifisch, nicht im Vendor |
+| **Projektkontext** | `AGENTS.md` / `.cursor/rules/` im Zielprojekt | Projekt-Konventionen; **ergänzen** das Gesetzbuch, ersetzen es nicht |
+
+Details und Beispiel-`.gitignore`: `README.md` § „Konsum im Zielprojekt“.
+
+### 0.2 Lesereihenfolge (CFG N1)
+
 **Jede eingehende Feature-Anfrage, jeder Bugfix, jede Änderung — ohne
-Ausnahme — MUSS mit dem Lesen dieses Repositorys beginnen**, bevor irgendein
-Code, Plan oder Artefakt erzeugt wird. Konkret, in dieser Reihenfolge:
+Ausnahme — MUSS mit dem Lesen des Gesetzbuchs beginnen**, bevor irgendein
+Code, Plan oder Artefakt erzeugt wird. Pfade unten relativ zum **Vendor-Pfad**
+(bzw. Repo-Root, wenn direkt in `agent-rules` gearbeitet wird). Konkret, in
+dieser Reihenfolge:
 
 1. `AGENTS.md` (dieses Dokument) — Rollen, Gesetze, DoD-Gates.
 2. `workflow-cfg.md` — der Control-Flow-Graph (CFG), der den Ablauf state-
@@ -29,14 +51,15 @@ Code, Plan oder Artefakt erzeugt wird. Konkret, in dieser Reihenfolge:
 4. `handover-template.md` — Format für Kontext-Übergaben.
 5. `memory-policy.md` — Gedächtnis-Governance (Gesetz 9): Ingestion des
    persistenten Projekt-Gedächtnisses ist **Teil des Bootstraps**.
-6. `.agent-state.json` (falls vorhanden, d. h. bei Fortsetzung einer
-   laufenden Aufgabe) — aktueller Zustand der Aufgabe **inklusive
-   `memory`-Objekt** (aktive Memories, ausstehende Writes).
+6. `runtime/.agent-state.json` im **Zielprojekt** (falls vorhanden, d. h. bei
+   Fortsetzung einer laufenden Aufgabe) — aktueller Zustand **inklusive
+   `memory`-Objekt** (aktive Memories, ausstehende Writes). Nicht im
+   Vendor-Clone ablegen.
 
 Der Bootstrap umfasst **Memory Ingestion**: Bevor gehandelt wird, lädt der
-Orchestrator das persistente Gedächtnis dieses Projekts (semantisch/prozedural
-via `AGENTS.md`, `.cursor/rules/*.mdc`, ggf. Cursor Memories; episodisch via
-vorhandenes `.agent-state.json` und archivierte Handovers) und unterzieht es den
+Orchestrator das persistente Gedächtnis des Zielprojekts (semantisch/prozedural
+via Gesetzbuch, `.cursor/rules/*.mdc`, ggf. Cursor Memories; episodisch via
+`runtime/.agent-state.json` und archivierte Handovers) und unterzieht es den
 Ingestion-Kontrollen aus `memory-policy.md` §5 (Provenienz, TTL, Poisoning-Screening).
 
 Ein Agent, der ohne diesen Bootstrap-Schritt handelt, verletzt die

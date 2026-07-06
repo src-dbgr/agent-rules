@@ -70,6 +70,53 @@ agent-rules/
 
 ---
 
+## Konsum im Zielprojekt
+
+Dieses Repository ist das **standalone Gesetzbuch** — kein Teil des Produktcodes. Zielprojekte beziehen es per Clone/Pull in einen **gitignorierten Vendor-Pfad** und halten Laufzeit-Artefakte getrennt davon.
+
+### Empfohlenes Muster
+
+1. **Hosten:** `agent-rules` auf GitHub als eigenes Repository versionieren und pflegen.
+2. **Beziehen:** Im Zielprojekt klonen oder aktualisieren (Pfad frei wählbar):
+   ```bash
+   git clone https://github.com/<org>/agent-rules.git .agent-rules
+   # Alternativen: vendor/agent-rules/, tools/agent-rules/ — nicht vorgeschrieben
+   ```
+3. **Bootstrap (CFG N1):** Orchestrator liest vom Vendor-Pfad:
+   `AGENTS.md` → `workflow-cfg.md` → `tools-registry.md` → `handover-template.md` → `memory-policy.md`
+4. **Runtime:** Projekt-spezifischer Zustand in `runtime/` (gitignored), z. B. `.agent-state.json` und `handover-*.md` — **nicht** im Vendor-Clone.
+
+### Drei Ebenen (nicht vermischen)
+
+| Ebene | Ort | Zweck |
+|-------|-----|-------|
+| **Gesetzbuch** | GitHub `agent-rules` / Vendor-Clone | Normative Regeln, CFG, Rollen, Tools |
+| **Laufzeit** | `runtime/` im Zielprojekt (gitignored) | State, Handovers, Memory-Snapshots |
+| **Projektkontext** | `AGENTS.md` / `.cursor/rules/` im Zielprojekt | Projekt-Konventionen — ergänzen das Gesetzbuch, ersetzen es nicht |
+
+### Beispiel `.gitignore` (Zielprojekt)
+
+```gitignore
+# Agent-Gesetzbuch (Vendor, regelmäßig pullen)
+.agent-rules/
+
+# Agent-Laufzeit (projektspezifisch, nicht committen)
+runtime/
+```
+
+### Beispiel Agent-Anweisung (paste-ready)
+
+```
+Bootstrap (CFG N1): Lies das Gesetzbuch aus dem Vendor-Pfad (z. B. .agent-rules/):
+AGENTS.md → workflow-cfg.md → tools-registry.md → memory-policy.md.
+Runtime-State liegt in runtime/.agent-state.json — getrennt vom Vendor-Clone.
+Die AGENTS.md des Zielprojekts ergänzt das Gesetzbuch, ersetzt es nicht.
+```
+
+Kein Backend, kein Submodule-Zwang — nur Clone/Pull und klarer Pfad im Bootstrap.
+
+---
+
 ## Empirische Grundlagen
 
 Die Architektur folgt etablierten Mustern aus der Multi-Agent-Literatur und Produktionspraxis (2025–2026):
