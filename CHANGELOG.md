@@ -8,6 +8,46 @@ Das Regelwerk verlangt für jede Änderung eine **bewusste Versionserhöhung**
 Format angelehnt an [Keep a Changelog](https://keepachangelog.com/);
 Versionierung semantisch (MAJOR.MINOR.PATCH) auf das Gesetzbuch als Ganzes.
 
+## [1.3.0] — 2026-07-06
+
+### Added
+- **Architektur-Konformitäts-Gate (Drift-Prävention ohne Bloat):** Schließt die
+  Lücke, dass **Architektur-Drift** auf normalen Features (Standard-Track) bisher
+  unadressiert war, weil der Architect ausschließlich Deep-Track-exklusiv ist.
+  Neues, leichtgewichtiges **Architektur-Konformitäts-Gate** als Pflicht-DoD des
+  **Tester & Reviewer** (N5) im **Standard- und Deep-Track**: wächterhafte
+  Drift-Erkennung (Modulgrenzen, Abhängigkeitsrichtung, Schichtung, Muster) —
+  **keine** Architektur-Autorschaft.
+- **Begrenzter Eskalations-Rückkanal N5 → N3c (max 1×):** Stellt das Gate
+  **echten** Architekturbedarf fest (neue Komponente/Abhängigkeitsrichtung/
+  Querschnittsbelang), wird auf Deep-Track hochgestuft und der Architect
+  nachträglich gespawnt — statt Drift still durchzuwinken. Symmetrisch zum
+  bestehenden N5 → N3b (Anforderungslücke, max 1×).
+
+### Changed
+- **Prinzip „Architektur-Autorschaft vs. Architektur-Konformität"** eingeführt:
+  Autorschaft (Entwurf/ADR/TLA+) bleibt Deep-Track-exklusiv (Anti-Overengineering);
+  Konformität (Drift-Check) gilt auf Standard + Deep. Verankert in `AGENTS.md`
+  (§2.5, §3.3, §3.5, §6-DoD-Tabelle N8), `workflow-cfg.md` (§1 ASCII, §2 N5-DoD,
+  §3.1–3.3 Track-Pfade, §4, §5.1 Rückkanal-Tabelle, §6.3 Terminierung) und
+  `workflows/triage-decision-matrix.md` (Rollen-Ketten, Anti-Overengineering-Regel 4).
+- Versions-Bump aller Kerndokumente auf **1.3.0** (`AGENTS.md`, `README.md`,
+  `workflow-cfg.md`, `memory-policy.md`, `skills-policy.md`, `tools-registry.md`,
+  `handover-template.md`, `workflows/triage-decision-matrix.md`,
+  `proofs/termination-proof.md`).
+- `schemas/agent-state.schema.json` (`schema_version` const) und alle Instanzen/Beispiele
+  (`.agent-state.json`, `handover-template.md`, `templates/handover-filled-example.md`) auf
+  `1.3.0` gehoben. **Keine strukturelle Schemaänderung** — nur Versionskennung.
+
+### Unchanged (bewusst)
+- **`specs/workflow.tla` / `specs/workflow.cfg` nicht geändert:** Der neue
+  Rückkanal N5 → N3c ist **one-shot** (max 1×) und wird — wie das bereits
+  bestehende N5 → N3b — im formalen Modell als knoten-lokale, endliche Aktion
+  abstrahiert. Die geprüften Invarianten (`InvCycle` `cycle ≤ 3`, `InvDepth`
+  `depth ≤ 4`, `InvTerminal`) und der Terminierungs-/Deadlock-Beweis bleiben
+  unverändert gültig (Begründung: `workflow-cfg.md` §6.3, `proofs/termination-proof.md` §7).
+  Die CFG-Topologie ändert sich damit **nicht materiell**.
+
 ## [1.2.0] — 2026-07-06
 
 ### Added

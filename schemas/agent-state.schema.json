@@ -27,7 +27,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.2.0",
+      "const": "1.3.0",
       "description": "Schema-Version dieses Gesetzbuchs"
     },
     "orchestrator_id": {

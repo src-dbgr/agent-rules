@@ -1,6 +1,6 @@
 # agent-rules — Das Gesetzbuch für Agenten-gesteuerte Software-Projekte
 
-> **Version:** 1.2.0  
+> **Version:** 1.3.0  
 > **Status:** Verbindlich (normativ)  
 > **Sprache:** Deutsch (Nutzerdokumentation); technische Identifikatoren und JSON-Schlüssel auf Englisch
 

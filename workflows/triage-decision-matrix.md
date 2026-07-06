@@ -1,6 +1,6 @@
 # Triage-Entscheidungsmatrix
 
-> Version: 1.2.0
+> Version: 1.3.0
 > Bezug: `workflow-cfg.md` §3, Node N2
 
 Der Orchestrator bewertet die Nutzeranfrage anhand gewichteter Faktoren und
@@ -55,11 +55,15 @@ Jeder Faktor: 0 (nein) oder 1 (ja). Summe `S`:
 | Pfad | Knotenfolge (Rollen) |
 |------|----------------------|
 | FAST_TRACK | Developer → Tester → Aggregation |
-| STANDARD_TRACK | Business Analyst → Developer → Tester → [UX/UI] → Documentation → Deploy Prep → Aggregation |
-| DEEP_TRACK | Researcher → Business Analyst → Architect → Developer → [Security] → Tester → [UX/UI] → Documentation → Deploy Prep → Aggregation |
+| STANDARD_TRACK | Business Analyst → Developer → Tester **(+ Architektur-Konformitäts-Gate)** → [UX/UI] → Documentation → Deploy Prep → Aggregation |
+| DEEP_TRACK | Researcher → Business Analyst → Architect → Developer → [Security] → Tester **(+ Architektur-Konformitäts-Gate)** → [UX/UI] → Documentation → Deploy Prep → Aggregation |
 
 `[UX/UI]` nur wenn visuelle/UI-Änderungen (Pflicht N9).
 `[Security]` bei Angriffsflächen-Erweiterung oder Deep-Track-Default.
+`(+ Architektur-Konformitäts-Gate)` = leichtgewichtige Drift-Erkennung durch den
+Tester & Reviewer (Standard + Deep, Pflicht). Bei echtem Architekturbedarf:
+Eskalation **N5 → N3c** (Hochstufung auf Deep, Architect spawnen, max 1×). Der
+Fast-Track hat **kein** Gate (echte Trivialität verändert die Architektur nicht).
 
 ---
 
@@ -84,5 +88,10 @@ Nach Triage-Entscheidung in `.agent-state.json`:
 1. **Nicht** Deep-Track für Einzeiler oder reine Textfixes.
 2. **Nicht** Fast-Track für Auth, Payment, Schema-Migrationen.
 3. Researcher nur spawnen, wenn echte Wissenslücke besteht — nicht „auf Vorrat".
-4. Architect nur im Deep-Track — Standard-Features brauchen kein ADR-Zwang,
-   außer die Komplexität es erfordert (dann Pfad hochstufen).
+4. Architect-**Autorschaft** (ADR/Entwurf) nur im Deep-Track — Standard-Features
+   brauchen keinen Vorab-Architekten und keinen ADR-Zwang. **Architektur-Drift**
+   auf normalen Features wird stattdessen durch das leichtgewichtige
+   **Architektur-Konformitäts-Gate** des Tester & Reviewers (N5, Standard + Deep)
+   verhindert; erst wenn dieses Gate **echten** Architekturbedarf feststellt, wird
+   per Eskalation **N5 → N3c** (max 1×) auf Deep hochgestuft und der Architect
+   nachträglich gespawnt. So bleibt der Standard-Track schlank, ohne Drift zuzulassen.

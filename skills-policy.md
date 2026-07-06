@@ -1,6 +1,6 @@
 # Skills-Policy — Governance für Agent Skills (SKILL.md)
 
-> **Version:** 1.2.0
+> **Version:** 1.3.0
 > **Status:** Verbindlich (normativ) — konkretisiert **Gesetz 9** (prozedurales Gedächtnis) für den Konstrukt-Typ *Skill*
 > **Bezug:** `AGENTS.md` §3.14 / §8 (prozedurale Writes), `memory-policy.md` §1 (CoALA `procedural`), §8 (Cursor-Integration), `tools-registry.md` §3.9 / §4 / §8, `workflow-cfg.md` (N1/N7)
 

@@ -1,6 +1,6 @@
 # AGENTS.md — Rollen- und Regelwerk für Multi-Agenten-Software-Entwicklung
 
-> Version: 1.2.0
+> Version: 1.3.0
 > Status: Verbindlich (normativ) für alle Agenten, die in diesem Repository oder unter Bezugnahme auf dieses Repository operieren.
 > Geltungsbereich: Jeder Orchestrator-Agent, jeder Sub-Agent, jede Rolle, jeder Cognitive-Framework-Graph-Knoten (CFG-Knoten, siehe `workflow-cfg.md`).
 
@@ -221,19 +221,39 @@ steht in `workflow-cfg.md` §3 und `workflows/triage-decision-matrix.md`.
 | Pfad | Typische Anfragen | Rollen-Kette (vereinfacht) |
 |------|-------------------|----------------------------|
 | **Fast-Track** | Textfixes, Triviales, dokumentierte Einzeiler | Developer → Tester & Reviewer |
-| **Standard-Track** | Normale Features, Bugfixes mit Fachlogik | Business Analyst → Developer → Tester & Reviewer |
-| **Deep-Track** | Architektur, Nebenläufigkeit, sicherheitskritisch | Researcher → Business Analyst → Architect → Developer → Tester & Reviewer |
+| **Standard-Track** | Normale Features, Bugfixes mit Fachlogik | Business Analyst → Developer → Tester & Reviewer **(inkl. Architektur-Konformitäts-Gate)** |
+| **Deep-Track** | Architektur, Nebenläufigkeit, sicherheitskritisch | Researcher → Business Analyst → Architect → Developer → Tester & Reviewer **(inkl. Architektur-Konformitäts-Gate)** |
+
+**Architektur-Autorschaft vs. Architektur-Konformität (gegen Drift ohne Bloat):**
+Der Architect als **vollwertige Vorab-Rolle** (Zielarchitektur entwerfen, ADRs,
+ggf. TLA+) bleibt bewusst **Deep-Track-exklusiv** — ein normales Feature braucht
+keinen Architektur-Neuentwurf (Anti-Overengineering). Damit dennoch **keine
+Architektur-Drift** auf normalen Features entsteht, trägt der **Tester & Reviewer**
+in **Standard- und Deep-Track** ein leichtgewichtiges **Architektur-Konformitäts-Gate**
+(Drift-Erkennung, §3.5): Er prüft die Änderung gegen bestehende Modulgrenzen,
+Abhängigkeitsrichtungen, Schichtung und Konventionen — **nicht** entwerfend,
+sondern **wächterhaft**. Stellt das Gate **echten** Architekturbedarf fest (neue
+Komponente, neue Abhängigkeitsrichtung, Querschnittsbelang), erfolgt eine
+**begrenzte Eskalation N5 → N3c** (Hochstufung auf Deep, Architect wird gespawnt,
+**max. 1×**, siehe `workflow-cfg.md` §5.1) — statt still Drift zuzulassen.
+Fast-Track ist ausgenommen: echte Trivialität (Text/Doku/Einzeiler mit
+bestehender Testabdeckung) verändert die Architektur definitionsgemäß nicht.
 
 **Anti-Overengineering-Regeln:**
 - Fast-Track **niemals** für Auth, Payment, Schema-Migrationen oder UI-Redesigns.
 - Deep-Track **niemals** für reine Text- oder Kommentaränderungen.
+- Architect-**Autorschaft** (ADR/Entwurf) nur im Deep-Track; im Standard-Track
+  genügt das leichtgewichtige **Konformitäts-Gate** des Reviewers — kein
+  ADR-Zwang für normale Features, solange die Änderung driftfrei in die
+  bestehende Architektur passt.
 - Bei Grenzfällen: **höherer Pfad** wählen (Sicherheit vor Geschwindigkeit).
 - `triage_path` in `.agent-state.json` **muss** gesetzt sein, bevor N3+ betreten wird.
   Konkret: `cfg.track` ≠ `undecided` und `triage.decision` ≠ `pending`.
 
 **Zykluslimit (Gesetz 2):** Test-/Review-Schleifen (N8 → N6) sind auf **max. 3
-Versuche** begrenzt. Danach: Terminal Blocked, Abort oder Eskalation an den
-Nutzer — kein stiller 4. Versuch.
+Versuche** begrenzt. Die Architektur-Eskalation (N8 → N5 / CFG-Kern N5 → N3c) ist
+auf **max. 1×** begrenzt (danach reguläre Eskalation an den Nutzer). Danach: Terminal
+Blocked, Abort oder Eskalation an den Nutzer — kein stiller 4. Versuch.
 
 ---
 
@@ -288,8 +308,15 @@ Annahme-Dokumentation.
 
 ### 3.3 Architect (Architekt)
 
-**Verfügbarkeit:** **Deep-Track Pflicht** (siehe `workflow-cfg.md` §3.3).
-Im Standard-Track entfällt diese Rolle.
+**Verfügbarkeit:** **Deep-Track Pflicht** (siehe `workflow-cfg.md` §3.3) — für
+die **Architektur-Autorschaft** (Neuentwurf, ADRs, ggf. formale Verifikation).
+Im Standard-Track entfällt diese **Autoren-Rolle** bewusst (Anti-Overengineering).
+Die **Architektur-Konformität** (Drift-Erkennung gegen die bestehende Architektur)
+wird auf Standard- und Deep-Track dagegen **immer** geprüft — nicht durch einen
+eigenen Vorab-Architekten, sondern durch das **Architektur-Konformitäts-Gate** des
+**Tester & Reviewer** (§3.5). Erkennt dieses Gate echten Autoren-Bedarf, wird per
+begrenzter Eskalation (N5 → N3c, max. 1×) auf Deep hochgestuft und der Architect
+nachträglich gespawnt.
 
 **Mandat:** Technische Zielarchitektur, Komponentenschnitt,
 Schnittstellenverträge, Technologieauswahl, Nichtfunktionale Anforderungen
@@ -332,7 +359,8 @@ bekannten TODOs ohne Ticket-Referenz.
 ### 3.5 Tester & Reviewer
 
 **Mandat:** Verifikation von Korrektheit, Robustheit und Einhaltung der
-Akzeptanzkriterien; Code-Review auf Qualität, Lesbarkeit, Wartbarkeit.
+Akzeptanzkriterien; Code-Review auf Qualität, Lesbarkeit, Wartbarkeit; **Wächter
+der Architektur-Konformität** (Drift-Erkennung, Standard- und Deep-Track).
 
 **Verantwortlichkeiten:**
 - Testfälle aus Akzeptanzkriterien ableiten (Traceability).
@@ -340,12 +368,29 @@ Akzeptanzkriterien; Code-Review auf Qualität, Lesbarkeit, Wartbarkeit.
 - **Visuelle/UI-Änderungen:** Automatisierte visuelle Regressionstests
   (Playwright Snapshots, Percy, Chromatic o. Ä.) sind **Pflicht** — manuelle
   Sichtprüfung allein erfüllt das DoD **nicht** (siehe `workflow-cfg.md` N8).
+- **Architektur-Konformitäts-Gate (Standard + Deep, Pflicht):** Prüfe jede
+  nicht-triviale Änderung **wächterhaft** (nicht entwerfend) gegen die
+  bestehende Architektur — Modulgrenzen, Abhängigkeitsrichtung (keine neuen
+  Zyklen/Rückwärtsabhängigkeiten), Schichtung, etablierte Muster/Konventionen,
+  Interface-Verträge. Ziel: **Architektur-Drift und schleichende Erosion**
+  auf normalen Features früh erkennen. Dies ist eine **leichtgewichtige
+  Konformitätsprüfung**, keine Architektur-Autorschaft (die bleibt dem Architect
+  im Deep-Track, §3.3).
+- **Drift-Eskalation:** Erfordert die Änderung eine **echte
+  Architekturentscheidung** (neue Komponente, neue Abhängigkeitsrichtung,
+  Querschnittsbelang, neue Persistenz-/Nebenläufigkeitsschicht), so ist das
+  Gate **blockierend**: Eskalation **N5 → N3c** (Hochstufung auf Deep-Track,
+  Architect wird gespawnt), **max. 1×** (siehe `workflow-cfg.md` §5.1). Kein
+  stilles Durchwinken driftender Änderungen.
 - Review-Feedback konkret, umsetzbar und priorisiert (blockierend vs.
   nice-to-have) formulieren.
 
 **DoD:** Alle Akzeptanzkriterien haben mindestens einen zugeordneten Test;
 Testsuite grün (`exit_code: 0` in `acceptance_proofs`); bei UI-Änderungen
-visueller Regressionstest grün; Review ohne offene blockierende Punkte.
+visueller Regressionstest grün; **Architektur-Konformitäts-Gate bestanden**
+(keine unbegründete Drift; kein neuer Abhängigkeitszyklus; echter
+Architekturbedarf entweder verneint oder per N5 → N3c eskaliert); Review ohne
+offene blockierende Punkte.
 
 ### 3.6 UX/UI Expert
 
@@ -641,7 +686,7 @@ eigenmächtig "optimistisch" weiterschalten.
 | N5 – Architekturentwurf | Architect | ADRs vorhanden; TLA+ nur bei krit. Nebenläufigkeit mit `tlc` Exit 0 |
 | N6 – Implementierung | Developer | Code lauffähig, konventionskonform, ohne Secrets |
 | N7 – Sicherheitsprüfung | Security Auditor | Kein offenes kritisches/hohes Finding; SAST/SCA-Bericht vorhanden |
-| N8 – Test & Review | Tester & Reviewer | Suite grün; bei UI: visuelle Regression grün |
+| N8 – Test & Review | Tester & Reviewer | Suite grün; bei UI: visuelle Regression grün; **Architektur-Konformitäts-Gate bestanden** (Standard/Deep) — kein Drift/Abhängigkeitszyklus oder Eskalation N5 → N3c (max 1×) |
 | N9 – UX/UI Validation | UX/UI Expert | WCAG-Check; visuelle Konsistenz (bei UI-Änderungen) |
 | N10 – Dokumentation | Documentation Specialist | README/Docs/Changelog aktuell |
 | N11 – Freigabe/Deployment-Vorbereitung | DevOps/SRE | Pipeline-Integration geprüft, Rollback-Pfad dokumentiert |

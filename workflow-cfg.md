@@ -1,6 +1,6 @@
 # Control-Flow-Graph (CFG) — Triage, Rollenpfade & Terminierungsbeweis
 
-> **Version:** 1.2.0  
+> **Version:** 1.3.0  
 > **Status:** Verbindlich  
 > **Bezug:** Gesetz 2 (CFG & Triage-Routing), Gesetz 6 (DoD & ausführbare Beweise), Gesetz 9 (Memory-Gates N1/N7)
 
@@ -50,14 +50,20 @@ Dieses Dokument definiert den **deterministischen Kontrollfluss** aller Agenten-
            ┌───────────────────────────▼─────────────────────────────────────┐
            │  N5: TESTER & REVIEWER (+ UX/UI bei UI-Änderungen)                 │
            │  UI-Änderungen: PFLICHT visuelle Regressionstests                   │
-           └───────────────┬───────────────────────────────┬───────────────────┘
-                           │ PASS                          │ FAIL (Zyklus ≤3)
-                           │                               └──────┐
-                           │                                      │
-                           │         ┌────────────────────────────▼────────┐
-                           │         │ N4 ← Rückkanal (max 3 Versuche)       │
-                           │         └───────────────────────────────────────┘
-                           │
+           │  Standard/Deep: PFLICHT Architektur-Konformitäts-Gate (Drift-Check) │
+           └──────────┬─────────────────────┬──────────────────────┬────────────┘
+                     │ PASS                 │ FAIL (Zyklus ≤3)      │ ARCH-DRIFT
+                     │                      └──────┐               │ (echter
+                     │                             │               │  Arch-Bedarf)
+                     │         ┌───────────────────▼────────┐      │ → Deep
+                     │         │ N4 ← Rückkanal (max 3)      │      │ hochstufen
+                     │         └────────────────────────────┘      │
+                     │                                    ┌────────▼────────────┐
+                     │                                    │ N3c ← Architektur-   │
+                     │                                    │ Eskalation (max 1×) │
+                     │                                    │ Architect spawnen    │
+                     │                                    └──────────────────────┘
+                     │
            ┌───────────────▼───────────────────────────────────────────────────┐
            │  N6: SECURITY AUDITOR (Standard/Deep; Fast nur bei Security-Signal) │
            └───────────────┬───────────────────────────────────────────────────┘
@@ -86,7 +92,7 @@ Jeder Knotenwechsel erfordert **ausführbare Nachweise** (Gesetz 6). Prosa allei
 | **N3b** | Business Analysis | Business Analyst | Akzeptanzkriterien (Given/When/Then); keine offenen Widersprüche ohne dokumentierte Annahme |
 | **N3c** | Architecture | Architect | ADR(s); Schnittstellen; **nur Deep-Track**; TLA+ nur bei kritischen Nebenläufigkeits-Kernsystemen (siehe §4) |
 | **N4** | Implementation | Developer | Build/Lint grün; keine Secrets; Schnittstellenkonformität |
-| **N5** | Test & Review | Tester & Reviewer | **Alle** Akzeptanzkriterien getestet; `pytest`/`npm test`/etc. Exit 0; UI: visuelle Regression Exit 0 |
+| **N5** | Test & Review | Tester & Reviewer | **Alle** Akzeptanzkriterien getestet; `pytest`/`npm test`/etc. Exit 0; UI: visuelle Regression Exit 0; **Architektur-Konformitäts-Gate** (Standard/Deep): keine Drift/kein neuer Abhängigkeitszyklus, sonst Eskalation N5 → N3c (max 1×) |
 | **N6** | Security | Security Auditor | SAST/SCA Exit 0 oder dokumentierte Akzeptanz; keine kritischen Findings offen |
 | **N7** | Aggregation (+ Memory Consolidation) | Orchestrator / Memory Curator | Teilergebnisse konsolidiert; **Memory Consolidation** (durable Learnings geschrieben, Stale expiriert/superseded, Secret/PII- + Injection-Scan bestanden, Scope korrekt, Snapshot abgelegt); `phase: done` oder `blocked` |
 
@@ -119,7 +125,7 @@ Der Orchestrator wählt auf **N2** genau einen Track. Default bei Unsicherheit: 
 
 **Pfad:** N0 → N1 → N2 → **N4 Developer** → **N5 Tester** → N7
 
-**Übersprungen:** Research, Business Analyst (ersetzt durch Mini-Akzeptanzkriterium im Handover), Architect, Security (außer `signals` enthält `security_surface`).
+**Übersprungen:** Research, Business Analyst (ersetzt durch Mini-Akzeptanzkriterium im Handover), Architect, **Architektur-Konformitäts-Gate** (echte Trivialität verändert die Architektur nicht), Security (außer `signals` enthält `security_surface`).
 
 **Komplexitäts-Score:** 1–3
 
@@ -131,6 +137,12 @@ Der Orchestrator wählt auf **N2** genau einen Track. Default bei Unsicherheit: 
 
 **Research (N3a):** Optional, wenn externe Standards/CVEs relevant.
 
+**Architekt (N3c):** Kein Vorab-Architect (Anti-Overengineering). Stattdessen führt
+der Tester & Reviewer in **N5 das Architektur-Konformitäts-Gate** (Drift-Check gegen
+bestehende Architektur). Erkennt das Gate **echten** Architekturbedarf, erfolgt die
+begrenzte Eskalation **N5 → N3c** (Hochstufung auf Deep, Architect wird gespawnt,
+max. 1×, §5.1).
+
 **Komplexitäts-Score:** 4–7
 
 ### 3.3 Deep-Track
@@ -139,7 +151,9 @@ Der Orchestrator wählt auf **N2** genau einen Track. Default bei Unsicherheit: 
 
 **Pfad:** N0 → N1 → N2 → N3a Research → N3b Business Analyst → N3c Architect → N4 → N5 → N6 → N7
 
-**Research & Architect:** Pflicht.
+**Research & Architect:** Pflicht (Architektur-**Autorschaft**: ADRs, Interface-Verträge,
+ggf. TLA+). Zusätzlich prüft der Tester & Reviewer in N5 das **Architektur-Konformitäts-Gate**
+(Umsetzung entspricht dem Architekturentwurf — kein Auseinanderdriften von Entwurf und Code).
 
 **Komplexitäts-Score:** 8–10
 
@@ -160,6 +174,23 @@ Der Orchestrator wählt auf **N2** genau einen Track. Default bei Unsicherheit: 
 ---
 
 ## 4. Architektur & formale Verifikation (Deep-Track)
+
+**Autorschaft vs. Konformität (Drift-Prävention ohne Bloat):** Es werden zwei
+Architektur-Aktivitäten getrennt:
+
+1. **Architektur-Autorschaft** — Zielarchitektur *entwerfen* (Komponentenschnitt,
+   ADRs, Interface-Verträge, ggf. formale Verifikation). Teuer, vorab, **Deep-Track**
+   (Rolle Architect, N3c). Ein normales Feature braucht **keinen** Neuentwurf.
+2. **Architektur-Konformität** — die Umsetzung *gegen die bestehende Architektur
+   prüfen* (Drift-Erkennung: Modulgrenzen, Abhängigkeitsrichtung, Schichtung,
+   Muster). Leichtgewichtig, zur Review-Zeit, **Standard + Deep**, ausgeführt vom
+   Tester & Reviewer als **Architektur-Konformitäts-Gate** in N5 (§3.5 in
+   `AGENTS.md`). Findet das Gate echten Autoren-Bedarf, eskaliert es begrenzt
+   **N5 → N3c** (max 1×, §5.1) und stuft auf Deep hoch.
+
+So bleibt Fast-Track schnell (kein Gate), normale Features driften nicht
+(Konformitäts-Gate greift), und Über-Engineering unterbleibt (kein ADR-Zwang,
+solange die Änderung driftfrei in die bestehende Architektur passt).
 
 **Grundsatz:** Testgetriebene Architektur ist der Default. TLA+, Petri-Netze oder äquivalente formale Methoden sind **nur** Pflicht, wenn **alle** Bedingungen erfüllt:
 
@@ -182,6 +213,7 @@ Der Orchestrator wählt auf **N2** genau einen Track. Default bei Unsicherheit: 
 | N5 | N4 | Test/Review-Fehler | max 3 |
 | N6 | N4 | Security-Finding (fixbar) | max 3 |
 | N5 | N3b | Anforderungslücke entdeckt | max 1 (sonst Eskalation) |
+| N5 | N3c | Architektur-Drift / echter Architekturbedarf entdeckt (Konformitäts-Gate) → Deep-Hochstufung, Architect spawnen | max 1 (sonst Eskalation) |
 | beliebig | Handover | Kontext ≥ 80 % | unbegrenzt (Rotation, kein Fix-Zyklus) |
 
 ### 5.2 Zähler-Semantik
@@ -239,6 +271,19 @@ wobei:
 
 **Rückkanal-Transitionen (N5→N4, N6→N4):**  
 `forward_progress` temporär rückläufig, aber `cycle` strikt steigend mit Obergrenze 3. Nach 3 Versuchen: Transition zu Terminal(BLOCKED|ABORT|FALLBACK) — **kein** weiterer Rückkanal.
+
+**Einmalige Eskalations-Rückkanäle (N5→N3b, N5→N3c):**  
+Diese sind **one-shot** (Limit max 1, §5.1): Sie feuern höchstens **einmal** je
+Ausführung, stufen den Track hoch (Anforderungs- bzw. Architektur-Lücke) und führen
+danach wieder auf den Hauptpfad zurück. Ein zweiter Anlauf ist verboten (sonst
+reguläre Eskalation an den Nutzer). Da sie nicht wiederholbar sind und keinen
+unbegrenzten Zyklus erzeugen, reduzieren sie `forward_progress` nur **endlich oft**
+— die Rank-Funktion bleibt wohlfundiert. **Materiell ändert dies die
+CFG-Topologie nicht:** die formalen Schranken (`cycle ≤ 3`, `depth ≤ 4`) und die
+im TLA+-Modell (`specs/workflow.tla`) geprüften Invarianten (`InvCycle`,
+`InvDepth`, `InvTerminal`) bleiben unverändert gültig; das TLA+-Modell abstrahiert
+diese max-1-Eskalationen (wie schon N5→N3b) als knoten-lokale, endliche Aktion und
+**bedarf daher keiner Anpassung** (siehe `proofs/termination-proof.md` §7).
 
 **Spawn-Transitionen:**  
 `depth` steigt maximal bis 4. Auf `depth = 4`: Spawn verboten; nur Solution | Abstract | Hard Error (endliche Aktion).

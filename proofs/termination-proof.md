@@ -1,6 +1,6 @@
 # Terminierungs- und Deadlock-Freiheitsbeweis (Erweiterung)
 
-> **Version:** 1.2.0  
+> **Version:** 1.3.0  
 > **Bezug:** `workflow-cfg.md` §6–7, `specs/workflow.tla`, `memory-policy.md` §9 (Memory-Gates)
 
 Dieses Dokument ergänzt den strukturellen Beweis in `workflow-cfg.md` um eine **formale TLA+-Skizze** und prüfbare Invarianten.
@@ -105,6 +105,16 @@ Das TLA+-Modell abstrahiert:
 
 - Kontext-Rotation (ersetzt Instanz, ändert `cfg_node` nicht)
 - Parallele Sub-Agenten (modelliert als sequentiell aggregiert)
+- **Einmalige Eskalations-Rückkanäle (N5→N3b Anforderungslücke, N5→N3c
+  Architektur-Drift)** — jeweils **one-shot** (Limit max 1, `workflow-cfg.md` §5.1).
+  Sie feuern höchstens einmal, stufen den Track hoch und kehren auf den Hauptpfad
+  zurück; ein zweiter Anlauf ist verboten (sonst reguläre Nutzer-Eskalation). Da sie
+  nicht wiederholbar sind, erzeugen sie keinen unbegrenzten Zyklus und lassen die
+  Schranken `cycle ≤ 3` / `depth ≤ 4` unberührt. Sie sind daher — wie die
+  Memory-Operationen — als knoten-lokale, endliche Aktionen subsumiert und
+  **erfordern keine Änderung** von `specs/workflow.tla`/`specs/workflow.cfg`. Die
+  Rank-Funktion `R = ⟨terminal, −cfg_node_on_fail, cycle, depth⟩` bleibt
+  wohlfundiert.
 - **Memory-Operationen (Gesetz 9)** — Ingestion (N1) und Consolidation (N7) sind
   endliche Schleifen über eine endliche Menge Memory-Einträge; sie ändern
   `cfg_node`, `cycle` und `depth` **nicht** und führen keine neuen Kanten in den

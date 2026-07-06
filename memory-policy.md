@@ -1,6 +1,6 @@
 # Memory-Gesetz — Gedächtnis-Governance für Multi-Agenten-Systeme
 
-> **Version:** 1.2.0
+> **Version:** 1.3.0
 > **Status:** Verbindlich (normativ) — konkretisiert **Gesetz 9** aus `AGENTS.md`
 > **Bezug:** `AGENTS.md` §5 (Kontextlimit-Prävention), §5a (Gesetz 9), `workflow-cfg.md` (N1/N7 Memory-Gates; N7 = Aggregation im CFG-Kern, entspricht Knoten N12 der erweiterten `AGENTS.md`-Nummerierung), `handover-template.md` §7a (Gedächtnis-Übergabe), `schemas/agent-state.schema.json` (`memory`-Objekt), `tools-registry.md` §3.9
 
