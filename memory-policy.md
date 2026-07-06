@@ -1,6 +1,6 @@
 # Memory-Gesetz — Gedächtnis-Governance für Multi-Agenten-Systeme
 
-> **Version:** 1.1.0
+> **Version:** 1.2.0
 > **Status:** Verbindlich (normativ) — konkretisiert **Gesetz 9** aus `AGENTS.md`
 > **Bezug:** `AGENTS.md` §5 (Kontextlimit-Prävention), §5a (Gesetz 9), `workflow-cfg.md` (N1/N7 Memory-Gates; N7 = Aggregation im CFG-Kern, entspricht Knoten N12 der erweiterten `AGENTS.md`-Nummerierung), `handover-template.md` §7a (Gedächtnis-Übergabe), `schemas/agent-state.schema.json` (`memory`-Objekt), `tools-registry.md` §3.9
 
@@ -35,6 +35,11 @@ Schreib-Risiko:
 > es einem Agenten erlauben, die Absichten seiner Designer zu unterlaufen (CoALA §4.5).
 > Daher gilt: prozedurale Memory-Writes **nur** über bewusste, versionierte Revision durch
 > den Nutzer oder einen ausdrücklich autorisierten Orchestrator (siehe `AGENTS.md` §8).
+
+> **Skills sind prozedurales Gedächtnis.** Der Konstrukt-Typ *Skill* (`SKILL.md`) fällt in
+> die `procedural`-Schicht und unterliegt damit der höchsten Schreib-Risiko-Stufe. Definition,
+> Ort/Scoping, die Entscheidung Skill-vs-Rule-vs-`AGENTS.md`-vs-MCP und die Governance sind
+> in **`skills-policy.md`** normiert.
 
 ---
 
@@ -186,7 +191,8 @@ Entscheidungen nicht auf Halbwissen basieren:
 
 > **Auswahlleitfaden:** Interaktive Agenten mit Sub-Sekunden-Recall → **Mem0** oder **Zep**.
 > Temporales/relationales Reasoning → **Zep/Graphiti**. Reiner LangGraph-Stack, Batch →
-> **LangMem**. Prozedurale/skill-lastige Persistenz in Cursor → **Rules + Skills**.
+> **LangMem**. Prozedurale/skill-lastige Persistenz in Cursor → **Rules + Skills**
+> (Skill-Governance: `skills-policy.md`).
 
 ---
 
@@ -199,6 +205,7 @@ CoALA-Taxonomie:
 |--------------------|--------------|-------|------------|
 | **`AGENTS.md`** (Projekt-Root, nested) | `semantic`/`procedural` | `project` (nested: spezifischer gewinnt) | Projektfakten, Konventionen, Build/Test-Kommandos — von allen Tools gelesen |
 | **`.cursor/rules/*.mdc`** (Frontmatter: `alwaysApply`/`globs`/`description`) | `procedural`/`semantic` | `project` | Glob-gescopte, aktivierungsgesteuerte Regeln (Cursor-spezifisch) |
+| **Skills** (`.cursor/skills/`, `.agents/skills/`, `~`-Varianten; `SKILL.md`) | `procedural` | `project`/`user`/`global` | On-Demand-Prozeduren (Progressive Disclosure), cross-agent portabel — Governance: `skills-policy.md` |
 | **Cursor Memories** | `semantic` | `project`/`user` | Fakten, die über Sessions überleben sollen |
 | **Cursor User Rules** (Settings) | `procedural`/`semantic` | `user` | **nur** genuin projektübergreifende Präferenzen (Leakage-Gefahr, Gesetz 9.2) |
 | **Team Rules** (Dashboard) | `procedural` | `global` (Team) | organisationsweite Vorgaben |

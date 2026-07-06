@@ -1,6 +1,6 @@
 # Tools Registry — Erlaubte Werkzeuge & CLI-Befehle je Rolle
 
-> **Version:** 1.1.0  
+> **Version:** 1.2.0  
 > **Status:** Verbindlich  
 > **Prinzip:** Least Privilege — jede Rolle erhält nur Werkzeuge, die für ihr Mandat nötig sind.
 
@@ -159,7 +159,8 @@ Nachweis. Nur Scan-Exit-0 (gitleaks/Injection-Policy) + dokumentierte
 **Least Privilege für Memory:** Fachrollen (Developer, Tester, …) lesen aktives
 Gedächtnis (Handover §7a), schreiben aber **nicht** direkt in persistente Stores —
 Writes laufen über den Memory Curator an N7. Prozedurale Writes (Gesetze/Skills):
-nur mit Versions-Bump + Autorisierung (§8 unten, `AGENTS.md` §8).
+nur mit Versions-Bump + Autorisierung (§8 unten, `AGENTS.md` §8). Skill-spezifische
+Governance (Definition, Ort, Skill-vs-Rule-vs-MCP, `allowed-tools`): `skills-policy.md`.
 
 ---
 

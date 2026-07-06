@@ -1,6 +1,6 @@
 # agent-rules — Das Gesetzbuch für Agenten-gesteuerte Software-Projekte
 
-> **Version:** 1.1.0  
+> **Version:** 1.2.0  
 > **Status:** Verbindlich (normativ)  
 > **Sprache:** Deutsch (Nutzerdokumentation); technische Identifikatoren und JSON-Schlüssel auf Englisch
 
@@ -37,8 +37,10 @@ agent-rules/
 ├── AGENTS.md                    # Rollen- und Regelwerk (Verfassung)
 ├── workflow-cfg.md              # Control-Flow-Graph + Terminierungsbeweis
 ├── memory-policy.md             # Gedächtnis-Governance (Gesetz 9): CoALA, Scoping, TTL, ASI06
+├── skills-policy.md             # Skill-Governance: SKILL.md, Skill-vs-Rule-vs-MCP, Scoping
 ├── tools-registry.md            # Erlaubte Werkzeuge und CLI-Befehle je Rolle
 ├── handover-template.md         # Normiertes Handover-Protokoll (inkl. Memory-Übergabe §7a)
+├── CHANGELOG.md                 # Versionierte Änderungshistorie des Gesetzbuchs
 ├── .agent-state.json            # Beispiel-Instanz (siehe Schema)
 ├── .gitignore
 ├── schemas/
@@ -53,7 +55,10 @@ agent-rules/
 ├── workflows/
 │   └── triage-decision-matrix.md  # Entscheidungsmatrix für Triage (N2)
 └── templates/
-    └── handover-example.md      # Ausgefülltes Beispiel-Handover
+    ├── handover-example.md          # Beispiel-Handover
+    ├── handover-filled-example.md   # Ausgefülltes Referenz-Handover
+    └── skill-template/
+        └── SKILL.md                 # Paste-ready Skill-Vorlage fürs Zielprojekt
 ```
 
 ---
@@ -118,6 +123,27 @@ Kein Backend, kein Submodule-Zwang — nur Clone/Pull und klarer Pfad im Bootstr
 
 ---
 
+## Skills — warum das Gesetzbuch die *Policy* liefert, nicht die Skills
+
+Ein häufiges Missverständnis: „Das Bibel-Repo braucht ein `skills/`-Verzeichnis."
+Es braucht die **Policy über Skills** — und die steht in **`skills-policy.md`**.
+
+- **Was ein Skill ist:** ein Ordner mit `SKILL.md` (offener Agent-Skills-Standard,
+  Progressive Disclosure), der eine **auf-Abruf** genutzte, mehrschrittige Prozedur lehrt —
+  cross-agent portabel (Cursor, Claude Code, Codex …). In der CoALA-Taxonomie ist ein Skill
+  **prozedurales Gedächtnis** (Gesetz 9) — höchste Schreib-Risiko-Stufe.
+- **Skill vs. Rule vs. `AGENTS.md` vs. MCP:** Immer-an-Kontext → Rule/`AGENTS.md`;
+  auf-Abruf-Prozedur → Skill; Werkzeug-Anbindung → MCP; einmalig/trivial → gar nichts
+  persistieren. Vollständige Matrix: `skills-policy.md` §3.
+- **Warum keine Skills im Gesetzbuch:** Skills sind überwiegend **projekt-/aufgaben-
+  spezifisch**. Sie in ein universelles Gesetzbuch zu legen, verletzt **Gesetz 9.2**
+  (kein Cross-Project-Leakage) und dupliziert die ohnehin *immer-an* geltenden Kern-Gesetze
+  (Bootstrap, Delegation, Triage). Deshalb: **Policy + paste-ready Template**
+  (`templates/skill-template/SKILL.md`), Skills selbst leben im **Zielprojekt**
+  (`.cursor/skills/…`), nicht im Vendor-Clone. Begründung: `skills-policy.md` §7.
+
+---
+
 ## Empirische Grundlagen
 
 Die Architektur folgt etablierten Mustern aus der Multi-Agent-Literatur und Produktionspraxis (2025–2026):
@@ -137,4 +163,4 @@ Quellen: arXiv TDAD (2026), LangGraph State-Machine-Muster, OWASP LLM Top 10, OW
 
 ## Lizenz & Änderungen
 
-Änderungen an diesem Gesetzbuch erfordern bewusste Versionserhöhung in `AGENTS.md` und abgestimmte Aktualisierung aller referenzierten Dokumente. Sub-Agenten dürfen diese Gesetze **nicht** eigenmächtig abschwächen.
+Änderungen an diesem Gesetzbuch erfordern bewusste Versionserhöhung in `AGENTS.md` und abgestimmte Aktualisierung aller referenzierten Dokumente. Jede Revision wird in `CHANGELOG.md` protokolliert (Auditierbarkeit). Sub-Agenten dürfen diese Gesetze **nicht** eigenmächtig abschwächen.

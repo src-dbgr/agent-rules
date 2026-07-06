@@ -1,6 +1,6 @@
 # AGENTS.md — Rollen- und Regelwerk für Multi-Agenten-Software-Entwicklung
 
-> Version: 1.1.0
+> Version: 1.2.0
 > Status: Verbindlich (normativ) für alle Agenten, die in diesem Repository oder unter Bezugnahme auf dieses Repository operieren.
 > Geltungsbereich: Jeder Orchestrator-Agent, jeder Sub-Agent, jede Rolle, jeder Cognitive-Framework-Graph-Knoten (CFG-Knoten, siehe `workflow-cfg.md`).
 
@@ -486,7 +486,8 @@ im CFG-Kern von `workflow-cfg.md` ist Aggregation Knoten N7 — siehe Mapping
 - **Poisoning-Abwehr (ASI06):** Integrity-Baseline unveränderlicher Schlüssel
   wahren; Cross-Project-Leakage verhindern.
 - **Prozedurale Writes** (Gesetzes-/Skill-Änderung) niemals eigenmächtig — nur
-  mit Versions-Bump + Autorisierung (§8).
+  mit Versions-Bump + Autorisierung (§8). Skill-Governance (Definition, Ort,
+  Skill-vs-Rule-vs-MCP-Entscheidung): `skills-policy.md`.
 
 **DoD:** `memory.active[]` und `memory.pending_writes[]` konsistent und schema-
 valide; kein Secret/PII im Memory-Write (`gitleaks` Exit 0); Scope-Korrektheit
@@ -747,6 +748,8 @@ dazu ausdrücklich autorisierten Orchestrator-Agenten.
   arXiv:2309.02427 — vierschichtige Gedächtnis-Taxonomie (Grundlage Gesetz 9).
 - OWASP Top 10 for Agentic Applications — ASI06: Memory & Context Poisoning;
   OWASP Agent Memory Guard (Referenzimplementierung).
+- Agent Skills (Anthropic, offener Standard `agentskills.io`, 2025–2026) —
+  `SKILL.md` + Progressive Disclosure; Governance in `skills-policy.md`.
 - LangGraph (checkpointer/store), Mem0 (arXiv:2504.19413), Zep/Graphiti
   (arXiv:2501.13956), Letta/MemGPT — Memory-Store-Landschaft 2025–2026.
 - Vollständige Memory-Grundlagen: `memory-policy.md` §12.

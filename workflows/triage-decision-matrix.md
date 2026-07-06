@@ -1,6 +1,6 @@
 # Triage-Entscheidungsmatrix
 
-> Version: 1.1.0
+> Version: 1.2.0
 > Bezug: `workflow-cfg.md` §3, Node N2
 
 Der Orchestrator bewertet die Nutzeranfrage anhand gewichteter Faktoren und

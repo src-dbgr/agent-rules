@@ -1,6 +1,6 @@
 {
   "$comment": "BEISPIEL-INSTANZ — Schema: schemas/agent-state.schema.json. Im Zielprojekt nach runtime/.agent-state.json kopieren.",
-  "schema_version": "1.1.0",
+  "schema_version": "1.2.0",
   "orchestrator_id": "00000000-0000-4000-8000-000000000001",
   "original_user_prompt": "Beispiel: Implementiere Benutzer-Login mit OAuth2",
   "phase": "bootstrapping",

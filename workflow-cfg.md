@@ -1,6 +1,6 @@
 # Control-Flow-Graph (CFG) — Triage, Rollenpfade & Terminierungsbeweis
 
-> **Version:** 1.1.0  
+> **Version:** 1.2.0  
 > **Status:** Verbindlich  
 > **Bezug:** Gesetz 2 (CFG & Triage-Routing), Gesetz 6 (DoD & ausführbare Beweise), Gesetz 9 (Memory-Gates N1/N7)
 

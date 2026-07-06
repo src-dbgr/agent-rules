@@ -1,6 +1,6 @@
 # Terminierungs- und Deadlock-Freiheitsbeweis (Erweiterung)
 
-> **Version:** 1.1.0  
+> **Version:** 1.2.0  
 > **Bezug:** `workflow-cfg.md` §6–7, `specs/workflow.tla`, `memory-policy.md` §9 (Memory-Gates)
 
 Dieses Dokument ergänzt den strukturellen Beweis in `workflow-cfg.md` um eine **formale TLA+-Skizze** und prüfbare Invarianten.
