@@ -24,6 +24,7 @@ proof-artifacts/
 specs/workflow_TTrace_*
 states/
 lib/tla2tools.jar
+.tools/
 coverage/
 htmlcov/
 .pytest_cache/

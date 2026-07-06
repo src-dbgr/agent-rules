@@ -106,6 +106,18 @@ Legende: ✅ erlaubt | ⚠️ eingeschränkt | ❌ verboten
 
 **Anti-Halluzination:** Ein in Chat generiertes „TLA+ sieht gut aus" ist **kein** Nachweis. Nur CLI-Exit 0 + gespeichertes TLC-Log unter `proof-artifacts/`.
 
+### 3.6a Verifizierter Lauf (Referenz)
+
+```bash
+./scripts/verify-proofs.sh
+```
+
+| Werkzeug | Ergebnis (lokal) |
+|----------|------------------|
+| **ajv** | `.agent-state.json valid` |
+| **gitleaks** | `no leaks found` |
+| **TLC** | `Model checking completed. No error has been found.` (60 distinct states, Tiefe 13) |
+
 ### 3.7 Container & CI
 
 | Zweck | Befehl | Erfolg | Rolle |
