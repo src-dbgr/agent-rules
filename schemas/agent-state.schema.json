@@ -1,0 +1,356 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-rules.local/schemas/agent-state.schema.json",
+  "title": "AgentState",
+  "description": "Maschinenlesbarer globaler Zustand für Multi-Agenten-Orchestrierung. Der Orchestrator ist Eigentümer und alleiniger Schreiber.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "orchestrator_id",
+    "original_user_prompt",
+    "phase",
+    "cfg",
+    "triage",
+    "tree",
+    "cycles",
+    "running_sub_agents",
+    "artifacts",
+    "memory",
+    "blockers",
+    "timestamps"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$comment": {
+      "type": "string",
+      "description": "Optionale Annotation (z.B. Hinweis, dass dies eine Beispiel-Instanz ist)"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.1.0",
+      "description": "Schema-Version dieses Gesetzbuchs"
+    },
+    "orchestrator_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Eindeutige ID des Orchestrators für diesen Anfrage-Baum"
+    },
+    "original_user_prompt": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unveränderter Original-Prompt des Nutzers (Node 0)"
+    },
+    "phase": {
+      "type": "string",
+      "enum": ["bootstrapping", "triage", "executing", "aggregating", "done", "blocked", "handover_pending"],
+      "description": "Globale Lebenszyklusphase"
+    },
+    "cfg": {
+      "type": "object",
+      "required": ["active_node", "active_node_name", "completed_nodes", "track"],
+      "additionalProperties": false,
+      "properties": {
+        "active_node": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "description": "Aktueller CFG-Knoten (siehe workflow-cfg.md)"
+        },
+        "active_node_name": {
+          "type": "string",
+          "description": "Menschenlesbarer Knotenname, z.B. N4_implementation"
+        },
+        "completed_nodes": {
+          "type": "array",
+          "items": { "type": "integer" },
+          "uniqueItems": true,
+          "description": "Abgeschlossene CFG-Knoten (DoD erfüllt)"
+        },
+        "track": {
+          "type": "string",
+          "enum": ["fast", "standard", "deep", "undecided"],
+          "description": "Gewählter Triage-Pfad nach Knoten N2"
+        }
+      }
+    },
+    "triage": {
+      "type": "object",
+      "required": ["decision", "rationale", "complexity_score"],
+      "additionalProperties": false,
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": ["fast_track", "standard_track", "deep_track", "pending"],
+          "description": "Ergebnis der Triage-Bewertung"
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Begründung der Track-Wahl (Anti-Overengineering-Nachweis)"
+        },
+        "complexity_score": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "description": "1=trivial, 10=architekturkritisch/konkurrierend"
+        },
+        "signals": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Erkannte Signale, z.B. concurrency, ui_change, security_surface"
+        }
+      }
+    },
+    "tree": {
+      "type": "object",
+      "required": ["current_depth", "max_depth", "total_spawned"],
+      "additionalProperties": false,
+      "properties": {
+        "current_depth": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "description": "Aktuelle maximale Baumtiefe im laufenden Teilbaum"
+        },
+        "max_depth": {
+          "type": "integer",
+          "const": 4,
+          "description": "Hartes Gesetzeslimit"
+        },
+        "total_spawned": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Gesamtzahl gespawnter Sub-Agenten in diesem Baum"
+        }
+      }
+    },
+    "cycles": {
+      "type": "object",
+      "required": ["current_attempt", "max_attempts", "active_loop"],
+      "additionalProperties": false,
+      "properties": {
+        "current_attempt": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3,
+          "description": "Aktueller Versuch im begrenzten Zyklus (1-basiert)"
+        },
+        "max_attempts": {
+          "type": "integer",
+          "const": 3,
+          "description": "Hartes Zykluslimit"
+        },
+        "active_loop": {
+          "type": "string",
+          "enum": ["none", "test_fix", "review_fix", "security_fix", "handover_rotation"],
+          "description": "Welcher Rückkanal-Zyklus aktiv ist"
+        },
+        "loop_history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["loop", "attempt", "outcome", "timestamp"],
+            "properties": {
+              "loop": { "type": "string" },
+              "attempt": { "type": "integer", "minimum": 1, "maximum": 3 },
+              "outcome": { "type": "string", "enum": ["pass", "fail", "escalate", "abort"] },
+              "timestamp": { "type": "string", "format": "date-time" }
+            }
+          }
+        }
+      }
+    },
+    "running_sub_agents": {
+      "type": "array",
+      "description": "Aktuell laufende Sub-Agenten (Orchestrator-Sicht)",
+      "items": {
+        "type": "object",
+        "required": ["id", "role", "depth", "status", "cfg_node", "spawned_at"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "role": {
+            "type": "string",
+            "enum": [
+              "researcher",
+              "business_analyst",
+              "architect",
+              "developer",
+              "tester_reviewer",
+              "ux_ui_expert",
+              "security_auditor",
+              "data_engineer",
+              "devops_sre",
+              "documentation_specialist",
+              "performance_engineer",
+              "compliance_governance",
+              "memory_curator",
+              "sub_orchestrator"
+            ]
+          },
+          "depth": { "type": "integer", "minimum": 1, "maximum": 4 },
+          "status": {
+            "type": "string",
+            "enum": ["spawning", "running", "blocked", "completed", "failed", "handover_out"]
+          },
+          "cfg_node": { "type": "integer" },
+          "parent_id": { "type": "string", "format": "uuid" },
+          "spawned_at": { "type": "string", "format": "date-time" },
+          "context_utilization_percent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "handover_path": {
+            "type": "string",
+            "description": "Pfad zum zugehörigen Handover-Dokument"
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "description": "Referenzen auf erzeugte Artefakte (Pfade, keine Inline-Duplikation)",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "path": { "type": "string" },
+          "type": { "type": "string" },
+          "role": { "type": "string" },
+          "checksum": { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "memory": {
+      "type": "object",
+      "description": "Gedächtnis-Zustand (Gesetz 9, siehe memory-policy.md). Trennt persistentes Gedächtnis vom flüchtigen Kontext.",
+      "required": ["active", "pending_writes", "poisoning_checks"],
+      "additionalProperties": false,
+      "properties": {
+        "active": {
+          "type": "array",
+          "description": "Aktuell geladene/aktive Memory-Einträge (nach Ingestion an N1)",
+          "items": {
+            "type": "object",
+            "required": ["id", "layer", "scope", "trust"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string" },
+              "layer": {
+                "type": "string",
+                "enum": ["working", "episodic", "semantic", "procedural"],
+                "description": "CoALA-Schicht"
+              },
+              "scope": {
+                "type": "string",
+                "enum": ["thread", "project", "user", "global"],
+                "description": "Gesetz 9.1 — Sichtbarkeitsbereich"
+              },
+              "trust": {
+                "type": "string",
+                "enum": ["trusted", "unverified", "untrusted"],
+                "description": "Gesetz 9.4 — Provenienz-Vertrauensstufe"
+              },
+              "source": { "type": "string", "description": "Herkunft (Pfad/URL/Store)" },
+              "summary": { "type": "string" },
+              "created_at": { "type": "string", "format": "date-time" },
+              "valid_until": { "type": "string", "format": "date-time", "description": "TTL (Gesetz 9.3); leer = keine feste TTL" },
+              "superseded_by": { "type": "string", "description": "ID des ablösenden Eintrags (bi-temporal)" },
+              "last_validated_at": { "type": "string", "format": "date-time" }
+            }
+          }
+        },
+        "pending_writes": {
+          "type": "array",
+          "description": "Consolidation-Kandidaten, die an N7 geprüft und ggf. persistiert werden",
+          "items": {
+            "type": "object",
+            "required": ["id", "layer", "scope", "status"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string" },
+              "layer": { "type": "string", "enum": ["episodic", "semantic", "procedural"] },
+              "scope": { "type": "string", "enum": ["thread", "project", "user", "global"] },
+              "candidate": { "type": "string", "description": "Kurzbeschreibung des zu schreibenden Wissens" },
+              "status": { "type": "string", "enum": ["pending", "written", "quarantined", "rejected", "deduped"] }
+            }
+          }
+        },
+        "poisoning_checks": {
+          "type": "object",
+          "description": "ASI06-Abwehr (memory-policy.md §5). Ergebnisse der Ingestion-/Write-Kontrollen.",
+          "additionalProperties": false,
+          "properties": {
+            "source_validated": { "type": "boolean" },
+            "session_isolated": { "type": "boolean" },
+            "integrity_baseline": { "type": "boolean", "description": "SHA-256-Baseline unveränderlicher Schlüssel geprüft" },
+            "injection_scan": { "type": "string", "enum": ["passed", "failed", "not_run"] },
+            "policy_action": { "type": "string", "enum": ["allow", "redact", "quarantine", "block"] },
+            "snapshot_ref": { "type": "string", "description": "Pfad zum Forensik-/Rollback-Snapshot" }
+          }
+        },
+        "store": {
+          "type": "object",
+          "description": "Optional: externer Memory-Store des Zielprojekts",
+          "additionalProperties": false,
+          "properties": {
+            "backend": { "type": "string", "enum": ["none", "langgraph_store", "mem0", "zep", "letta", "cursor_memories", "mcp", "other"] },
+            "namespace": { "type": "string" }
+          }
+        }
+      }
+    },
+    "dod_gates": {
+      "type": "object",
+      "description": "Nachweis-Status je CFG-Knoten",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": { "type": "string", "enum": ["pending", "passed", "failed", "waived"] },
+          "proof_type": {
+            "type": "string",
+            "enum": ["unit_test", "integration_test", "e2e_test", "visual_regression", "tla_verify", "sast", "sca", "memory_scan", "manual_waiver"]
+          },
+          "proof_command": { "type": "string" },
+          "proof_exit_code": { "type": "integer" },
+          "proof_artifact_path": { "type": "string" },
+          "verified_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "severity", "message", "created_at"],
+        "properties": {
+          "id": { "type": "string" },
+          "severity": { "type": "string", "enum": ["info", "warning", "error", "critical"] },
+          "message": { "type": "string" },
+          "cfg_node": { "type": "integer" },
+          "agent_id": { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "resolved_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "context_budget": {
+      "type": "object",
+      "properties": {
+        "orchestrator_utilization_percent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "handover_threshold_percent": { "type": "number", "const": 80 },
+        "last_handover_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "timestamps": {
+      "type": "object",
+      "required": ["created_at", "updated_at"],
+      "properties": {
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" },
+        "completed_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

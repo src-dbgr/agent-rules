@@ -1,0 +1,35 @@
+# Agent runtime state (project-specific, not law book)
+**/runtime/.agent-state.json
+**/runtime/handover-*.md
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs & temp
+*.log
+tmp/
+.temp/
+
+# Test & proof artifacts (generated at runtime in target projects)
+proof-artifacts/
+.tla-checkpoints/
+coverage/
+htmlcov/
+.pytest_cache/
+node_modules/
+
+# Secrets — never commit
+.env
+.env.*
+*.pem
+*.key
+credentials.json
+secrets.*
