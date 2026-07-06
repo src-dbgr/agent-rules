@@ -54,6 +54,9 @@ agent-rules/
 │   └── workflow.cfg             # TLC Model-Checker-Konfiguration (kanonisch)
 ├── workflows/
 │   └── triage-decision-matrix.md  # Entscheidungsmatrix für Triage (N2)
+├── prompts/                         # Nicht-Gesetzbuch: copy-paste Prompt-Vorlagen
+│   ├── README.md
+│   └── project-bootstrap-prompt.md  # Standard-Bootstrap + Feature-Request-Slot
 └── templates/
     ├── handover-example.md          # Beispiel-Handover
     ├── handover-filled-example.md   # Ausgefülltes Referenz-Handover
@@ -120,6 +123,18 @@ Die AGENTS.md des Zielprojekts ergänzt das Gesetzbuch, ersetzt es nicht.
 ```
 
 Kein Backend, kein Submodule-Zwang — nur Clone/Pull und klarer Pfad im Bootstrap.
+
+---
+
+## Nicht-Gesetzbuch — Verbraucher-Vorlagen
+
+Copy-paste-fertige Prompts für Zielprojekte — **nicht normativ**, nur Einstiegshilfe:
+
+| Vorlage | Pfad |
+|---------|------|
+| Projekt-Bootstrap + Feature-Request | [`prompts/project-bootstrap-prompt.md`](prompts/project-bootstrap-prompt.md) |
+
+**Nutzung:** Vorlage öffnen, GitHub-URL anpassen, Feature-Request unter `<!-- DEIN FEATURE-REQUEST HIER -->` einfügen, gesamten Inhalt in den Agent-Chat pasten. Der Agent lädt das Gesetzbuch, führt CFG N1 aus, arbeitet dann deine Anfrage ab. Details: [`prompts/README.md`](prompts/README.md).
 
 ---
 
