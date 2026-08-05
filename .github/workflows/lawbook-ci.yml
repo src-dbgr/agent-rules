@@ -1,0 +1,315 @@
+# Durchsetzung des Gesetzbuchs v2.0 in CI (ADR-009 §3).
+#
+# Grundsatz: In CI wird NICHTS uebersprungen. Alle optionalen Werkzeuge werden
+# explizit installiert; `--allow-skip` ist verboten (die Skripte verweigern es,
+# sobald $CI gesetzt ist, siehe config/policy-defaults.json#/enforcement/allow_skip_in_ci).
+# Exit 2 ("NICHT NACHGEWIESEN") macht den Lauf rot — genauso wie Exit 1. Ein
+# fehlendes Werkzeug ist kein Bestehen.
+#
+# Der Lauf ist auch dann sinnvoll, wenn Dateien aus WP-2..WP-6 noch fehlen:
+# geprueft wird, was existiert; im Manifest als `required` deklarierte fehlende
+# Dateien sind FAIL (nicht SKIP). Solange WP-2..6 offen sind, ist dieser Workflow
+# deshalb absichtlich rot — er ist die Arbeitsliste der Folgepakete.
+#
+# Schritte 4 bis 8 rufen Skripte auf, die WP-3..WP-5 liefern. Existiert ein Skript
+# noch nicht, meldet der Schritt das als FAIL mit Eigentuemer-Paket und laeuft
+# weiter (continue-on-error), damit ein einzelnes fehlendes Skript nicht die
+# Diagnose der uebrigen Schritte verdeckt. Der letzte Schritt fasst zusammen und
+# entscheidet ueber den Ausgang des Jobs.
+
+name: lawbook-ci
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lawbook-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lawbook:
+    name: Gesetzbuch pruefen
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: "true"
+      GITLEAKS_VERSION: "8.18.4"
+    steps:
+      # --- Schritt 1: Werkzeuge bereitstellen (nichts darf fehlen) -----------
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Node bereitstellen (fuer ajv via npx)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: JDK bereitstellen (fuer TLC)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Werkzeuge installieren und Verfuegbarkeit belegen
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq jq ripgrep python3 python3-pip curl tar
+          python3 -m pip install --quiet --disable-pip-version-check pyyaml
+          # gitleaks: ohne dieses Werkzeug melden die Nachweisskripte Exit 2.
+          curl -fsSL -o /tmp/gitleaks.tar.gz \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          tar -C /tmp -xzf /tmp/gitleaks.tar.gz gitleaks
+          sudo install -m 0755 /tmp/gitleaks /usr/local/bin/gitleaks
+          # tla2tools.jar: URL und Zielpfad stehen in der Zahlen-SSoT.
+          JAR_PATH="$(jq -r '.enforcement.tla_jar_path' config/policy-defaults.json)"
+          JAR_URL="$(jq -r '.enforcement.tla_jar_url' config/policy-defaults.json)"
+          JAR_SHA="$(jq -r '.enforcement.tla_jar_sha256 // ""' config/policy-defaults.json)"
+          mkdir -p "$(dirname "$JAR_PATH")"
+          if [ ! -f "$JAR_PATH" ]; then curl -fsSL -o "$JAR_PATH" "$JAR_URL"; fi
+          if [ -n "$JAR_SHA" ]; then
+            echo "${JAR_SHA}  ${JAR_PATH}" | sha256sum -c -
+          else
+            echo "WARNUNG: enforcement.tla_jar_sha256 ist leer — Bezug ungepinnt (offener Punkt, ADR-009 §3.1)."
+            sha256sum "$JAR_PATH"
+          fi
+          for t in jq rg python3 node npx java gitleaks; do
+            command -v "$t" >/dev/null || { echo "FAIL: Werkzeug $t fehlt"; exit 1; }
+            echo "vorhanden: $t"
+          done
+
+      # --- Schritt 2: Linter (inkl. Kontext-Budget) --------------------------
+      - name: Linter — alle Pruefungen, strikt
+        id: lint
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          ./scripts/lint-lawbook.sh --all --strict
+          rc=$?
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          # context-budget.sh (WP-3) laeuft hier mit; AK-088 verlangt seine Nennung.
+          if [ -x ./scripts/context-budget.sh ]; then
+            ./scripts/context-budget.sh --max-bytes-per-agent 32000 --check-coverage || rc=1
+          else
+            echo "FAIL: scripts/context-budget.sh fehlt (WP-3) — Kontext-Budget nicht geprueft"
+            rc=1
+          fi
+          exit "$rc"
+
+      - name: Linter — Selbsttest je Pruefung (Mutation muss FAIL erzeugen)
+        id: lint_selftest
+        continue-on-error: true
+        run: ./scripts/lint-lawbook.sh --self-test
+
+      # --- Schritt 3: Schema-Validierungen inkl. Negativfaellen --------------
+      - name: Schemata und Fixtures validieren
+        id: schemas
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          rc=0
+          ajv() { npx -y -p ajv-cli@5 -p ajv-formats ajv "$@" --spec=draft2020 -c ajv-formats; }
+          # Jedes Schema muss selbst uebersetzbar sein, sonst validiert es stumm nichts.
+          # strict-required ist aus: die Regel verlangt, dass in jedem if/then-Zweig die
+          # Eigenschaft erneut deklariert wird. Das doppelt jede Definition und laesst beide
+          # Stellen auseinanderlaufen. Alle uebrigen strict-Regeln sind aktiv.
+          for s in schemas/*.json; do
+            if ajv compile -s "$s" --strict=true --strict-required=false >/dev/null 2>&1; then
+              echo "PASS: $s uebersetzbar (strict)"
+            else
+              echo "FAIL: $s ist kein uebersetzbares Schema (strict)"
+              ajv compile -s "$s" --strict=true --strict-required=false 2>&1 | sed 's/^/    /'
+              rc=1
+            fi
+          done
+          ajv validate -s schemas/manifest.schema.json -d manifest.json || rc=1
+          ajv validate -s schemas/policy-defaults.schema.json -d config/policy-defaults.json || rc=1
+          # Erwartungswerte je Fixture stehen in manifest.json#/test_expectations.
+          while IFS=$'\t' read -r path expect; do
+            if ajv validate -s schemas/agent-state.schema.json -d "$path" >/dev/null 2>&1; then
+              got=pass
+            else
+              got=fail
+            fi
+            if [ "$got" = "$expect" ]; then
+              echo "PASS: $path (erwartet $expect)"
+            else
+              echo "FAIL: $path erwartet $expect, erhalten $got"
+              rc=1
+            fi
+          done < <(jq -r '.test_expectations.cases[] | select(.validator=="agent_state_schema") | [.path,.expect] | @tsv' manifest.json)
+          exit "$rc"
+
+      # --- Schritt 4: JSON-Beispiele in der Dokumentation --------------------
+      - name: Dokumentierte JSON-Beispiele validieren
+        id: doc_examples
+        continue-on-error: true
+        run: |
+          if [ -x ./scripts/validate-doc-examples.sh ]; then
+            ./scripts/validate-doc-examples.sh
+          else
+            echo "FAIL: scripts/validate-doc-examples.sh fehlt (WP-5)"; exit 1
+          fi
+
+      # --- Schritt 5: Triage-Fixtures ---------------------------------------
+      - name: Triage-Algebra und Fixtures
+        id: triage
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          rc=0
+          ./scripts/check-triage.sh || rc=1
+          # Negativfaelle: der Pruefer MUSS scheitern.
+          while IFS=$'\t' read -r path expect; do
+            if ./scripts/check-triage.sh --file "$path" --quiet >/dev/null 2>&1; then got=pass; else got=fail; fi
+            [ "$got" = "$expect" ] && echo "PASS: $path (erwartet $expect)" || { echo "FAIL: $path erwartet $expect, erhalten $got"; rc=1; }
+          done < <(jq -r '.test_expectations.cases[] | select(.validator=="check_triage") | [.path,.expect] | @tsv' manifest.json)
+          MIN="$(jq -r '.enforcement.triage_fixtures_min' config/policy-defaults.json)"
+          if [ -x ./scripts/triage-fixtures-check.sh ]; then
+            ./scripts/triage-fixtures-check.sh --min "$MIN" --cover-all || rc=1
+          else
+            echo "FAIL: scripts/triage-fixtures-check.sh fehlt (WP-3)"; rc=1
+          fi
+          exit "$rc"
+
+      # --- Schritt 6: Handover-Fixtures -------------------------------------
+      - name: Handover-Frontmatter validieren
+        id: handovers
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          rc=0
+          ajv() { npx -y -p ajv-cli@5 -p ajv-formats ajv "$@" --spec=draft2020 -c ajv-formats; }
+          # Das Frontmatter-Schema wird schon jetzt an Fixtures belegt, damit es nicht
+          # ungeprueft auf WP-4 wartet. Erwartungswerte: manifest.json#/test_expectations.
+          while IFS=$'\t' read -r path expect; do
+            if ajv validate -s schemas/handover.schema.json -d "$path" >/dev/null 2>&1; then got=pass; else got=fail; fi
+            if [ "$got" = "$expect" ]; then
+              echo "PASS: $path (erwartet $expect)"
+            else
+              echo "FAIL: $path erwartet $expect, erhalten $got"; rc=1
+            fi
+          done < <(jq -r '.test_expectations.cases[] | select(.validator=="handover_schema") | [.path,.expect] | @tsv' manifest.json)
+          # Body-Regeln (Zeilen-Caps, no-inline-logs) sieht JSON Schema nicht; das leistet WP-4.
+          if [ -x ./scripts/validate-handovers.sh ]; then
+            ./scripts/validate-handovers.sh tests/fixtures || rc=1
+          else
+            echo "FAIL: scripts/validate-handovers.sh fehlt (WP-4) — Body-Regeln des Handovers unbelegt"; rc=1
+          fi
+          exit "$rc"
+
+      # --- Schritt 7: Laufzeit-Hygiene (GC, Branches) -----------------------
+      - name: GC-Sweep und Branch-Hygiene (nur Pruefmodus)
+        id: hygiene
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          rc=0
+          if [ -x ./scripts/gc-sweep.sh ]; then
+            ./scripts/gc-sweep.sh --dry-run || rc=1
+            ./scripts/gc-sweep.sh --check-index || rc=1
+          else
+            echo "FAIL: scripts/gc-sweep.sh fehlt (WP-4)"; rc=1
+          fi
+          if [ -x ./scripts/branch-hygiene.sh ]; then
+            ./scripts/branch-hygiene.sh --self-test-protections || rc=1
+          else
+            echo "FAIL: scripts/branch-hygiene.sh fehlt (WP-5)"; rc=1
+          fi
+          exit "$rc"
+
+      # --- Schritt 8: Dokumentierte Kommandos und Migration -----------------
+      - name: Dokumentierte Kommandos und State-Migration
+        id: commands
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          rc=0
+          if [ -x ./scripts/check-doc-commands.sh ]; then
+            ./scripts/check-doc-commands.sh || rc=1
+          else
+            echo "FAIL: scripts/check-doc-commands.sh fehlt (WP-5)"; rc=1
+          fi
+          while IFS=$'\t' read -r path expect; do
+            out="$RUNNER_TEMP/migrated.json"
+            if ./scripts/migrate-state.sh "$path" "$out" && \
+               npx -y -p ajv-cli@5 -p ajv-formats ajv validate -s schemas/agent-state.schema.json \
+                 -d "$out" --spec=draft2020 -c ajv-formats; then got=pass; else got=fail; fi
+            [ "$got" = "$expect" ] && echo "PASS: Migration $path" || { echo "FAIL: Migration $path erwartet $expect, erhalten $got"; rc=1; }
+          done < <(jq -r '.test_expectations.cases[] | select(.validator=="migrate_state") | [.path,.expect] | @tsv' manifest.json)
+          exit "$rc"
+
+      # --- Schritt 9: Nachweiskette (TLC, Mutationstest, Secret-Scan) -------
+      - name: Nachweiskette — verify-proofs ohne --allow-skip
+        id: proofs
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          rc=0
+          ./scripts/verify-proofs.sh || rc=$?
+          if [ "$rc" = 2 ]; then
+            echo "FAIL: Exit 2 bedeutet NICHT NACHGEWIESEN — in CI ist das ein Fehler, kein Bestehen."
+            rc=1
+          fi
+          # Mutationstest: die Sonde MUSS am mutierten Modell scheitern (ADR-004).
+          if [ -f specs/mutation.cfg ]; then
+            JAR_PATH="$(jq -r '.enforcement.tla_jar_path' config/policy-defaults.json)"
+            if java -cp "$JAR_PATH" tlc2.TLC -config specs/mutation.cfg specs/workflow.tla; then
+              echo "FAIL: specs/mutation.cfg ist durchgelaufen — das Modell prueft die Eigenschaft nicht (Tautologie)."
+              rc=1
+            else
+              echo "PASS: Mutationstest scheitert wie gefordert."
+            fi
+          else
+            echo "FAIL: specs/mutation.cfg fehlt (WP-5) — Aussagekraft der Sonde unbelegt"; rc=1
+          fi
+          exit "$rc"
+
+      # --- Syntaxpruefung aller Skripte -------------------------------------
+      - name: Shell-Syntax aller Skripte
+        id: shellsyntax
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          rc=0
+          for f in scripts/*.sh; do
+            if bash -n "$f"; then echo "PASS: bash -n $f"; else echo "FAIL: bash -n $f"; rc=1; fi
+          done
+          exit "$rc"
+
+      # --- Auswertung --------------------------------------------------------
+      - name: Zusammenfassung und Ausgang
+        if: always()
+        run: |
+          set -uo pipefail
+          declare -A R=(
+            [linter]="${{ steps.lint.outcome }}"
+            [linter-selbsttest]="${{ steps.lint_selftest.outcome }}"
+            [schemata]="${{ steps.schemas.outcome }}"
+            [doku-beispiele]="${{ steps.doc_examples.outcome }}"
+            [triage]="${{ steps.triage.outcome }}"
+            [handover]="${{ steps.handovers.outcome }}"
+            [hygiene]="${{ steps.hygiene.outcome }}"
+            [kommandos]="${{ steps.commands.outcome }}"
+            [nachweise]="${{ steps.proofs.outcome }}"
+            [shell-syntax]="${{ steps.shellsyntax.outcome }}"
+          )
+          fail=0
+          { echo "## Gesetzbuch-CI"; echo ""; echo "| Schritt | Ergebnis |"; echo "|---|---|"; } >> "$GITHUB_STEP_SUMMARY"
+          for k in "${!R[@]}"; do
+            echo "| $k | ${R[$k]} |" >> "$GITHUB_STEP_SUMMARY"
+            [ "${R[$k]}" = "success" ] || fail=1
+          done
+          if [ "$fail" -ne 0 ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "Mindestens ein Schritt ist rot. Solange WP-2..WP-6 offen sind, ist das der erwartete Zustand." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi

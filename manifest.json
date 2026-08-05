@@ -1,0 +1,2950 @@
+{
+  "$comment": "Struktur-SSoT des Gesetzbuchs v2.0 (ADR-001). Diese Datei wird von Agenten NICHT gelesen, sondern per Skript abgefragt (load_when=script_only). Alle einstellbaren ZAHLEN stehen dagegen in config/policy-defaults.json; hier stehen nur Dokument-Obergrenzen (max_lines/max_bytes), die der Linter gegen die Klassen-Caps der Konfiguration prueft. max_lines/max_bytes sind Obergrenzen, keine Messwerte (ADR-001 §4): gemessen wird mit wc, ein deklarierter Ist-Wert wuerde veralten. tokens_est_max ist abgeleitet: ceil((max_bytes oder max_lines*caps.bytes_per_line_proxy) / caps.bytes_per_token_proxy) - scripts/lint-lawbook.sh --budget rechnet das nach.",
+  "$schema_ref": "schemas/manifest.schema.json",
+  "lawbook_version": "2.0.0",
+  "state_schema_version": "2.0.0",
+  "category_of_kind": {
+    "core": "kern",
+    "module": "modul",
+    "role_card": "rollenkarte",
+    "schema": "schema",
+    "script": "skript",
+    "ci": "skript",
+    "config": "daten",
+    "manifest": "daten",
+    "fixture_set": "daten",
+    "example": "daten",
+    "spec": "nicht-normativ",
+    "template": "nicht-normativ",
+    "doc": "nicht-normativ",
+    "doc_set": "nicht-normativ",
+    "prompt": "nicht-normativ",
+    "stub": "nicht-normativ",
+    "readme": "nicht-normativ",
+    "changelog": "nicht-normativ",
+    "license": "nicht-normativ",
+    "vcs_config": "nicht-normativ"
+  },
+  "line_cap_of_kind": {
+    "core": "/caps/core_max_lines",
+    "module": "/caps/module_max_lines",
+    "role_card": "/caps/role_card_max_lines",
+    "stub": "/caps/stub_max_lines",
+    "template": "/caps/handover_max_lines"
+  },
+  "documents": [
+    {
+      "id": "core",
+      "path": "AGENTS.md",
+      "kind": "core",
+      "category": "kern",
+      "purpose": "Gesetze-Tabelle, Sofort-Ablauf, CFG-Kurztabelle, Rollenindex, Verweistabelle",
+      "load_when": "always",
+      "load_trigger": "Bootstrap N1 und nach jeder Compaction/Rotation erneut - einzige Pflichtlektuere (NFR-1)",
+      "max_lines": 195,
+      "max_bytes": 12000,
+      "tokens_est_max": 3000,
+      "required": true,
+      "owner_wp": "WP-2"
+    },
+    {
+      "id": "mod-workflow",
+      "path": "modules/workflow.md",
+      "kind": "module",
+      "category": "modul",
+      "purpose": "CFG v2: Knoten-/Kantentabelle, Mermaid-Diagramm, Rank-Funktion, Terminalzustaende",
+      "load_when": "reading_list",
+      "load_trigger": "Leseliste nennt mod-workflow oder einen seiner Anker",
+      "max_lines": 250,
+      "max_bytes": null,
+      "tokens_est_max": 3250,
+      "required": true,
+      "owner_wp": "WP-3"
+    },
+    {
+      "id": "mod-triage",
+      "path": "modules/triage.md",
+      "kind": "module",
+      "category": "modul",
+      "purpose": "Klassen-Regelliste, Flags, Gate-Matrix, DoD je Klasse, Alt->Neu-Mapping",
+      "load_when": "reading_list",
+      "load_trigger": "Leseliste nennt mod-triage oder einen seiner Anker (Orchestrator an N2)",
+      "max_lines": 230,
+      "max_bytes": null,
+      "tokens_est_max": 2990,
+      "required": true,
+      "owner_wp": "WP-3"
+    },
+    {
+      "id": "mod-context",
+      "path": "modules/context.md",
+      "kind": "module",
+      "category": "modul",
+      "purpose": "Hierarchie und Tiefenlimit, zaehlbare Budgets, Rotation, Amtsuebergabe, Delegationsbrief",
+      "load_when": "reading_list",
+      "load_trigger": "Leseliste nennt mod-context oder einen seiner Anker",
+      "max_lines": 150,
+      "max_bytes": null,
+      "tokens_est_max": 1950,
+      "required": true,
+      "owner_wp": "WP-3"
+    },
+    {
+      "id": "mod-lifecycle",
+      "path": "modules/lifecycle.md",
+      "kind": "module",
+      "category": "modul",
+      "purpose": "runtime-Layout, Index, Retention/GC, Promotion, Handover-Format, Abbruch und Rollback",
+      "load_when": "reading_list",
+      "load_trigger": "Leseliste nennt mod-lifecycle oder einen seiner Anker (Orchestrator an N1/N7)",
+      "max_lines": 240,
+      "max_bytes": null,
+      "tokens_est_max": 3120,
+      "required": true,
+      "owner_wp": "WP-4"
+    },
+    {
+      "id": "mod-vcs",
+      "path": "modules/vcs.md",
+      "kind": "module",
+      "category": "modul",
+      "purpose": "Branch-Lebenszyklus, Abraeumen, Loeschverbote, Zustaendigkeitsmatrix, Auslieferung",
+      "load_when": "reading_list",
+      "load_trigger": "Leseliste nennt mod-vcs oder einen seiner Anker (Auslieferung an N6b)",
+      "max_lines": 180,
+      "max_bytes": null,
+      "tokens_est_max": 2340,
+      "required": true,
+      "owner_wp": "WP-5"
+    },
+    {
+      "id": "mod-tools",
+      "path": "modules/tools.md",
+      "kind": "module",
+      "category": "modul",
+      "purpose": "Werkzeugmatrix je Rolle, Verbote, Verifizierungs-Semantik, Betreiber-Empfehlungen",
+      "load_when": "reading_list",
+      "load_trigger": "Leseliste nennt den Rollen-Anker modules/tools.md#<rolle>",
+      "max_lines": 230,
+      "max_bytes": null,
+      "tokens_est_max": 2990,
+      "required": true,
+      "owner_wp": "WP-3"
+    },
+    {
+      "id": "mod-memory",
+      "path": "modules/memory.md",
+      "kind": "module",
+      "category": "modul",
+      "purpose": "LAW-MEMORY.1-.6, Ingestion/Consolidation, kein Self-Re-Ingest, TTL und Provenienz",
+      "load_when": "reading_list",
+      "load_trigger": "Leseliste nennt mod-memory oder einen seiner Anker",
+      "max_lines": 220,
+      "max_bytes": null,
+      "tokens_est_max": 2860,
+      "required": true,
+      "owner_wp": "WP-4"
+    },
+    {
+      "id": "mod-skills",
+      "path": "modules/skills.md",
+      "kind": "module",
+      "category": "modul",
+      "purpose": "Skill-Governance, Frontmatter-Tabelle, Entscheidung Skill vs. Rule vs. MCP",
+      "load_when": "reading_list",
+      "load_trigger": "Leseliste nennt mod-skills (nur bei Skill-Aenderungen)",
+      "max_lines": 120,
+      "max_bytes": null,
+      "tokens_est_max": 1560,
+      "required": true,
+      "owner_wp": "WP-4"
+    },
+    {
+      "id": "role-researcher",
+      "path": "roles/researcher.md",
+      "kind": "role_card",
+      "category": "rollenkarte",
+      "purpose": "Mandat, DoD, Werkzeuge, Rueckgabeformat der Rolle researcher",
+      "load_when": "reading_list",
+      "load_trigger": "Delegation an Rolle researcher",
+      "max_lines": 40,
+      "max_bytes": null,
+      "tokens_est_max": 520,
+      "required": true,
+      "owner_wp": "WP-2"
+    },
+    {
+      "id": "role-business_analyst",
+      "path": "roles/business_analyst.md",
+      "kind": "role_card",
+      "category": "rollenkarte",
+      "purpose": "Mandat, DoD, Werkzeuge, Rueckgabeformat der Rolle business_analyst",
+      "load_when": "reading_list",
+      "load_trigger": "Delegation an Rolle business_analyst",
+      "max_lines": 42,
+      "max_bytes": null,
+      "tokens_est_max": 546,
+      "required": true,
+      "owner_wp": "WP-2"
+    },
+    {
+      "id": "role-architect",
+      "path": "roles/architect.md",
+      "kind": "role_card",
+      "category": "rollenkarte",
+      "purpose": "Mandat, DoD, Werkzeuge, Rueckgabeformat der Rolle architect",
+      "load_when": "reading_list",
+      "load_trigger": "Delegation an Rolle architect",
+      "max_lines": 55,
+      "max_bytes": null,
+      "tokens_est_max": 715,
+      "required": true,
+      "owner_wp": "WP-2"
+    },
+    {
+      "id": "role-developer",
+      "path": "roles/developer.md",
+      "kind": "role_card",
+      "category": "rollenkarte",
+      "purpose": "Mandat, DoD, Werkzeuge, Rueckgabeformat der Rolle developer",
+      "load_when": "reading_list",
+      "load_trigger": "Delegation an Rolle developer",
+      "max_lines": 48,
+      "max_bytes": null,
+      "tokens_est_max": 624,
+      "required": true,
+      "owner_wp": "WP-2"
+    },
+    {
+      "id": "role-tester_reviewer",
+      "path": "roles/tester_reviewer.md",
+      "kind": "role_card",
+      "category": "rollenkarte",
+      "purpose": "Mandat, DoD, Werkzeuge, Rueckgabeformat der Rolle tester_reviewer",
+      "load_when": "reading_list",
+      "load_trigger": "Delegation an Rolle tester_reviewer",
+      "max_lines": 60,
+      "max_bytes": null,
+      "tokens_est_max": 780,
+      "required": true,
+      "owner_wp": "WP-2"
+    },
+    {
+      "id": "role-ux_ui_expert",
+      "path": "roles/ux_ui_expert.md",
+      "kind": "role_card",
+      "category": "rollenkarte",
+      "purpose": "Mandat, DoD, Werkzeuge, Rueckgabeformat der Rolle ux_ui_expert",
+      "load_when": "reading_list",
+      "load_trigger": "Delegation an Rolle ux_ui_expert",
+      "max_lines": 38,
+      "max_bytes": null,
+      "tokens_est_max": 494,
+      "required": true,
+      "owner_wp": "WP-2"
+    },
+    {
+      "id": "role-security_auditor",
+      "path": "roles/security_auditor.md",
+      "kind": "role_card",
+      "category": "rollenkarte",
+      "purpose": "Mandat, DoD, Werkzeuge, Rueckgabeformat der Rolle security_auditor",
+      "load_when": "reading_list",
+      "load_trigger": "Delegation an Rolle security_auditor",
+      "max_lines": 48,
+      "max_bytes": null,
+      "tokens_est_max": 624,
+      "required": true,
+      "owner_wp": "WP-2"
+    },
+    {
+      "id": "role-data_engineer",
+      "path": "roles/data_engineer.md",
+      "kind": "role_card",
+      "category": "rollenkarte",
+      "purpose": "Mandat, DoD, Werkzeuge, Rueckgabeformat der Rolle data_engineer",
+      "load_when": "reading_list",
+      "load_trigger": "Delegation an Rolle data_engineer",
+      "max_lines": 38,
+      "max_bytes": null,
+      "tokens_est_max": 494,
+      "required": true,
+      "owner_wp": "WP-2"
+    },
+    {
+      "id": "role-devops_sre",
+      "path": "roles/devops_sre.md",
+      "kind": "role_card",
+      "category": "rollenkarte",
+      "purpose": "Mandat, DoD, Werkzeuge, Rueckgabeformat der Rolle devops_sre",
+      "load_when": "reading_list",
+      "load_trigger": "Delegation an Rolle devops_sre",
+      "max_lines": 40,
+      "max_bytes": null,
+      "tokens_est_max": 520,
+      "required": true,
+      "owner_wp": "WP-2"
+    },
+    {
+      "id": "role-documentation_specialist",
+      "path": "roles/documentation_specialist.md",
+      "kind": "role_card",
+      "category": "rollenkarte",
+      "purpose": "Mandat, DoD, Werkzeuge, Rueckgabeformat der Rolle documentation_specialist",
+      "load_when": "reading_list",
+      "load_trigger": "Delegation an Rolle documentation_specialist",
+      "max_lines": 34,
+      "max_bytes": null,
+      "tokens_est_max": 442,
+      "required": true,
+      "owner_wp": "WP-2"
+    },
+    {
+      "id": "role-performance_engineer",
+      "path": "roles/performance_engineer.md",
+      "kind": "role_card",
+      "category": "rollenkarte",
+      "purpose": "Mandat, DoD, Werkzeuge, Rueckgabeformat der Rolle performance_engineer",
+      "load_when": "reading_list",
+      "load_trigger": "Delegation an Rolle performance_engineer",
+      "max_lines": 34,
+      "max_bytes": null,
+      "tokens_est_max": 442,
+      "required": true,
+      "owner_wp": "WP-2"
+    },
+    {
+      "id": "role-compliance_governance",
+      "path": "roles/compliance_governance.md",
+      "kind": "role_card",
+      "category": "rollenkarte",
+      "purpose": "Mandat, DoD, Werkzeuge, Rueckgabeformat der Rolle compliance_governance",
+      "load_when": "reading_list",
+      "load_trigger": "Delegation an Rolle compliance_governance",
+      "max_lines": 36,
+      "max_bytes": null,
+      "tokens_est_max": 468,
+      "required": true,
+      "owner_wp": "WP-2"
+    },
+    {
+      "id": "role-memory_curator",
+      "path": "roles/memory_curator.md",
+      "kind": "role_card",
+      "category": "rollenkarte",
+      "purpose": "Mandat, DoD, Werkzeuge, Rueckgabeformat der Rolle memory_curator",
+      "load_when": "reading_list",
+      "load_trigger": "Delegation an Rolle memory_curator",
+      "max_lines": 50,
+      "max_bytes": null,
+      "tokens_est_max": 650,
+      "required": true,
+      "owner_wp": "WP-2"
+    },
+    {
+      "id": "role-sub_orchestrator",
+      "path": "roles/sub_orchestrator.md",
+      "kind": "role_card",
+      "category": "rollenkarte",
+      "purpose": "Mandat, DoD, Werkzeuge, Rueckgabeformat der Rolle sub_orchestrator",
+      "load_when": "reading_list",
+      "load_trigger": "Delegation an Rolle sub_orchestrator",
+      "max_lines": 45,
+      "max_bytes": null,
+      "tokens_est_max": 585,
+      "required": true,
+      "owner_wp": "WP-2"
+    },
+    {
+      "id": "manifest",
+      "path": "manifest.json",
+      "kind": "manifest",
+      "category": "daten",
+      "purpose": "Struktur-SSoT: documents, anchors, laws, cfg, triage, reading_lists, ssot",
+      "load_when": "script_only",
+      "load_trigger": "nur ueber scripts/context-budget.sh und scripts/lint-lawbook.sh",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-1"
+    },
+    {
+      "id": "config-policy",
+      "path": "config/policy-defaults.json",
+      "kind": "config",
+      "category": "daten",
+      "purpose": "Zahlen-SSoT: alle einstellbaren Werte samt _provenance",
+      "load_when": "script_only",
+      "load_trigger": "nur per jq durch Skripte und CI",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-1"
+    },
+    {
+      "id": "schema-agent-state",
+      "path": "schemas/agent-state.schema.json",
+      "kind": "schema",
+      "category": "schema",
+      "purpose": "State v2.0.0: Klassen/Flags, budget, vcs, orchestrator_lineage, followup_ref-Sperre",
+      "load_when": "script_only",
+      "load_trigger": "nur ueber ajv in Skripten und CI",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-1"
+    },
+    {
+      "id": "schema-manifest",
+      "path": "schemas/manifest.schema.json",
+      "kind": "schema",
+      "category": "schema",
+      "purpose": "Schema dieser Manifest-Datei",
+      "load_when": "script_only",
+      "load_trigger": "nur ueber ajv in Skripten und CI",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-1"
+    },
+    {
+      "id": "schema-handover",
+      "path": "schemas/handover.schema.json",
+      "kind": "schema",
+      "category": "schema",
+      "purpose": "Schema des YAML-Frontmatters eines Handovers",
+      "load_when": "script_only",
+      "load_trigger": "nur ueber scripts/validate-handovers.sh",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-1"
+    },
+    {
+      "id": "schema-policy-defaults",
+      "path": "schemas/policy-defaults.schema.json",
+      "kind": "schema",
+      "category": "schema",
+      "purpose": "Schema der Zahlen-SSoT inklusive gc.artifacts",
+      "load_when": "script_only",
+      "load_trigger": "nur ueber ajv in Skripten und CI",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-1"
+    },
+    {
+      "id": "script-lint-lawbook",
+      "path": "scripts/lint-lawbook.sh",
+      "kind": "script",
+      "category": "skript",
+      "purpose": "24 deterministische Pruefungen, --all/--strict/--allow-skip",
+      "load_when": "script_only",
+      "load_trigger": "N1, jedes WP-Ende, CI-Schritt 2",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-1"
+    },
+    {
+      "id": "script-check-triage",
+      "path": "scripts/check-triage.sh",
+      "kind": "script",
+      "category": "skript",
+      "purpose": "Referenzimplementierung der Triage-Algebra; prueft jede Fixture einzeln",
+      "load_when": "script_only",
+      "load_trigger": "CI-Schritt 5 und lint-lawbook.sh --triage-gate-sets-distinct",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-1"
+    },
+    {
+      "id": "script-migrate-state",
+      "path": "scripts/migrate-state.sh",
+      "kind": "script",
+      "category": "skript",
+      "purpose": "State-Migration v1.3.1 -> 2.0.0, Dry-Run-Default",
+      "load_when": "script_only",
+      "load_trigger": "einmalig je Zielprojekt beim Umstieg",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-1"
+    },
+    {
+      "id": "script-verify-proofs",
+      "path": "scripts/verify-proofs.sh",
+      "kind": "script",
+      "category": "skript",
+      "purpose": "Nachweiskette mit PASS/FAIL/NICHT NACHGEWIESEN (Exit 0/1/2)",
+      "load_when": "script_only",
+      "load_trigger": "DoD-Gates mit ausfuehrbarem Nachweis, CI-Schritt 9",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-5"
+    },
+    {
+      "id": "script-context-budget",
+      "path": "scripts/context-budget.sh",
+      "kind": "script",
+      "category": "skript",
+      "purpose": "--reading-list, --check-coverage, --max-bytes-per-agent",
+      "load_when": "script_only",
+      "load_trigger": "jede Delegation (Leseliste) und CI-Schritt 2",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-3"
+    },
+    {
+      "id": "script-triage-fixtures-check",
+      "path": "scripts/triage-fixtures-check.sh",
+      "kind": "script",
+      "category": "skript",
+      "purpose": "--min 20 --cover-all gegen tests/fixtures/triage-fixtures.json",
+      "load_when": "script_only",
+      "load_trigger": "N2-Nachweis und CI-Schritt 5",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-3"
+    },
+    {
+      "id": "script-gc-sweep",
+      "path": "scripts/gc-sweep.sh",
+      "kind": "script",
+      "category": "skript",
+      "purpose": "--dry-run (Default), --apply, --check-index*, --check-keep-latest",
+      "load_when": "script_only",
+      "load_trigger": "Pflicht-Gate an N1 (dry-run) und N7 (apply)",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-4"
+    },
+    {
+      "id": "script-validate-handovers",
+      "path": "scripts/validate-handovers.sh",
+      "kind": "script",
+      "category": "skript",
+      "purpose": "Frontmatter gegen schemas/handover.schema.json, Regel no-inline-logs",
+      "load_when": "script_only",
+      "load_trigger": "jede Uebergabe und CI-Schritt 6",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-4"
+    },
+    {
+      "id": "script-snapshot",
+      "path": "scripts/snapshot.sh",
+      "kind": "script",
+      "category": "skript",
+      "purpose": "create / restore --latest fuer State-Snapshots",
+      "load_when": "script_only",
+      "load_trigger": "vor irreversiblen Schritten (Flag irrev) und vor jeder Amtsuebergabe",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-4"
+    },
+    {
+      "id": "script-state-lock",
+      "path": "scripts/state-lock.sh",
+      "kind": "script",
+      "category": "skript",
+      "purpose": "--acquire, --release, --self-test-foreign-lock",
+      "load_when": "script_only",
+      "load_trigger": "N1 (Lock erwerben), Amtsuebergabe, Terminalzustand",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-4"
+    },
+    {
+      "id": "script-branch-hygiene",
+      "path": "scripts/branch-hygiene.sh",
+      "kind": "script",
+      "category": "skript",
+      "purpose": "--report (Default), --apply-local, --self-test-protections, --worktrees",
+      "load_when": "script_only",
+      "load_trigger": "N6b (Bericht) und CI-Schritt 7",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-5"
+    },
+    {
+      "id": "script-check-doc-commands",
+      "path": "scripts/check-doc-commands.sh",
+      "kind": "script",
+      "category": "skript",
+      "purpose": "jedes dokumentierte Nachweis-Kommando ist ausfuehrbar",
+      "load_when": "script_only",
+      "load_trigger": "CI-Schritt 8",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-5"
+    },
+    {
+      "id": "script-validate-doc-examples",
+      "path": "scripts/validate-doc-examples.sh",
+      "kind": "script",
+      "category": "skript",
+      "purpose": "jedes JSON-Beispiel in der Doku ist schema-valide",
+      "load_when": "script_only",
+      "load_trigger": "CI-Schritt 4",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-5"
+    },
+    {
+      "id": "ci",
+      "path": ".github/workflows/lawbook-ci.yml",
+      "kind": "ci",
+      "category": "skript",
+      "purpose": "CI-Workflow mit mindestens 9 Pruefschritten (ADR-009 §3)",
+      "load_when": "script_only",
+      "load_trigger": "push und pull_request",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-1"
+    },
+    {
+      "id": "spec-workflow-tla",
+      "path": "specs/workflow.tla",
+      "kind": "spec",
+      "category": "nicht-normativ",
+      "purpose": "beschraenkte Modell-Sonde des Hauptpfads (kein Vollbeweis)",
+      "load_when": "script_only",
+      "load_trigger": "nur ueber scripts/verify-proofs.sh",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-5"
+    },
+    {
+      "id": "spec-workflow-cfg",
+      "path": "specs/workflow.cfg",
+      "kind": "spec",
+      "category": "nicht-normativ",
+      "purpose": "TLC-Konfiguration: PROPERTY Termination, INVARIANT TypeOK, CHECK_DEADLOCK",
+      "load_when": "script_only",
+      "load_trigger": "nur ueber scripts/verify-proofs.sh",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-5"
+    },
+    {
+      "id": "spec-mutation-cfg",
+      "path": "specs/mutation.cfg",
+      "kind": "spec",
+      "category": "nicht-normativ",
+      "purpose": "Mutationstest: muss scheitern (Exit != 0), sonst ist die Invariante tautologisch",
+      "load_when": "script_only",
+      "load_trigger": "nur ueber scripts/verify-proofs.sh",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-5"
+    },
+    {
+      "id": "spec-coverage",
+      "path": "specs/coverage.md",
+      "kind": "doc",
+      "category": "nicht-normativ",
+      "purpose": "Abdeckungstabelle: jeder Knoten und jede Kante mit abgedeckt ja|nein",
+      "load_when": "on_demand_human",
+      "load_trigger": "nicht beim Bootstrap; nur auf Nachfrage oder ueber --model-coverage",
+      "max_lines": 120,
+      "max_bytes": null,
+      "tokens_est_max": 1560,
+      "required": true,
+      "owner_wp": "WP-5"
+    },
+    {
+      "id": "fixtures-triage-cases",
+      "path": "tests/fixtures/triage-cases.json",
+      "kind": "fixture_set",
+      "category": "daten",
+      "purpose": "26 Triage-Fixtures mit erwarteter Klasse, Flags und Gate-Menge (Pruefer: scripts/check-triage.sh)",
+      "load_when": "script_only",
+      "load_trigger": "nur ueber scripts/check-triage.sh und CI",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-1"
+    },
+    {
+      "id": "fixtures-triage",
+      "path": "tests/fixtures/triage-fixtures.json",
+      "kind": "fixture_set",
+      "category": "daten",
+      "purpose": "Fixture-Datei fuer scripts/triage-fixtures-check.sh --min 20 --cover-all (AK-034)",
+      "load_when": "script_only",
+      "load_trigger": "nur ueber scripts/triage-fixtures-check.sh und CI",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-3"
+    },
+    {
+      "id": "fixtures-state",
+      "path_glob": "tests/fixtures/state-*.json",
+      "kind": "fixture_set",
+      "category": "daten",
+      "purpose": "positive und negative State-Faelle je AK (AK-018, AK-023, AK-024, AK-036, AK-080, AK-081, AK-091...AK-093, AK-107, AK-108, AK-112)",
+      "load_when": "script_only",
+      "load_trigger": "nur ueber ajv in CI-Schritt 3",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-1"
+    },
+    {
+      "id": "fixtures-negative",
+      "path_glob": "tests/fixtures/negative/*.json",
+      "kind": "fixture_set",
+      "category": "daten",
+      "purpose": "absichtlich falsche Datensaetze; jede Pruefung muss an ihnen scheitern (Anti-Tautologie-Nachweis)",
+      "load_when": "script_only",
+      "load_trigger": "nur ueber Negativtests in CI-Schritt 3 und 5",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-1"
+    },
+    {
+      "id": "fixtures-handover",
+      "path_glob": "tests/fixtures/handover-*.md",
+      "kind": "fixture_set",
+      "category": "daten",
+      "purpose": "vollstaendige Handover-Dokumente inklusive Body; belegen Zeilen-Caps und no-inline-logs (AK-016, AK-017, AK-090)",
+      "load_when": "script_only",
+      "load_trigger": "nur ueber scripts/validate-handovers.sh und CI-Schritt 6",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-4"
+    },
+    {
+      "id": "fixtures-handover-frontmatter",
+      "path_glob": "tests/fixtures/handover-*.json",
+      "kind": "fixture_set",
+      "category": "daten",
+      "purpose": "reine Frontmatter-Faelle gegen schemas/handover.schema.json; belegen das Schema ohne Markdown-Body (AK-090)",
+      "load_when": "script_only",
+      "load_trigger": "nur ueber CI-Schritt 6 gemaess manifest.json#/test_expectations",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-1"
+    },
+    {
+      "id": "example-state",
+      "path": "examples/agent-state.example.json",
+      "kind": "example",
+      "category": "daten",
+      "purpose": "gueltige Beispiel-Instanz des State-Schemas (ersetzt die Live-Datei im Root, AK-047)",
+      "load_when": "script_only",
+      "load_trigger": "nur ueber ajv und als Kopiervorlage fuer Zielprojekte",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-1"
+    },
+    {
+      "id": "template-handover",
+      "path": "templates/handover.md",
+      "kind": "template",
+      "category": "nicht-normativ",
+      "purpose": "Vorlage: YAML-Frontmatter plus hoechstens drei Body-Abschnitte",
+      "load_when": "on_demand_human",
+      "load_trigger": "beim Erzeugen eines Handovers (Kopiervorlage, nicht Kontext)",
+      "max_lines": 150,
+      "max_bytes": 12000,
+      "tokens_est_max": 3000,
+      "required": true,
+      "owner_wp": "WP-4"
+    },
+    {
+      "id": "template-handover-filled",
+      "path": "templates/handover-filled-example.md",
+      "kind": "template",
+      "category": "nicht-normativ",
+      "purpose": "einziges ausgefuelltes Handover-Beispiel, schema-validiert",
+      "load_when": "on_demand_human",
+      "load_trigger": "auf Nachfrage; wird von validate-handovers.sh geprueft",
+      "max_lines": 150,
+      "max_bytes": 12000,
+      "tokens_est_max": 3000,
+      "required": true,
+      "owner_wp": "WP-4"
+    },
+    {
+      "id": "template-skill",
+      "path": "templates/skill-template/SKILL.md",
+      "kind": "template",
+      "category": "nicht-normativ",
+      "purpose": "Vorlage fuer Agent Skills (Frontmatter plus Progressive Disclosure)",
+      "load_when": "on_demand_human",
+      "load_trigger": "beim Anlegen eines Skills",
+      "max_lines": 120,
+      "max_bytes": null,
+      "tokens_est_max": 1560,
+      "required": true,
+      "owner_wp": "WP-4"
+    },
+    {
+      "id": "doc-migration",
+      "path": "docs/migration-v1-to-v2.md",
+      "kind": "doc",
+      "category": "nicht-normativ",
+      "purpose": "Umzugstabelle, Alt->Neu-Mappings, Anleitung fuer Zielprojekte",
+      "load_when": "on_demand_human",
+      "load_trigger": "ausdruecklich nicht beim Bootstrap; nur beim Umstieg",
+      "max_lines": 300,
+      "max_bytes": null,
+      "tokens_est_max": 3900,
+      "required": true,
+      "owner_wp": "WP-6"
+    },
+    {
+      "id": "docs-adr",
+      "path_glob": "docs/adr/*.md",
+      "kind": "doc_set",
+      "category": "nicht-normativ",
+      "purpose": "promovierte Architekturentscheidungen (nicht-normativ, nicht beim Bootstrap lesen)",
+      "load_when": "on_demand_human",
+      "load_trigger": "nur auf Nutzerwunsch",
+      "max_lines": 300,
+      "max_bytes": null,
+      "tokens_est_max": 3900,
+      "required": true,
+      "owner_wp": "WP-6"
+    },
+    {
+      "id": "docs-review",
+      "path_glob": "docs/review/*.md",
+      "kind": "doc_set",
+      "category": "nicht-normativ",
+      "purpose": "promovierte Audits, Recherchen und Anforderungen (nicht-normativ)",
+      "load_when": "on_demand_human",
+      "load_trigger": "nur auf Nutzerwunsch",
+      "max_lines": 500,
+      "max_bytes": null,
+      "tokens_est_max": 6500,
+      "required": true,
+      "owner_wp": "WP-6"
+    },
+    {
+      "id": "readme",
+      "path": "README.md",
+      "kind": "readme",
+      "category": "nicht-normativ",
+      "purpose": "Einstieg fuer Menschen, Vendor-Anleitung, Lizenz-Link",
+      "load_when": "on_demand_human",
+      "load_trigger": "nur fuer Menschen; kein Bestandteil einer Leseliste",
+      "max_lines": 150,
+      "max_bytes": null,
+      "tokens_est_max": 1950,
+      "required": true,
+      "owner_wp": "WP-6"
+    },
+    {
+      "id": "changelog",
+      "path": "CHANGELOG.md",
+      "kind": "changelog",
+      "category": "nicht-normativ",
+      "purpose": "Release-Historie; einzige Stelle, an der Alt-Begriffe stehen duerfen",
+      "load_when": "on_demand_human",
+      "load_trigger": "nur fuer Menschen",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-6"
+    },
+    {
+      "id": "license",
+      "path": "LICENSE",
+      "kind": "license",
+      "category": "nicht-normativ",
+      "purpose": "Lizenztext (Inhaber vom Nutzer zu setzen, offener Punkt 1)",
+      "load_when": "on_demand_human",
+      "load_trigger": "nur fuer Menschen",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-6"
+    },
+    {
+      "id": "prompt-bootstrap",
+      "path": "prompts/project-bootstrap-prompt.md",
+      "kind": "prompt",
+      "category": "nicht-normativ",
+      "purpose": "Bootstrap-Prompt fuer Zielprojekte: genau eine Pflichtdatei",
+      "load_when": "on_demand_human",
+      "load_trigger": "beim Einrichten eines Zielprojekts",
+      "max_lines": 40,
+      "max_bytes": null,
+      "tokens_est_max": 520,
+      "required": true,
+      "owner_wp": "WP-6"
+    },
+    {
+      "id": "prompt-readme",
+      "path": "prompts/README.md",
+      "kind": "prompt",
+      "category": "nicht-normativ",
+      "purpose": "Kurzanleitung zu den Prompt-Vorlagen",
+      "load_when": "on_demand_human",
+      "load_trigger": "beim Einrichten eines Zielprojekts",
+      "max_lines": 20,
+      "max_bytes": null,
+      "tokens_est_max": 260,
+      "required": true,
+      "owner_wp": "WP-6"
+    },
+    {
+      "id": "vcs-gitignore",
+      "path": ".gitignore",
+      "kind": "vcs_config",
+      "category": "nicht-normativ",
+      "purpose": "ignoriert runtime/ vollstaendig sowie proof-artifacts/ und states/ (AK-046)",
+      "load_when": "script_only",
+      "load_trigger": "nur durch git",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-4"
+    },
+    {
+      "id": "stub-workflow-cfg",
+      "path": "workflow-cfg.md",
+      "kind": "stub",
+      "category": "nicht-normativ",
+      "purpose": "Stub: verschoben nach modules/workflow.md, modules/triage.md, specs/coverage.md",
+      "load_when": "on_demand_human",
+      "load_trigger": "nur wenn ein Bestands-Vendor-Clone den Alt-Pfad zitiert (gilt bis v3.0)",
+      "max_lines": 10,
+      "max_bytes": null,
+      "tokens_est_max": 130,
+      "required": true,
+      "owner_wp": "WP-6"
+    },
+    {
+      "id": "stub-tools-registry",
+      "path": "tools-registry.md",
+      "kind": "stub",
+      "category": "nicht-normativ",
+      "purpose": "Stub: verschoben nach modules/tools.md",
+      "load_when": "on_demand_human",
+      "load_trigger": "nur wenn ein Bestands-Vendor-Clone den Alt-Pfad zitiert (gilt bis v3.0)",
+      "max_lines": 10,
+      "max_bytes": null,
+      "tokens_est_max": 130,
+      "required": true,
+      "owner_wp": "WP-6"
+    },
+    {
+      "id": "stub-memory-policy",
+      "path": "memory-policy.md",
+      "kind": "stub",
+      "category": "nicht-normativ",
+      "purpose": "Stub: verschoben nach modules/memory.md",
+      "load_when": "on_demand_human",
+      "load_trigger": "nur wenn ein Bestands-Vendor-Clone den Alt-Pfad zitiert (gilt bis v3.0)",
+      "max_lines": 10,
+      "max_bytes": null,
+      "tokens_est_max": 130,
+      "required": true,
+      "owner_wp": "WP-6"
+    },
+    {
+      "id": "stub-handover-template",
+      "path": "handover-template.md",
+      "kind": "stub",
+      "category": "nicht-normativ",
+      "purpose": "Stub: verschoben nach modules/lifecycle.md#handover und templates/handover.md",
+      "load_when": "on_demand_human",
+      "load_trigger": "nur wenn ein Bestands-Vendor-Clone den Alt-Pfad zitiert (gilt bis v3.0)",
+      "max_lines": 10,
+      "max_bytes": null,
+      "tokens_est_max": 130,
+      "required": true,
+      "owner_wp": "WP-6"
+    },
+    {
+      "id": "stub-skills-policy",
+      "path": "skills-policy.md",
+      "kind": "stub",
+      "category": "nicht-normativ",
+      "purpose": "Stub: verschoben nach modules/skills.md",
+      "load_when": "on_demand_human",
+      "load_trigger": "nur wenn ein Bestands-Vendor-Clone den Alt-Pfad zitiert (gilt bis v3.0)",
+      "max_lines": 10,
+      "max_bytes": null,
+      "tokens_est_max": 130,
+      "required": true,
+      "owner_wp": "WP-6"
+    }
+  ],
+  "manifest_scope": {
+    "$comment": "Grundmenge fuer --manifest-complete: versionierte Dateien = git ls-files --cached --others --exclude-standard, minus exclude_globs.",
+    "exclude_globs": [
+      ".git/**",
+      "runtime/**",
+      "proof-artifacts/**",
+      "states/**",
+      "lib/**",
+      "node_modules/**",
+      "*.log"
+    ],
+    "expected_removals": [
+      {
+        "path": ".agent-state.json",
+        "reason": "Live-Datei im Root war ein Beispiel; ersetzt durch examples/agent-state.example.json (AK-047)",
+        "owner_wp": "WP-6"
+      },
+      {
+        "path": "workflows/triage-decision-matrix.md",
+        "reason": "Scoring-Matrix ersetzt durch modules/triage.md; kein Stub, weil der Inhalt nicht verschoben, sondern ersetzt ist",
+        "owner_wp": "WP-6"
+      },
+      {
+        "path": "proofs/termination-proof.md",
+        "reason": "Beweisbehauptung ersetzt durch Rank-Argument in modules/workflow.md plus specs/coverage.md",
+        "owner_wp": "WP-6"
+      },
+      {
+        "path": "templates/handover-example.md",
+        "reason": "verletzt das eigene Template (AK-027, F-055)",
+        "owner_wp": "WP-4"
+      }
+    ]
+  },
+  "test_expectations": {
+    "$comment": "Erwartungswerte je Fixture (Tautologie-Schutz). Grundlage von scripts/lint-lawbook.sh --fixtures-declared und der CI-Schema-Stufe: eine Fixture ohne Eintrag hier wird nie geprueft und ist damit stumm. expect=fail bedeutet: der Validator MUSS mit Exit != 0 enden.",
+    "cases": [
+      {
+        "path": "examples/agent-state.example.json",
+        "validator": "agent_state_schema",
+        "expect": "pass",
+        "ak": "AK-047",
+        "reason": "Beispiel-State ausserhalb des Roots, vollstaendig ausgefuellt"
+      },
+      {
+        "path": "tests/fixtures/state-node-n3b.json",
+        "validator": "agent_state_schema",
+        "expect": "pass",
+        "ak": "AK-080",
+        "reason": "Sub-Buchstaben-Knoten als active_node"
+      },
+      {
+        "path": "tests/fixtures/state-rotation-depth4.json",
+        "validator": "agent_state_schema",
+        "expect": "pass",
+        "ak": "AK-023",
+        "reason": "Rotation auf Tiefe 4 ohne Ruecksetzen von total_spawned"
+      },
+      {
+        "path": "tests/fixtures/state-rotation-attempt7.json",
+        "validator": "agent_state_schema",
+        "expect": "pass",
+        "ak": "AK-024",
+        "reason": "kumulativer Rotationszaehler"
+      },
+      {
+        "path": "tests/fixtures/state-role-other.json",
+        "validator": "agent_state_schema",
+        "expect": "pass",
+        "ak": "AK-092",
+        "reason": "Rolle other mit role_label"
+      },
+      {
+        "path": "tests/fixtures/state-incident-done-with-followup.json",
+        "validator": "agent_state_schema",
+        "expect": "pass",
+        "ak": "AK-108",
+        "reason": "incident darf mit followup_ref abschliessen"
+      },
+      {
+        "path": "tests/fixtures/state-class-answer.json",
+        "validator": "agent_state_schema",
+        "expect": "pass",
+        "ak": "AK-036",
+        "reason": "Gate-Set der Klasse answer"
+      },
+      {
+        "path": "tests/fixtures/state-class-chore.json",
+        "validator": "agent_state_schema",
+        "expect": "pass",
+        "ak": "AK-036",
+        "reason": "Gate-Set der Klasse chore"
+      },
+      {
+        "path": "tests/fixtures/state-class-revert.json",
+        "validator": "agent_state_schema",
+        "expect": "pass",
+        "ak": "AK-036",
+        "reason": "Gate-Set der Klasse revert"
+      },
+      {
+        "path": "tests/fixtures/state-class-spike.json",
+        "validator": "agent_state_schema",
+        "expect": "pass",
+        "ak": "AK-036",
+        "reason": "Gate-Set der Klasse spike"
+      },
+      {
+        "path": "tests/fixtures/state-class-incident.json",
+        "validator": "agent_state_schema",
+        "expect": "pass",
+        "ak": "AK-036",
+        "reason": "Gate-Set der Klasse incident"
+      },
+      {
+        "path": "tests/fixtures/state-class-feature.json",
+        "validator": "agent_state_schema",
+        "expect": "pass",
+        "ak": "AK-036",
+        "reason": "Gate-Set der Klasse feature"
+      },
+      {
+        "path": "tests/fixtures/state-no-budget.json",
+        "validator": "agent_state_schema",
+        "expect": "fail",
+        "ak": "AK-018",
+        "reason": "budget fehlt"
+      },
+      {
+        "path": "tests/fixtures/state-bogus-gate-key.json",
+        "validator": "agent_state_schema",
+        "expect": "fail",
+        "ak": "AK-081",
+        "reason": "dod_gates-Schluessel ausserhalb des Knoten-Katalogs"
+      },
+      {
+        "path": "tests/fixtures/state-no-dod-gates.json",
+        "validator": "agent_state_schema",
+        "expect": "fail",
+        "ak": "AK-091",
+        "reason": "dod_gates fehlt"
+      },
+      {
+        "path": "tests/fixtures/state-fanout-exceeded.json",
+        "validator": "agent_state_schema",
+        "expect": "fail",
+        "ak": "AK-093",
+        "reason": "total_spawned ueber max_total_spawned"
+      },
+      {
+        "path": "tests/fixtures/state-incident-done-no-followup.json",
+        "validator": "agent_state_schema",
+        "expect": "fail",
+        "ak": "AK-107",
+        "reason": "incident phase done ohne followup_ref"
+      },
+      {
+        "path": "tests/fixtures/negative/state-additional-property.json",
+        "validator": "agent_state_schema",
+        "expect": "fail",
+        "ak": "AK-045",
+        "reason": "unbekanntes Top-Level-Feld gegen additionalProperties:false"
+      },
+      {
+        "path": "tests/fixtures/triage-cases.json",
+        "validator": "check_triage",
+        "expect": "pass",
+        "ak": "AK-034",
+        "reason": "28 Faelle, alle 6 Klassen und 9 Flags, Ordnungstest"
+      },
+      {
+        "path": "tests/fixtures/negative/triage-cases-wrong-expectation.json",
+        "validator": "check_triage",
+        "expect": "fail",
+        "ak": "AK-034",
+        "reason": "TF-04 ohne N6a trotz sec-Flag - Gate-Ableitung muss anschlagen"
+      },
+      {
+        "path": "tests/fixtures/negative/triage-cases-circular-criterion.json",
+        "validator": "check_triage",
+        "expect": "fail",
+        "ak": "AK-032",
+        "reason": "Ausloeser der Regel 5 nennt den Klassennamen feature"
+      },
+      {
+        "path": "tests/fixtures/state-v1_3_1.json",
+        "validator": "migrate_state",
+        "expect": "pass",
+        "ak": "AK-112",
+        "reason": "v1.3.1-Eingabe der Migration; gegen das v2-Schema absichtlich invalide"
+      },
+      {
+        "path": "tests/fixtures/handover-delegation.json",
+        "validator": "handover_schema",
+        "expect": "pass",
+        "ak": "AK-090",
+        "reason": "Delegationsbrief mit Auftragsgrenzen, Abnahmekriterien und Budget-Proxies"
+      },
+      {
+        "path": "tests/fixtures/negative/handover-delegation-no-done-criteria.json",
+        "validator": "handover_schema",
+        "expect": "fail",
+        "ak": "AK-090",
+        "reason": "Delegation ohne done_criteria; belegt die Bedingung aus allOf[0]"
+      }
+    ],
+    "validators": {
+      "agent_state_schema": "npx -y -p ajv-cli@5 -p ajv-formats ajv validate -s schemas/agent-state.schema.json -d <path> --spec=draft2020 -c ajv-formats",
+      "check_triage": "./scripts/check-triage.sh --file <path>",
+      "migrate_state": "./scripts/migrate-state.sh <path> <out> && ajv validate -s schemas/agent-state.schema.json -d <out>",
+      "handover_schema": "npx -y -p ajv-cli@5 -p ajv-formats ajv validate -s schemas/handover.schema.json -d <path> --spec=draft2020 -c ajv-formats"
+    },
+    "fixture_globs": [
+      "tests/fixtures/*.json",
+      "tests/fixtures/negative/*.json",
+      "examples/*.json"
+    ]
+  },
+  "anchors": [
+    {
+      "id": "a-core-gesetze",
+      "document": "AGENTS.md",
+      "anchor": "gesetze",
+      "max_lines": 20,
+      "purpose": "Gesetzes-Kanon als Tabelle (15 Zeilen)"
+    },
+    {
+      "id": "a-workflow-knoten",
+      "document": "modules/workflow.md",
+      "anchor": "knoten",
+      "max_lines": 40,
+      "purpose": "Knoten, Kanten, Rueckkanal-Limits"
+    },
+    {
+      "id": "a-workflow-rank",
+      "document": "modules/workflow.md",
+      "anchor": "rank-funktion",
+      "max_lines": 25,
+      "purpose": "Terminierungsargument (genau eine Stelle, AK-026)"
+    },
+    {
+      "id": "a-workflow-terminals",
+      "document": "modules/workflow.md",
+      "anchor": "terminalzustaende",
+      "max_lines": 20,
+      "purpose": "t_done, t_blocked, t_abort"
+    },
+    {
+      "id": "a-triage-gate-matrix",
+      "document": "modules/triage.md",
+      "anchor": "gate-matrix",
+      "max_lines": 30,
+      "purpose": "Gates je Klasse und Flag, High-Water-Mark"
+    },
+    {
+      "id": "a-context-hierarchie",
+      "document": "modules/context.md",
+      "anchor": "hierarchie",
+      "max_lines": 20,
+      "purpose": "Baum, Tiefenlimit, Tiefe-4-Triade"
+    },
+    {
+      "id": "a-context-budget",
+      "document": "modules/context.md",
+      "anchor": "budget",
+      "max_lines": 25,
+      "purpose": "zaehlbare Proxies und Rotationsschwellen"
+    },
+    {
+      "id": "a-context-amtsuebergabe",
+      "document": "modules/context.md",
+      "anchor": "amtsuebergabe",
+      "max_lines": 20,
+      "purpose": "Orchestrator-Rotation mit orchestrator_lineage"
+    },
+    {
+      "id": "a-context-delegationsbrief",
+      "document": "modules/context.md",
+      "anchor": "delegationsbrief",
+      "max_lines": 25,
+      "purpose": "Pflichtfelder einer Delegation"
+    },
+    {
+      "id": "a-lifecycle-layout",
+      "document": "modules/lifecycle.md",
+      "anchor": "runtime-layout",
+      "max_lines": 25,
+      "purpose": "Layout-Tabelle aller runtime-Pfade (Grundlage --runtime-paths-declared)"
+    },
+    {
+      "id": "a-lifecycle-retention",
+      "document": "modules/lifecycle.md",
+      "anchor": "retention",
+      "max_lines": 25,
+      "purpose": "Retention nach Alter und Anzahl, Pflicht-Sweep"
+    },
+    {
+      "id": "a-lifecycle-handover",
+      "document": "modules/lifecycle.md",
+      "anchor": "handover",
+      "max_lines": 30,
+      "purpose": "Handover-Format: Frontmatter plus Body"
+    },
+    {
+      "id": "a-lifecycle-promotion",
+      "document": "modules/lifecycle.md",
+      "anchor": "promotion",
+      "max_lines": 20,
+      "purpose": "Promotion durable Wissens an N7"
+    },
+    {
+      "id": "a-lifecycle-rollback",
+      "document": "modules/lifecycle.md",
+      "anchor": "abbruch-und-rollback",
+      "max_lines": 20,
+      "purpose": "Snapshot und Rueckweg (AK-104)"
+    },
+    {
+      "id": "a-vcs-auslieferung",
+      "document": "modules/vcs.md",
+      "anchor": "auslieferung",
+      "max_lines": 30,
+      "purpose": "Auslieferung an N6b, Plattform-Mandat-Ausnahme"
+    },
+    {
+      "id": "a-tools-verifizierung",
+      "document": "modules/tools.md",
+      "anchor": "verifizierung",
+      "max_lines": 25,
+      "purpose": "Nachweis-Semantik PASS/FAIL/NICHT NACHGEWIESEN"
+    },
+    {
+      "id": "a-memory-consolidation",
+      "document": "modules/memory.md",
+      "anchor": "consolidation",
+      "max_lines": 25,
+      "purpose": "Consolidation an N7, kein Self-Re-Ingest"
+    },
+    {
+      "id": "a-tools-researcher",
+      "document": "modules/tools.md",
+      "anchor": "researcher",
+      "max_lines": 15,
+      "purpose": "Werkzeugrechte der Rolle researcher"
+    },
+    {
+      "id": "a-tools-business_analyst",
+      "document": "modules/tools.md",
+      "anchor": "business_analyst",
+      "max_lines": 15,
+      "purpose": "Werkzeugrechte der Rolle business_analyst"
+    },
+    {
+      "id": "a-tools-architect",
+      "document": "modules/tools.md",
+      "anchor": "architect",
+      "max_lines": 15,
+      "purpose": "Werkzeugrechte der Rolle architect"
+    },
+    {
+      "id": "a-tools-developer",
+      "document": "modules/tools.md",
+      "anchor": "developer",
+      "max_lines": 15,
+      "purpose": "Werkzeugrechte der Rolle developer"
+    },
+    {
+      "id": "a-tools-tester_reviewer",
+      "document": "modules/tools.md",
+      "anchor": "tester_reviewer",
+      "max_lines": 15,
+      "purpose": "Werkzeugrechte der Rolle tester_reviewer"
+    },
+    {
+      "id": "a-tools-ux_ui_expert",
+      "document": "modules/tools.md",
+      "anchor": "ux_ui_expert",
+      "max_lines": 15,
+      "purpose": "Werkzeugrechte der Rolle ux_ui_expert"
+    },
+    {
+      "id": "a-tools-security_auditor",
+      "document": "modules/tools.md",
+      "anchor": "security_auditor",
+      "max_lines": 15,
+      "purpose": "Werkzeugrechte der Rolle security_auditor"
+    },
+    {
+      "id": "a-tools-data_engineer",
+      "document": "modules/tools.md",
+      "anchor": "data_engineer",
+      "max_lines": 15,
+      "purpose": "Werkzeugrechte der Rolle data_engineer"
+    },
+    {
+      "id": "a-tools-devops_sre",
+      "document": "modules/tools.md",
+      "anchor": "devops_sre",
+      "max_lines": 15,
+      "purpose": "Werkzeugrechte der Rolle devops_sre"
+    },
+    {
+      "id": "a-tools-documentation_specialist",
+      "document": "modules/tools.md",
+      "anchor": "documentation_specialist",
+      "max_lines": 15,
+      "purpose": "Werkzeugrechte der Rolle documentation_specialist"
+    },
+    {
+      "id": "a-tools-performance_engineer",
+      "document": "modules/tools.md",
+      "anchor": "performance_engineer",
+      "max_lines": 15,
+      "purpose": "Werkzeugrechte der Rolle performance_engineer"
+    },
+    {
+      "id": "a-tools-compliance_governance",
+      "document": "modules/tools.md",
+      "anchor": "compliance_governance",
+      "max_lines": 15,
+      "purpose": "Werkzeugrechte der Rolle compliance_governance"
+    },
+    {
+      "id": "a-tools-memory_curator",
+      "document": "modules/tools.md",
+      "anchor": "memory_curator",
+      "max_lines": 15,
+      "purpose": "Werkzeugrechte der Rolle memory_curator"
+    },
+    {
+      "id": "a-tools-sub_orchestrator",
+      "document": "modules/tools.md",
+      "anchor": "sub_orchestrator",
+      "max_lines": 15,
+      "purpose": "Werkzeugrechte der Rolle sub_orchestrator"
+    }
+  ],
+  "laws": [
+    {
+      "id": "LAW-HIERARCHY",
+      "rule": "Der empfangende Agent ist Orchestrator; der Baum ist hoechstens 4 Ebenen tief; auf Tiefe 4 gilt Loesung, Abstraktion oder Hard Error.",
+      "normative_in": "modules/context.md#hierarchie"
+    },
+    {
+      "id": "LAW-LINEAGE",
+      "rule": "Je Anfrage-Baum ist genau ein Orchestrator aktiv; ein Wechsel ist Amtsuebergabe mit Eintrag in orchestrator_lineage.",
+      "normative_in": "modules/context.md#amtsuebergabe"
+    },
+    {
+      "id": "LAW-DELEGATION",
+      "rule": "Der Orchestrator delegiert und fuehrt Zustand; er schreibt keinen Produktionscode.",
+      "normative_in": "modules/context.md#delegationsbrief"
+    },
+    {
+      "id": "LAW-ROLES",
+      "rule": "Es wird die minimal ausreichende Rollenmenge besetzt; die Rollen-Karte ist die Quelle des Mandats; kein Rollenwechsel innerhalb einer Instanz.",
+      "normative_in": "modules/context.md"
+    },
+    {
+      "id": "LAW-ISOLATION",
+      "rule": "Ein Sub-Agent erhaelt Kern, eine Rollen-Karte, ein Handover und benannte Anker - nichts sonst.",
+      "normative_in": "modules/context.md"
+    },
+    {
+      "id": "LAW-CONTEXT",
+      "rule": "Kontext wird ueber zaehlbare Budgets gesteuert; bei Schwellwert wird rotiert; nach Compaction wird der Kern erneut gelesen.",
+      "normative_in": "modules/context.md#budget"
+    },
+    {
+      "id": "LAW-CFG",
+      "rule": "Es gibt eine Knotenmenge, Vorwaertsfortschritt ist die Regel, Rueckkanaele existieren nur mit Limit.",
+      "normative_in": "modules/workflow.md#knoten"
+    },
+    {
+      "id": "LAW-TRIAGE",
+      "rule": "Eine geordnete Regelliste bestimmt eine von 6 Klassen; 9 Flags sind orthogonal; Gates sind die Vereinigung.",
+      "normative_in": "modules/triage.md"
+    },
+    {
+      "id": "LAW-STATE",
+      "rule": "Je orchestrator_id existiert genau ein schema-valider State mit Lock.",
+      "normative_in": "modules/lifecycle.md#runtime-layout"
+    },
+    {
+      "id": "LAW-DOD",
+      "rule": "Ein Gate gilt nur mit ausgefuehrtem Nachweis; SKIP ist nie PASS.",
+      "normative_in": "modules/tools.md#verifizierung"
+    },
+    {
+      "id": "LAW-TERMINAL",
+      "rule": "Jeder Lauf endet in genau einem Terminalzustand, nie stillschweigend; das Rollback-Verfahren ist definiert.",
+      "normative_in": "modules/workflow.md#terminalzustaende"
+    },
+    {
+      "id": "LAW-MEMORY",
+      "rule": "Gedaechtnis ist gescoped, provenienzgesichert, TTL-behaftet, frei von Secrets und PII und selektiv persistiert.",
+      "normative_in": "modules/memory.md",
+      "subrules": [
+        "LAW-MEMORY.1",
+        "LAW-MEMORY.2",
+        "LAW-MEMORY.3",
+        "LAW-MEMORY.4",
+        "LAW-MEMORY.5",
+        "LAW-MEMORY.6"
+      ]
+    },
+    {
+      "id": "LAW-LIFECYCLE",
+      "rule": "Artefakte haben Ort, Index, Ablaufdatum und Mengen-Cap; ein Pflicht-Sweep raeumt auf; kein Wieder-Einlesen eigener Alt-Ausgaben.",
+      "normative_in": "modules/lifecycle.md"
+    },
+    {
+      "id": "LAW-VCS",
+      "rule": "Der Arbeitsbranch ist registriert und hat ein Lebensende; Abraeumen ist Dry-Run-First; vier Loeschverbote gelten hart.",
+      "normative_in": "modules/vcs.md"
+    },
+    {
+      "id": "LAW-DELIVERY",
+      "rule": "Auslieferung ist Rollenpflicht am Auslieferungsknoten, nie Sache des Orchestrators; ein Plattform-Mandat ist ein dokumentierter Ausnahmefall.",
+      "normative_in": "modules/vcs.md#auslieferung"
+    }
+  ],
+  "phases": [
+    "bootstrapping",
+    "triage",
+    "executing",
+    "aggregating",
+    "done",
+    "blocked",
+    "abort"
+  ],
+  "cfg": {
+    "$comment": "Maschinenlesbarer Auszug des kanonischen Katalogs (Quelle des Entwurfs: runtime/architecture/cfg-v2-nodes.json). Der normative Prosatext (DoD, Nachweis je Knoten) steht in modules/workflow.md; hier stehen nur Identitaet, Rang, Rolle, Art und die Kanten mit Limits. scripts/lint-lawbook.sh --node-ids vergleicht diesen Auszug gegen den Katalog, falls dieser im Arbeitsbaum liegt.",
+    "id_grammar": {
+      "node": "^N[0-7][a-c]?$",
+      "terminal": "^t_(done|blocked|abort)$"
+    },
+    "max_rank": 9,
+    "nodes": [
+      {
+        "id": "N0",
+        "rank": 0,
+        "name": "INPUT",
+        "role": null,
+        "kind": "mandatory"
+      },
+      {
+        "id": "N1",
+        "rank": 1,
+        "name": "BOOTSTRAP",
+        "role": "orchestrator",
+        "kind": "mandatory"
+      },
+      {
+        "id": "N2",
+        "rank": 2,
+        "name": "TRIAGE",
+        "role": "orchestrator",
+        "kind": "mandatory"
+      },
+      {
+        "id": "N3a",
+        "rank": 3,
+        "letter": "a",
+        "name": "RESEARCH",
+        "role": "researcher",
+        "kind": "gated"
+      },
+      {
+        "id": "N3b",
+        "rank": 4,
+        "letter": "b",
+        "name": "REQUIREMENTS",
+        "role": "business_analyst",
+        "kind": "gated"
+      },
+      {
+        "id": "N3c",
+        "rank": 5,
+        "letter": "c",
+        "name": "ARCHITECTURE",
+        "role": "architect",
+        "kind": "gated"
+      },
+      {
+        "id": "N4",
+        "rank": 6,
+        "name": "IMPLEMENTATION",
+        "role": "developer",
+        "kind": "gated"
+      },
+      {
+        "id": "N5a",
+        "rank": 7,
+        "letter": "a",
+        "name": "TEST_REVIEW",
+        "role": "tester_reviewer",
+        "kind": "gated"
+      },
+      {
+        "id": "N5b",
+        "rank": 7,
+        "letter": "b",
+        "name": "UX_UI",
+        "role": "ux_ui_expert",
+        "kind": "gated"
+      },
+      {
+        "id": "N5c",
+        "rank": 7,
+        "letter": "c",
+        "name": "DOCUMENTATION",
+        "role": "documentation_specialist",
+        "kind": "gated"
+      },
+      {
+        "id": "N6a",
+        "rank": 8,
+        "letter": "a",
+        "name": "SECURITY",
+        "role": "security_auditor",
+        "kind": "gated"
+      },
+      {
+        "id": "N6b",
+        "rank": 8,
+        "letter": "b",
+        "name": "DELIVERY",
+        "role": "developer",
+        "kind": "gated"
+      },
+      {
+        "id": "N7",
+        "rank": 9,
+        "name": "AGGREGATION",
+        "role": "orchestrator",
+        "kind": "mandatory"
+      }
+    ],
+    "terminals": [
+      {
+        "id": "t_done",
+        "phase": "done",
+        "reversible": false
+      },
+      {
+        "id": "t_blocked",
+        "phase": "blocked",
+        "reversible": true
+      },
+      {
+        "id": "t_abort",
+        "phase": "abort",
+        "reversible": false
+      }
+    ],
+    "edges": [
+      {
+        "from": "N0",
+        "to": "N1",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N1",
+        "to": "N2",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N2",
+        "to": "N3a",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N2",
+        "to": "N3b",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N2",
+        "to": "N3c",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N2",
+        "to": "N4",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N2",
+        "to": "N7",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N3a",
+        "to": "N3b",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N3a",
+        "to": "N3c",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N3a",
+        "to": "N4",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N3a",
+        "to": "N7",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N3b",
+        "to": "N3c",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N3b",
+        "to": "N4",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N3c",
+        "to": "N4",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N4",
+        "to": "N5a",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N4",
+        "to": "N6a",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N4",
+        "to": "N6b",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N5a",
+        "to": "N5b",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N5a",
+        "to": "N5c",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N5a",
+        "to": "N6a",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N5a",
+        "to": "N6b",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N5b",
+        "to": "N5c",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N5b",
+        "to": "N6a",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N5b",
+        "to": "N6b",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N5c",
+        "to": "N6a",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N5c",
+        "to": "N6b",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N6a",
+        "to": "N6b",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N6a",
+        "to": "N7",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N6b",
+        "to": "N7",
+        "kind": "forward",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N7",
+        "to": "t_done",
+        "kind": "terminal",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N7",
+        "to": "t_blocked",
+        "kind": "terminal",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N7",
+        "to": "t_abort",
+        "kind": "terminal",
+        "limit": null,
+        "counter": null
+      },
+      {
+        "from": "N5a",
+        "to": "N4",
+        "kind": "back",
+        "limit": 3,
+        "counter": "cycles.attempts.test_fix"
+      },
+      {
+        "from": "N5b",
+        "to": "N4",
+        "kind": "back",
+        "limit": 3,
+        "counter": "cycles.attempts.ui_fix"
+      },
+      {
+        "from": "N6a",
+        "to": "N4",
+        "kind": "back",
+        "limit": 3,
+        "counter": "cycles.attempts.security_fix"
+      },
+      {
+        "from": "N6b",
+        "to": "N4",
+        "kind": "back",
+        "limit": 1,
+        "counter": "cycles.attempts.delivery_fix"
+      },
+      {
+        "from": "N5a",
+        "to": "N3b",
+        "kind": "escalation",
+        "limit": 1,
+        "counter": "cycles.one_shot_escalations.requirements_gap"
+      },
+      {
+        "from": "N5a",
+        "to": "N3c",
+        "kind": "escalation",
+        "limit": 1,
+        "counter": "cycles.one_shot_escalations.architecture_drift"
+      },
+      {
+        "from": "*",
+        "to": "*",
+        "kind": "rotation",
+        "limit": null,
+        "counter": "cycles.rotations"
+      },
+      {
+        "from": "*",
+        "to": "t_blocked",
+        "kind": "terminal",
+        "limit": null,
+        "counter": null
+      }
+    ]
+  },
+  "triage": {
+    "classes": [
+      {
+        "rule_no": 1,
+        "id": "incident",
+        "dod_key": "dod:followup_ref"
+      },
+      {
+        "rule_no": 2,
+        "id": "revert",
+        "dod_key": "dod:revert_diff_only"
+      },
+      {
+        "rule_no": 3,
+        "id": "answer",
+        "dod_key": null
+      },
+      {
+        "rule_no": 4,
+        "id": "spike",
+        "dod_key": "dod:spike_disposal"
+      },
+      {
+        "rule_no": 5,
+        "id": "chore",
+        "dod_key": null
+      },
+      {
+        "rule_no": 6,
+        "id": "feature",
+        "dod_key": null,
+        "catch_all": true
+      }
+    ],
+    "flags": [
+      {
+        "id": "sec",
+        "scope": "Authentifizierung, Autorisierung, Geheimnisse, Angriffsflaeche"
+      },
+      {
+        "id": "data",
+        "scope": "Schema-, Migrations- oder Datenbestandsaenderung"
+      },
+      {
+        "id": "legal",
+        "scope": "Lizenz, Datenschutz, regulatorische Pflicht"
+      },
+      {
+        "id": "ui",
+        "scope": "sichtbare Oberflaechenaenderung"
+      },
+      {
+        "id": "api",
+        "scope": "oeffentliche Schnittstelle, CLI oder Konfiguration"
+      },
+      {
+        "id": "conc",
+        "scope": "Nebenlaeufigkeit, Verteilung, gemeinsamer Zustand"
+      },
+      {
+        "id": "arch",
+        "scope": "neue Komponente, neue Abhaengigkeitsrichtung, Querschnittsbelang"
+      },
+      {
+        "id": "perf",
+        "scope": "Latenz-, Durchsatz- oder Ressourcenziel ist Anlass"
+      },
+      {
+        "id": "irrev",
+        "scope": "schwer oder nicht rueckholbar"
+      }
+    ],
+    "aggregation": "union",
+    "gate_matrix": {
+      "classes": {
+        "answer": [
+          "N1",
+          "N2",
+          "N7"
+        ],
+        "chore": [
+          "N1",
+          "N2",
+          "N4",
+          "N5a",
+          "N6b",
+          "N7"
+        ],
+        "revert": [
+          "N1",
+          "N2",
+          "N4",
+          "N5a",
+          "N6b",
+          "N7",
+          "dod:revert_diff_only"
+        ],
+        "spike": [
+          "N1",
+          "N2",
+          "N3a",
+          "N4",
+          "N7",
+          "dod:spike_disposal"
+        ],
+        "incident": [
+          "N1",
+          "N2",
+          "N4",
+          "N5a",
+          "N6b",
+          "N7",
+          "dod:followup_ref"
+        ],
+        "feature": [
+          "N1",
+          "N2",
+          "N3b",
+          "N4",
+          "N5a",
+          "N6b",
+          "N7"
+        ]
+      },
+      "flags": {
+        "sec": "N6a",
+        "data": "N6a",
+        "legal": "N6a",
+        "ui": "N5b",
+        "api": "N5c",
+        "conc": "N3c",
+        "arch": "N3c",
+        "perf": "dod:perf_budget",
+        "irrev": "dod:rollback_snapshot"
+      },
+      "extra_rules": {
+        "n3a_on_external_source": "N3a wird ergaenzt, wenn die Anfrage ohne externe Quelle nicht beantwortbar ist. Knoten-Ergaenzung, keine Klassenaenderung.",
+        "deferrable_gates_incident": [
+          "N3b",
+          "N5c",
+          "N6a"
+        ]
+      }
+    }
+  },
+  "delivery": {
+    "$comment": "Grundlage von --delivery-path-exists (AK-068): jede Klasse ausser answer hat einen Auslieferungsknoten und mindestens eine Rolle mit Push-Recht.",
+    "push_roles": [
+      "developer",
+      "devops_sre"
+    ],
+    "per_class": [
+      {
+        "class": "answer",
+        "node": null,
+        "roles": [],
+        "branch_scope": "kein Branch, keine Auslieferung"
+      },
+      {
+        "class": "chore",
+        "node": "N6b",
+        "roles": [
+          "developer",
+          "devops_sre"
+        ],
+        "branch_scope": "task"
+      },
+      {
+        "class": "revert",
+        "node": "N6b",
+        "roles": [
+          "developer",
+          "devops_sre"
+        ],
+        "branch_scope": "task"
+      },
+      {
+        "class": "incident",
+        "node": "N6b",
+        "roles": [
+          "developer",
+          "devops_sre"
+        ],
+        "branch_scope": "task"
+      },
+      {
+        "class": "feature",
+        "node": "N6b",
+        "roles": [
+          "developer",
+          "devops_sre"
+        ],
+        "branch_scope": "task"
+      },
+      {
+        "class": "spike",
+        "node": "N4",
+        "roles": [
+          "developer"
+        ],
+        "branch_scope": "spike/* - Push erlaubt, Merge in den Trunk verboten"
+      }
+    ]
+  },
+  "state": {
+    "path_pattern": "runtime/state/<orchestrator_id>.json",
+    "lock_pattern": "runtime/state/<orchestrator_id>.json.lock",
+    "one_per": "orchestrator_id",
+    "documented_in": "modules/lifecycle.md#runtime-layout",
+    "forbidden_paths": [
+      ".agent-state.json",
+      "runtime/.agent-state.json",
+      "states/"
+    ]
+  },
+  "runtime_layout": [
+    {
+      "path": "runtime/state/",
+      "purpose": "genau ein State je Orchestrator, plus Lock-Datei",
+      "lifetime": "bis Terminalzustand",
+      "gc_id": "active_state"
+    },
+    {
+      "path": "runtime/handovers/",
+      "purpose": "aktive Handover, Anzahl = laufende Sub-Agenten",
+      "lifetime": "Knoten-Abschluss",
+      "gc_id": "active_handover"
+    },
+    {
+      "path": "runtime/handovers/index.jsonl",
+      "purpose": "append-only Index statt Verzeichnis-Scan",
+      "lifetime": "365 Tage (siehe config)",
+      "gc_id": "handover_index"
+    },
+    {
+      "path": "runtime/reports/",
+      "purpose": "Research-, Requirements-, Architektur- und Audit-Berichte",
+      "lifetime": "TTL laut config",
+      "gc_id": "report"
+    },
+    {
+      "path": "runtime/archive/",
+      "purpose": "komprimierte Handover und State-Snapshots",
+      "lifetime": "Alter und Anzahl laut config",
+      "gc_id": "archived_handover"
+    },
+    {
+      "path": "runtime/tmp/",
+      "purpose": "Scratch und Werkzeugausgaben",
+      "lifetime": "24 h und bei Knoten-Abschluss",
+      "gc_id": "scratch"
+    },
+    {
+      "path": "runtime/audit.jsonl",
+      "purpose": "append-only Audit-Spur der Zustandsuebergaenge",
+      "lifetime": "365 Tage (siehe config)",
+      "gc_id": "audit_log"
+    },
+    {
+      "path": "proof-artifacts/",
+      "purpose": "Nachweise je Gate, keep-latest",
+      "lifetime": "30 Tage (siehe config)",
+      "gc_id": "proof_artifact"
+    },
+    {
+      "path": "runtime/architecture/",
+      "purpose": "Architektur-Entscheidungen des laufenden Umbaus (ADR-Entwuerfe, Knoten-Katalog, Fixture-Entwuerfe)",
+      "lifetime": "bis zur Promotion nach docs/ (ADR-007 §6, WP-6)",
+      "gc_id": "promotable_input"
+    },
+    {
+      "path": "runtime/requirements/",
+      "purpose": "Anforderungen und Akzeptanzkriterien des laufenden Umbaus",
+      "lifetime": "bis zur Promotion nach docs/ (ADR-007 §6, WP-6)",
+      "gc_id": "promotable_input"
+    },
+    {
+      "path": "runtime/research/",
+      "purpose": "Rechercheberichte des laufenden Umbaus",
+      "lifetime": "bis zur Promotion nach docs/ (ADR-007 §6, WP-6)",
+      "gc_id": "promotable_input"
+    },
+    {
+      "path": "runtime/audit/",
+      "purpose": "Audit- und Pruefberichte des laufenden Umbaus",
+      "lifetime": "bis zur Promotion nach docs/ (ADR-007 §6, WP-6)",
+      "gc_id": "promotable_input"
+    }
+  ],
+  "forbidden_runtime_paths": [
+    {
+      "path": "runtime/logs",
+      "reason": "nie definiert (F-031); Werkzeugausgaben gehoeren nach runtime/tmp/"
+    },
+    {
+      "path": "runtime/.agent-state.json",
+      "reason": "ersetzt durch runtime/state/<orchestrator_id>.json (F-082)"
+    },
+    {
+      "path": "runtime/handover-",
+      "reason": "Flach-Pfad ersetzt durch runtime/handovers/<uuid>.md (F-028, AK-044)"
+    },
+    {
+      "path": "states/",
+      "reason": "Laufzeit-Hinterlassenschaft ohne Definition (NB-3)"
+    }
+  ],
+  "reading_lists": [
+    {
+      "class": "*",
+      "node": "N1",
+      "role": "orchestrator",
+      "read": [
+        "core",
+        "a-lifecycle-layout",
+        "a-lifecycle-retention",
+        "a-memory-consolidation"
+      ],
+      "bytes_max": 32000
+    },
+    {
+      "class": "*",
+      "node": "N2",
+      "role": "orchestrator",
+      "read": [
+        "core",
+        "a-triage-gate-matrix"
+      ],
+      "bytes_max": 32000
+    },
+    {
+      "class": "*",
+      "node": "N3a",
+      "role": "researcher",
+      "read": [
+        "core",
+        "role-researcher",
+        "handover",
+        "a-tools-researcher"
+      ],
+      "bytes_max": 32000
+    },
+    {
+      "class": "*",
+      "node": "N3b",
+      "role": "business_analyst",
+      "read": [
+        "core",
+        "role-business_analyst",
+        "handover",
+        "a-tools-business_analyst"
+      ],
+      "bytes_max": 32000
+    },
+    {
+      "class": "*",
+      "node": "N3c",
+      "role": "architect",
+      "read": [
+        "core",
+        "role-architect",
+        "handover",
+        "a-tools-architect",
+        "a-workflow-rank"
+      ],
+      "bytes_max": 32000
+    },
+    {
+      "class": "*",
+      "node": "N4",
+      "role": "developer",
+      "read": [
+        "core",
+        "role-developer",
+        "handover",
+        "a-tools-developer",
+        "a-context-budget"
+      ],
+      "bytes_max": 32000
+    },
+    {
+      "class": "spike",
+      "node": "N4",
+      "role": "developer",
+      "read": [
+        "core",
+        "role-developer",
+        "handover",
+        "a-tools-developer",
+        "a-vcs-auslieferung"
+      ],
+      "bytes_max": 32000
+    },
+    {
+      "class": "incident",
+      "node": "N4",
+      "role": "developer",
+      "read": [
+        "core",
+        "role-developer",
+        "handover",
+        "a-tools-developer",
+        "a-triage-gate-matrix"
+      ],
+      "bytes_max": 32000
+    },
+    {
+      "class": "*",
+      "node": "N5a",
+      "role": "tester_reviewer",
+      "read": [
+        "core",
+        "role-tester_reviewer",
+        "handover",
+        "a-tools-tester_reviewer",
+        "a-workflow-knoten"
+      ],
+      "bytes_max": 32000
+    },
+    {
+      "class": "*",
+      "node": "N5b",
+      "role": "ux_ui_expert",
+      "read": [
+        "core",
+        "role-ux_ui_expert",
+        "handover",
+        "a-tools-ux_ui_expert"
+      ],
+      "bytes_max": 32000
+    },
+    {
+      "class": "*",
+      "node": "N5c",
+      "role": "documentation_specialist",
+      "read": [
+        "core",
+        "role-documentation_specialist",
+        "handover",
+        "a-tools-documentation_specialist"
+      ],
+      "bytes_max": 32000
+    },
+    {
+      "class": "*",
+      "node": "N6a",
+      "role": "security_auditor",
+      "read": [
+        "core",
+        "role-security_auditor",
+        "handover",
+        "a-tools-security_auditor"
+      ],
+      "bytes_max": 32000
+    },
+    {
+      "class": "*",
+      "node": "N6b",
+      "role": "developer",
+      "read": [
+        "core",
+        "role-developer",
+        "handover",
+        "a-tools-developer",
+        "a-vcs-auslieferung"
+      ],
+      "bytes_max": 32000
+    },
+    {
+      "class": "*",
+      "node": "N6b",
+      "role": "devops_sre",
+      "read": [
+        "core",
+        "role-devops_sre",
+        "handover",
+        "a-tools-devops_sre",
+        "a-vcs-auslieferung"
+      ],
+      "bytes_max": 32000
+    },
+    {
+      "class": "*",
+      "node": "N7",
+      "role": "orchestrator",
+      "read": [
+        "core",
+        "a-lifecycle-promotion",
+        "a-memory-consolidation",
+        "a-workflow-terminals"
+      ],
+      "bytes_max": 32000
+    }
+  ],
+  "ssot": [
+    {
+      "concept": "Gesetzes-Kanon (IDs und Ein-Satz-Regel)",
+      "normative_in": "AGENTS.md#gesetze",
+      "reference_allowed_in": [
+        "modules/*.md",
+        "roles/*.md"
+      ]
+    },
+    {
+      "concept": "Hierarchie, Tiefenlimit, Tiefe-4-Triade",
+      "normative_in": "modules/context.md#hierarchie",
+      "reference_allowed_in": [
+        "AGENTS.md",
+        "roles/sub_orchestrator.md"
+      ]
+    },
+    {
+      "concept": "Amtsuebergabe und orchestrator_lineage",
+      "normative_in": "modules/context.md#amtsuebergabe",
+      "reference_allowed_in": [
+        "AGENTS.md",
+        "modules/lifecycle.md"
+      ]
+    },
+    {
+      "concept": "Kontext-Budget, zaehlbare Proxies, Rotation",
+      "normative_in": "modules/context.md#budget",
+      "reference_allowed_in": [
+        "AGENTS.md",
+        "roles/*.md"
+      ]
+    },
+    {
+      "concept": "Delegationsbrief-Pflichtfelder",
+      "normative_in": "modules/context.md#delegationsbrief",
+      "reference_allowed_in": [
+        "schemas/handover.schema.json",
+        "templates/handover.md"
+      ]
+    },
+    {
+      "concept": "Knoten, Kanten, Rueckkanal-Limits",
+      "normative_in": "modules/workflow.md#knoten",
+      "reference_allowed_in": [
+        "AGENTS.md",
+        "modules/triage.md",
+        "specs/coverage.md"
+      ]
+    },
+    {
+      "concept": "Rank-Funktion und Terminierungsargument",
+      "normative_in": "modules/workflow.md#rank-funktion",
+      "reference_allowed_in": [
+        "specs/coverage.md"
+      ],
+      "unique_file": true,
+      "marker": "Rank-Funktion"
+    },
+    {
+      "concept": "Terminalzustaende und Rollback",
+      "normative_in": "modules/workflow.md#terminalzustaende",
+      "reference_allowed_in": [
+        "AGENTS.md",
+        "modules/lifecycle.md"
+      ]
+    },
+    {
+      "concept": "Klassen, Flags, Gate-Matrix, Effort",
+      "normative_in": "modules/triage.md",
+      "reference_allowed_in": [
+        "AGENTS.md",
+        "manifest.json"
+      ]
+    },
+    {
+      "concept": "Architektur-Autorschaft gegen Konformitaet",
+      "normative_in": "roles/tester_reviewer.md",
+      "reference_allowed_in": [
+        "roles/architect.md",
+        "modules/triage.md"
+      ],
+      "unique_file": true,
+      "marker": "Architektur-Autorschaft"
+    },
+    {
+      "concept": "Werkzeugrechte je Rolle",
+      "normative_in": "modules/tools.md",
+      "reference_allowed_in": [
+        "roles/*.md"
+      ]
+    },
+    {
+      "concept": "Rollen-Mandat und DoD",
+      "normative_in": "roles/",
+      "reference_allowed_in": [
+        "AGENTS.md"
+      ]
+    },
+    {
+      "concept": "runtime-Layout, Retention, GC, Index",
+      "normative_in": "modules/lifecycle.md",
+      "reference_allowed_in": [
+        "AGENTS.md",
+        "modules/memory.md",
+        "config/policy-defaults.json"
+      ]
+    },
+    {
+      "concept": "Handover-Format",
+      "normative_in": "modules/lifecycle.md#handover",
+      "reference_allowed_in": [
+        "templates/handover.md",
+        "schemas/handover.schema.json"
+      ]
+    },
+    {
+      "concept": "Promotion durable Wissens",
+      "normative_in": "modules/lifecycle.md#promotion",
+      "reference_allowed_in": [
+        "modules/memory.md#consolidation"
+      ]
+    },
+    {
+      "concept": "Gedaechtnis-Hierarchie, TTL, Provenienz, ASI06",
+      "normative_in": "modules/memory.md",
+      "reference_allowed_in": [
+        "AGENTS.md",
+        "roles/memory_curator.md"
+      ]
+    },
+    {
+      "concept": "Skill-Governance",
+      "normative_in": "modules/skills.md",
+      "reference_allowed_in": [
+        "modules/memory.md"
+      ]
+    },
+    {
+      "concept": "Branch-Lebenszyklus, Loeschverbote, Zustaendigkeit",
+      "normative_in": "modules/vcs.md",
+      "reference_allowed_in": [
+        "modules/tools.md",
+        "AGENTS.md"
+      ]
+    },
+    {
+      "concept": "Auslieferung und Plattform-Mandat-Ausnahme",
+      "normative_in": "modules/vcs.md#auslieferung",
+      "reference_allowed_in": [
+        "roles/developer.md",
+        "roles/devops_sre.md",
+        "AGENTS.md"
+      ]
+    },
+    {
+      "concept": "Alle Zahlenwerte",
+      "normative_in": "config/policy-defaults.json",
+      "reference_allowed_in": [
+        "*"
+      ]
+    },
+    {
+      "concept": "Dateiliste, Ladebedingungen, Leselisten",
+      "normative_in": "manifest.json",
+      "reference_allowed_in": [
+        "AGENTS.md"
+      ]
+    },
+    {
+      "concept": "Nachweis-Semantik PASS/FAIL/NICHT NACHGEWIESEN",
+      "normative_in": "modules/tools.md#verifizierung",
+      "reference_allowed_in": [
+        "scripts/*.sh",
+        "AGENTS.md"
+      ]
+    },
+    {
+      "concept": "Migration und Alt-Neu-Tabellen",
+      "normative_in": "docs/migration-v1-to-v2.md",
+      "reference_allowed_in": [
+        "CHANGELOG.md",
+        "workflow-cfg.md",
+        "tools-registry.md",
+        "memory-policy.md",
+        "handover-template.md",
+        "skills-policy.md"
+      ]
+    }
+  ],
+  "prose_number_guards": [
+    {
+      "pointer": "/caps/module_max_lines",
+      "pattern": "(?i)modul[a-z]*[^.\\n]{0,40}?(?:<=|≤|maximal|hoechstens|höchstens)\\s*([0-9]{2,5})\\s*Zeilen",
+      "files": [
+        "AGENTS.md",
+        "modules/*.md",
+        "roles/*.md"
+      ]
+    },
+    {
+      "pointer": "/caps/role_card_max_lines",
+      "pattern": "(?i)(?:rollen-?karte|karte)[^.\\n]{0,40}?(?:<=|≤|maximal|hoechstens|höchstens)\\s*([0-9]{2,5})\\s*Zeilen",
+      "files": [
+        "AGENTS.md",
+        "modules/*.md",
+        "roles/*.md"
+      ]
+    },
+    {
+      "pointer": "/caps/handover_max_lines",
+      "pattern": "(?i)(?:handover|rueckgabe|rückgabe)[^.\\n]{0,40}?(?:<=|≤|maximal|hoechstens|höchstens)\\s*([0-9]{2,5})\\s*Zeilen",
+      "files": [
+        "AGENTS.md",
+        "modules/*.md",
+        "roles/*.md",
+        "templates/handover.md"
+      ]
+    },
+    {
+      "pointer": "/caps/toc_required_from_lines",
+      "pattern": "(?i)inhaltsverzeichnis[^.\\n]{0,40}?([0-9]{2,5})\\s*Zeilen",
+      "files": [
+        "AGENTS.md",
+        "modules/*.md"
+      ]
+    },
+    {
+      "pointer": "/caps/normative_total_max_lines",
+      "pattern": "(?i)(?:summe|gesamt)[^.\\n]{0,40}?(?:<=|≤|maximal|hoechstens|höchstens)\\s*([0-9]{3,5})\\s*Zeilen",
+      "files": [
+        "AGENTS.md",
+        "modules/*.md"
+      ]
+    },
+    {
+      "pointer": "/caps/read_bytes_per_delegation_max",
+      "pattern": "(?i)(?:je|pro)\\s+delegation[^.\\n]{0,40}?([0-9]{4,7})\\s*(?:B|Bytes)",
+      "files": [
+        "AGENTS.md",
+        "modules/*.md",
+        "roles/*.md"
+      ]
+    },
+    {
+      "pointer": "/caps/read_bytes_per_run_max",
+      "pattern": "(?i)(?:je|pro)\\s+lauf[^.\\n]{0,40}?([0-9]{4,7})\\s*(?:B|Bytes)",
+      "files": [
+        "AGENTS.md",
+        "modules/*.md"
+      ]
+    },
+    {
+      "pointer": "/budgets/max_depth",
+      "pattern": "(?i)(?:baumtiefe|tiefenlimit)[^.\\n]{0,30}?(?:<=|≤|von|betraegt|beträgt|ist)?\\s*([0-9]{1,2})\\b",
+      "files": [
+        "AGENTS.md",
+        "modules/*.md",
+        "roles/*.md"
+      ]
+    },
+    {
+      "pointer": "/budgets/max_fanout",
+      "pattern": "(?i)(?:fan-?out|breite)[^.\\n]{0,30}?(?:<=|≤|von|betraegt|beträgt|ist)?\\s*([0-9]{1,2})\\b",
+      "files": [
+        "AGENTS.md",
+        "modules/*.md"
+      ]
+    },
+    {
+      "pointer": "/budgets/max_total_spawned",
+      "pattern": "(?i)max_total_spawned[^.\\n]{0,30}?([0-9]{1,4})\\b",
+      "files": [
+        "AGENTS.md",
+        "modules/*.md"
+      ]
+    },
+    {
+      "pointer": "/budgets/max_rotations_per_task",
+      "pattern": "(?i)max_rotations_per_task[^.\\n]{0,30}?([0-9]{1,4})\\b",
+      "files": [
+        "AGENTS.md",
+        "modules/*.md"
+      ]
+    },
+    {
+      "pointer": "/budgets/max_concurrent_handovers",
+      "pattern": "(?i)(?:gleichzeitig|aktive)[^.\\n]{0,25}handover[^.\\n]{0,25}?([0-9]{1,3})\\b",
+      "files": [
+        "AGENTS.md",
+        "modules/*.md"
+      ]
+    },
+    {
+      "pointer": "/cycles/max_attempts_per_back_edge",
+      "pattern": "(?i)(?:rueckkanal|rückkanal|fix-?versuch)[a-z]*[^.\\n]{0,30}?(?:<=|≤|maximal|hoechstens|höchstens)\\s*([0-9]{1,2})\\b",
+      "files": [
+        "AGENTS.md",
+        "modules/*.md",
+        "roles/*.md"
+      ]
+    },
+    {
+      "pointer": "/vcs/branch_max_age_hours",
+      "pattern": "(?i)branch[^.\\n]{0,40}?([0-9]{1,3})\\s*(?:h|Stunden)\\b",
+      "files": [
+        "AGENTS.md",
+        "modules/*.md"
+      ]
+    },
+    {
+      "pointer": "/vcs/max_active_task_branches",
+      "pattern": "(?i)aktive[nr]?\\s+(?:task-?)?branches?[^.\\n]{0,20}?([0-9]{1,3})\\b",
+      "files": [
+        "AGENTS.md",
+        "modules/*.md"
+      ]
+    },
+    {
+      "pointer": "/enforcement/triage_fixtures_min",
+      "pattern": "(?i)fixtures?[^.\\n]{0,30}?(?:mindestens|>=)\\s*([0-9]{1,3})\\b",
+      "files": [
+        "AGENTS.md",
+        "modules/*.md"
+      ]
+    },
+    {
+      "pointer": "/enforcement/skip_exit_code_strict",
+      "pattern": "(?i)NICHT NACHGEWIESEN[^.\\n]{0,40}?Exit\\s*([0-9])\\b",
+      "files": [
+        "AGENTS.md",
+        "modules/*.md",
+        "roles/*.md"
+      ]
+    }
+  ],
+  "migration": {
+    "from_version": "1.3.1",
+    "to_version": "2.0.0",
+    "documented_in": "docs/migration-v1-to-v2.md",
+    "legacy_files": [
+      ".agent-state.json",
+      ".gitignore",
+      "AGENTS.md",
+      "CHANGELOG.md",
+      "README.md",
+      "handover-template.md",
+      "memory-policy.md",
+      "prompts/README.md",
+      "prompts/project-bootstrap-prompt.md",
+      "proofs/termination-proof.md",
+      "schemas/agent-state.schema.json",
+      "scripts/verify-proofs.sh",
+      "skills-policy.md",
+      "specs/workflow.cfg",
+      "specs/workflow.tla",
+      "templates/handover-example.md",
+      "templates/handover-filled-example.md",
+      "templates/skill-template/SKILL.md",
+      "tools-registry.md",
+      "workflow-cfg.md",
+      "workflows/triage-decision-matrix.md"
+    ],
+    "stubs": [
+      "workflow-cfg.md",
+      "tools-registry.md",
+      "memory-policy.md",
+      "handover-template.md",
+      "skills-policy.md"
+    ],
+    "deletions": [
+      ".agent-state.json",
+      "workflows/triage-decision-matrix.md",
+      "proofs/termination-proof.md",
+      "templates/handover-example.md"
+    ],
+    "node_map": {
+      "0": "N0",
+      "1": "N1",
+      "2": "N2",
+      "3": "N3a",
+      "4": "N3b",
+      "5": "N3c",
+      "6": "N4",
+      "7": "N5a",
+      "8": "N5a",
+      "9": "N5b",
+      "10": "N5c",
+      "11": "N6b",
+      "12": "N7"
+    },
+    "node_map_note": "Uebertragen wird die ausfuehrliche Alt-Zaehlung (N0..N12), weil nur sie im Alt-Schema erlaubt war. Die Kern-Zaehlung des alten workflow-cfg.md (N7 = Aggregation) ist nicht rekonstruierbar; das Migrationsskript protokolliert diesen Fall und entscheidet nicht (offener Punkt 4).",
+    "track_map": {
+      "fast": {
+        "change_class": "chore",
+        "signals": []
+      },
+      "FAST_TRACK": {
+        "change_class": "chore",
+        "signals": []
+      },
+      "fast_track": {
+        "change_class": "chore",
+        "signals": []
+      },
+      "standard": {
+        "change_class": "feature",
+        "signals": []
+      },
+      "STANDARD_TRACK": {
+        "change_class": "feature",
+        "signals": []
+      },
+      "standard_track": {
+        "change_class": "feature",
+        "signals": []
+      },
+      "deep": {
+        "change_class": "feature",
+        "signals": [
+          "arch"
+        ]
+      },
+      "DEEP_TRACK": {
+        "change_class": "feature",
+        "signals": [
+          "arch"
+        ]
+      },
+      "deep_track": {
+        "change_class": "feature",
+        "signals": [
+          "arch"
+        ]
+      },
+      "undecided": {
+        "change_class": "feature",
+        "signals": []
+      },
+      "pending": {
+        "change_class": "feature",
+        "signals": []
+      }
+    },
+    "signal_map": {
+      "concurrency": "conc",
+      "ui_change": "ui",
+      "security_surface": "sec",
+      "data_migration": "data",
+      "schema_change": "data",
+      "api_change": "api",
+      "architecture": "arch",
+      "performance": "perf",
+      "irreversible": "irrev",
+      "legal": "legal"
+    },
+    "removed_fields": [
+      "cfg.track",
+      "triage.decision",
+      "triage.complexity_score",
+      "triage_path",
+      "context_budget.handover_threshold_percent",
+      "cycles.one_shot_escalations.requirements_gap_n5_n3b",
+      "cycles.one_shot_escalations.architecture_drift_n5_n3c"
+    ],
+    "phase_map": {
+      "bootstrapping": "bootstrapping",
+      "triage": "triage",
+      "executing": "executing",
+      "aggregating": "aggregating",
+      "done": "done",
+      "blocked": "blocked",
+      "handover_pending": "executing"
+    },
+    "outcome_map": {
+      "pass": "pass",
+      "passed": "pass",
+      "fail": "fail",
+      "failed": "fail",
+      "escalate": "escalate",
+      "escalated": "escalate",
+      "abort": "abort",
+      "aborted": "abort",
+      "rotated": "rotated"
+    }
+  }
+}

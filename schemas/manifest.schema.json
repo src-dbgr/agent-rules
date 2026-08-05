@@ -1,0 +1,516 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-rules.local/schemas/manifest.schema.json",
+  "title": "LawbookManifest",
+  "description": "Schema der Struktur-SSoT manifest.json (ADR-001, AK-011). Was JSON Schema NICHT ausdruecken kann, prueft scripts/lint-lawbook.sh: Existenz der Pfade und Anker (--links), Vollstaendigkeit gegenueber dem Arbeitsbaum (--manifest-complete), Ableitung von tokens_est_max (--budget), Referenzintegritaet der IDs in reading_lists (--links) und Uebereinstimmung mit dem Knoten-Katalog (--node-ids).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "lawbook_version",
+    "state_schema_version",
+    "category_of_kind",
+    "line_cap_of_kind",
+    "documents",
+    "manifest_scope",
+    "test_expectations",
+    "anchors",
+    "laws",
+    "phases",
+    "cfg",
+    "triage",
+    "delivery",
+    "state",
+    "runtime_layout",
+    "forbidden_runtime_paths",
+    "reading_lists",
+    "ssot",
+    "prose_number_guards",
+    "migration"
+  ],
+  "$defs": {
+    "node_id": { "type": "string", "pattern": "^N[0-7][a-c]?$" },
+    "gate": { "type": "string", "pattern": "^(N[0-7][a-c]?|dod:[a-z_]+)$" },
+    "change_class": { "type": "string", "enum": ["incident", "revert", "answer", "spike", "chore", "feature"] },
+    "flag": { "type": "string", "enum": ["sec", "data", "legal", "ui", "api", "conc", "arch", "perf", "irrev"] },
+    "role": {
+      "type": "string",
+      "enum": [
+        "orchestrator",
+        "researcher",
+        "business_analyst",
+        "architect",
+        "developer",
+        "tester_reviewer",
+        "ux_ui_expert",
+        "security_auditor",
+        "data_engineer",
+        "devops_sre",
+        "documentation_specialist",
+        "performance_engineer",
+        "compliance_governance",
+        "memory_curator",
+        "sub_orchestrator"
+      ]
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "core",
+        "module",
+        "role_card",
+        "schema",
+        "script",
+        "ci",
+        "config",
+        "manifest",
+        "fixture_set",
+        "example",
+        "spec",
+        "template",
+        "doc",
+        "doc_set",
+        "prompt",
+        "stub",
+        "readme",
+        "changelog",
+        "license",
+        "vcs_config"
+      ]
+    },
+    "category": { "type": "string", "enum": ["kern", "modul", "rollenkarte", "schema", "skript", "daten", "nicht-normativ"] },
+    "json_pointer": { "type": "string", "pattern": "^/[A-Za-z0-9_/]*$" }
+  },
+  "properties": {
+    "$comment": { "type": "string" },
+    "$schema_ref": { "type": "string" },
+    "lawbook_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "state_schema_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "category_of_kind": {
+      "type": "object",
+      "description": "kind -> category. Verhindert, dass dieselbe Dateiklasse unterschiedlich kategorisiert wird.",
+      "additionalProperties": { "$ref": "#/$defs/category" },
+      "minProperties": 1
+    },
+    "line_cap_of_kind": {
+      "type": "object",
+      "description": "kind -> JSON-Pointer der Klassen-Obergrenze in config/policy-defaults.json. Nur fuer Klassen mit Zeilen-Cap.",
+      "additionalProperties": { "$ref": "#/$defs/json_pointer" },
+      "minProperties": 1
+    },
+    "documents": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "kind", "category", "purpose", "load_when", "load_trigger", "max_lines", "max_bytes", "tokens_est_max", "required", "owner_wp"],
+        "oneOf": [{ "required": ["path"] }, { "required": ["path_glob"] }],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9_-]*$" },
+          "path": { "type": "string", "minLength": 1, "not": { "pattern": "[*?]" } },
+          "path_glob": { "type": "string", "minLength": 1, "pattern": "[*]" },
+          "kind": { "$ref": "#/$defs/kind" },
+          "category": { "$ref": "#/$defs/category" },
+          "purpose": { "type": "string", "minLength": 10 },
+          "load_when": {
+            "type": "string",
+            "enum": ["always", "reading_list", "script_only", "on_demand_human"],
+            "description": "ADR-001 §5. always gilt ausschliesslich fuer den Kern; script_only bedeutet: kein Agent liest die Datei als Kontext."
+          },
+          "load_trigger": { "type": "string", "minLength": 10, "description": "Beobachtbare Bedingung, unter der die Datei geladen wird - kein Ermessen." },
+          "max_lines": { "type": ["integer", "null"], "minimum": 1 },
+          "max_bytes": { "type": ["integer", "null"], "minimum": 1 },
+          "tokens_est_max": { "type": ["integer", "null"], "minimum": 1 },
+          "required": { "type": "boolean" },
+          "owner_wp": { "type": "string", "pattern": "^WP-[1-6]$" }
+        }
+      }
+    },
+    "manifest_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["exclude_globs", "expected_removals"],
+      "properties": {
+        "$comment": { "type": "string" },
+        "exclude_globs": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "expected_removals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "reason", "owner_wp"],
+            "properties": {
+              "path": { "type": "string", "minLength": 1 },
+              "reason": { "type": "string", "minLength": 10 },
+              "owner_wp": { "type": "string", "pattern": "^WP-[1-6]$" }
+            }
+          }
+        }
+      }
+    },
+    "test_expectations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cases", "validators", "fixture_globs"],
+      "description": "Erwartungswert je Fixture. Eine Fixture ohne Eintrag wird von keiner Stufe geprueft und ist damit stumm; das prueft scripts/lint-lawbook.sh --fixtures-declared.",
+      "properties": {
+        "$comment": { "type": "string" },
+        "cases": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "validator", "expect", "ak", "reason"],
+            "properties": {
+              "path": { "type": "string", "minLength": 1 },
+              "validator": { "type": "string", "enum": ["agent_state_schema", "check_triage", "migrate_state", "handover_schema", "none"] },
+              "expect": { "type": "string", "enum": ["pass", "fail"] },
+              "ak": { "type": "string", "pattern": "^AK-[0-9]{3}$" },
+              "reason": { "type": "string", "minLength": 10 }
+            }
+          }
+        },
+        "validators": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "type": "string", "minLength": 10 }
+        },
+        "fixture_globs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "pattern": "[*]" },
+          "uniqueItems": true
+        }
+      }
+    },
+    "anchors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "document", "anchor", "max_lines", "purpose"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^a-[a-z0-9_-]+$" },
+          "document": { "type": "string", "minLength": 1 },
+          "anchor": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$", "description": "GitHub-Anker-Form der Ueberschrift: Kleinbuchstaben, Ziffern, Bindestrich, Unterstrich" },
+          "max_lines": { "type": "integer", "minimum": 1, "maximum": 70 },
+          "purpose": { "type": "string", "minLength": 5 }
+        }
+      }
+    },
+    "laws": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "rule", "normative_in"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^LAW-[A-Z]+$" },
+          "rule": { "type": "string", "minLength": 20 },
+          "normative_in": { "type": "string", "minLength": 5 },
+          "subrules": { "type": "array", "items": { "type": "string", "pattern": "^LAW-[A-Z]+\\.[0-9]+$" }, "uniqueItems": true }
+        }
+      }
+    },
+    "phases": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z_]+$" }
+    },
+    "cfg": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id_grammar", "max_rank", "nodes", "terminals", "edges"],
+      "properties": {
+        "$comment": { "type": "string" },
+        "id_grammar": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["node", "terminal"],
+          "properties": { "node": { "type": "string" }, "terminal": { "type": "string" } }
+        },
+        "max_rank": { "type": "integer", "minimum": 1 },
+        "nodes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "rank", "name", "role", "kind"],
+            "properties": {
+              "id": { "$ref": "#/$defs/node_id" },
+              "rank": { "type": "integer", "minimum": 0 },
+              "letter": { "type": "string", "enum": ["a", "b", "c"] },
+              "name": { "type": "string", "pattern": "^[A-Z][A-Z_]*$" },
+              "role": { "oneOf": [{ "$ref": "#/$defs/role" }, { "type": "null" }] },
+              "kind": { "type": "string", "enum": ["mandatory", "gated"] }
+            }
+          }
+        },
+        "terminals": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "phase", "reversible"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^t_(done|blocked|abort)$" },
+              "phase": { "type": "string", "enum": ["done", "blocked", "abort"] },
+              "reversible": { "type": "boolean" }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["from", "to", "kind", "limit", "counter"],
+            "properties": {
+              "from": { "type": "string", "pattern": "^(N[0-7][a-c]?|\\*)$" },
+              "to": { "type": "string", "pattern": "^(N[0-7][a-c]?|t_(done|blocked|abort)|\\*)$" },
+              "kind": { "type": "string", "enum": ["forward", "back", "escalation", "rotation", "terminal"] },
+              "limit": { "type": ["integer", "null"], "minimum": 1 },
+              "counter": { "type": ["string", "null"] }
+            }
+          }
+        }
+      }
+    },
+    "triage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["classes", "flags", "aggregation", "gate_matrix"],
+      "properties": {
+        "classes": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["rule_no", "id", "dod_key"],
+            "properties": {
+              "rule_no": { "type": "integer", "minimum": 1, "maximum": 6 },
+              "id": { "$ref": "#/$defs/change_class" },
+              "dod_key": { "type": ["string", "null"], "pattern": "^dod:[a-z_]+$" },
+              "catch_all": { "type": "boolean" }
+            }
+          }
+        },
+        "flags": {
+          "type": "array",
+          "minItems": 9,
+          "maxItems": 9,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "scope"],
+            "properties": {
+              "id": { "$ref": "#/$defs/flag" },
+              "scope": { "type": "string", "minLength": 10 }
+            }
+          }
+        },
+        "aggregation": { "type": "string", "const": "union", "description": "High-Water-Mark: Vereinigung, keine Summe, kein Durchschnitt (AK-041)" },
+        "gate_matrix": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["classes", "flags", "extra_rules"],
+          "properties": {
+            "classes": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["incident", "revert", "answer", "spike", "chore", "feature"],
+              "patternProperties": {
+                "^[a-z]+$": { "type": "array", "minItems": 3, "uniqueItems": true, "items": { "$ref": "#/$defs/gate" } }
+              }
+            },
+            "flags": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["sec", "data", "legal", "ui", "api", "conc", "arch", "perf", "irrev"],
+              "patternProperties": { "^[a-z]+$": { "$ref": "#/$defs/gate" } }
+            },
+            "extra_rules": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["n3a_on_external_source", "deferrable_gates_incident"],
+              "properties": {
+                "n3a_on_external_source": { "type": "string", "minLength": 20 },
+                "deferrable_gates_incident": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/node_id" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "delivery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["push_roles", "per_class"],
+      "properties": {
+        "$comment": { "type": "string" },
+        "push_roles": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/role" } },
+        "per_class": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["class", "node", "roles", "branch_scope"],
+            "properties": {
+              "class": { "$ref": "#/$defs/change_class" },
+              "node": { "oneOf": [{ "$ref": "#/$defs/node_id" }, { "type": "null" }] },
+              "roles": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/role" } },
+              "branch_scope": { "type": "string", "minLength": 4 }
+            }
+          }
+        }
+      }
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path_pattern", "lock_pattern", "one_per", "documented_in", "forbidden_paths"],
+      "properties": {
+        "path_pattern": { "type": "string", "const": "runtime/state/<orchestrator_id>.json" },
+        "lock_pattern": { "type": "string", "minLength": 5 },
+        "one_per": { "type": "string", "const": "orchestrator_id" },
+        "documented_in": { "type": "string", "minLength": 5 },
+        "forbidden_paths": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "runtime_layout": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "purpose", "lifetime", "gc_id"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "purpose": { "type": "string", "minLength": 10 },
+          "lifetime": { "type": "string", "minLength": 3 },
+          "gc_id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" }
+        }
+      }
+    },
+    "forbidden_runtime_paths": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "reason"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string", "minLength": 10 }
+        }
+      }
+    },
+    "reading_lists": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["class", "node", "role", "read", "bytes_max"],
+        "properties": {
+          "class": { "oneOf": [{ "$ref": "#/$defs/change_class" }, { "type": "string", "const": "*" }] },
+          "node": { "$ref": "#/$defs/node_id" },
+          "role": { "$ref": "#/$defs/role" },
+          "read": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "description": "Dokument-ID, Anker-ID (a-...) oder das Schluesselwort handover. Aufloesung prueft --links.",
+            "items": { "type": "string", "minLength": 2 }
+          },
+          "bytes_max": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "ssot": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["concept", "normative_in", "reference_allowed_in"],
+        "properties": {
+          "concept": { "type": "string", "minLength": 5 },
+          "normative_in": { "type": "string", "minLength": 5 },
+          "reference_allowed_in": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "unique_file": { "type": "boolean", "description": "true = die Markierung darf in genau einer Datei vorkommen (AK-025, AK-026)" },
+          "marker": { "type": "string", "minLength": 3, "description": "Zeichenkette, die --ssot zaehlt; nur zusammen mit unique_file sinnvoll" }
+        },
+        "dependentRequired": { "unique_file": ["marker"] }
+      }
+    },
+    "prose_number_guards": {
+      "type": "array",
+      "description": "Deklarierte Waechter fuer --no-prose-numbers. Die Pruefung ist vollstaendig RELATIV zu dieser Liste: eine Zahl, fuer die kein Waechter registriert ist, wird nicht erkannt (dokumentierte Grenze).",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["pointer", "pattern", "files"],
+        "properties": {
+          "pointer": { "$ref": "#/$defs/json_pointer" },
+          "pattern": { "type": "string", "minLength": 5, "description": "Python-Regex mit genau einer Gruppe, die die Zahl faengt" },
+          "files": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+        }
+      }
+    },
+    "migration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from_version", "to_version", "documented_in", "legacy_files", "stubs", "deletions", "node_map", "track_map", "signal_map", "removed_fields"],
+      "properties": {
+        "from_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "to_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "documented_in": { "type": "string", "minLength": 5 },
+        "legacy_files": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "stubs": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "deletions": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "node_map": { "type": "object", "additionalProperties": { "$ref": "#/$defs/node_id" }, "minProperties": 1 },
+        "node_map_note": { "type": "string" },
+        "track_map": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["change_class", "signals"],
+            "properties": {
+              "change_class": { "$ref": "#/$defs/change_class" },
+              "signals": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/flag" } }
+            }
+          }
+        },
+        "signal_map": { "type": "object", "minProperties": 1, "additionalProperties": { "$ref": "#/$defs/flag" } },
+        "phase_map": {
+          "type": "object",
+          "minProperties": 1,
+          "description": "Alt-Phase -> v2-Phase. handover_pending entfaellt (Rotation ist kein eigener Zustand mehr).",
+          "additionalProperties": { "type": "string", "minLength": 1 }
+        },
+        "outcome_map": {
+          "type": "object",
+          "minProperties": 1,
+          "description": "Alt-Ergebnis in cycles.loop_history -> v2-Enum.",
+          "additionalProperties": { "type": "string", "minLength": 1 }
+        },
+        "removed_fields": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 3 } }
+      }
+    }
+  }
+}

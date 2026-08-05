@@ -1,0 +1,216 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-rules.local/schemas/policy-defaults.schema.json",
+  "title": "PolicyDefaults",
+  "description": "Schema der Zahlen-SSoT config/policy-defaults.json (ADR-006, ADR-007 §3, ADR-009, AK-051 in der Fassung von ad1-v2-architecture.md §16). Jeder Zahlenwert braucht einen _provenance-Eintrag; die Vollstaendigkeit prueft scripts/lint-lawbook.sh --config-provenance-complete, weil JSON Schema keine Kreuzreferenz zwischen Pointer und Wert ausdruecken kann.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "lawbook_version", "caps", "budgets", "cycles", "effort", "gc", "vcs", "enforcement", "_provenance"],
+  "properties": {
+    "$comment": { "type": "string" },
+    "$schema_ref": { "type": "string" },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "lawbook_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "caps": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bootstrap_mandatory_files",
+        "core_max_lines",
+        "core_max_bytes",
+        "module_max_lines",
+        "role_card_max_lines",
+        "role_lines_in_core_max",
+        "toc_required_from_lines",
+        "normative_total_max_lines",
+        "handover_max_lines",
+        "handover_max_bytes",
+        "subagent_return_max_lines",
+        "read_bytes_per_delegation_max",
+        "read_bytes_per_run_max",
+        "bytes_per_token_proxy",
+        "bytes_per_line_proxy",
+        "stub_max_lines",
+        "promoted_adr_max_lines",
+        "promoted_review_max_lines"
+      ],
+      "patternProperties": { "^[a-z_]+$": { "type": "integer", "minimum": 1 } }
+    },
+    "budgets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rotation", "max_rotations_per_task", "max_total_spawned", "max_fanout", "max_depth", "max_concurrent_handovers"],
+      "properties": {
+        "rotation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["bytes_read_max", "files_read_max", "tool_calls_max", "turns_max", "artifact_bytes_max", "percent_backstop"],
+          "properties": {
+            "bytes_read_max": { "type": "integer", "minimum": 1 },
+            "files_read_max": { "type": "integer", "minimum": 1 },
+            "tool_calls_max": { "type": "integer", "minimum": 1 },
+            "turns_max": { "type": "integer", "minimum": 1 },
+            "artifact_bytes_max": { "type": "integer", "minimum": 1 },
+            "percent_backstop": { "type": "integer", "minimum": 1, "maximum": 100 }
+          }
+        },
+        "max_rotations_per_task": { "type": "integer", "minimum": 1 },
+        "max_total_spawned": { "type": "integer", "minimum": 1 },
+        "max_fanout": { "type": "integer", "minimum": 1 },
+        "max_depth": { "type": "integer", "minimum": 1 },
+        "max_concurrent_handovers": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "cycles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_attempts_per_back_edge", "max_attempts_total", "one_shot_max", "delivery_fix_max"],
+      "patternProperties": { "^[a-z_]+$": { "type": "integer", "minimum": 1 } }
+    },
+    "effort": {
+      "type": "object",
+      "description": "Effort-Budget je Triage-Klasse plus flag_bonus (ADR-003 §8). Die 6 Klassen sind Pflicht; AK-042 (Fassung §16) zaehlt die Eintraege ohne flag_bonus.",
+      "additionalProperties": false,
+      "required": ["answer", "chore", "revert", "spike", "incident", "feature", "flag_bonus"],
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["max_subagents", "max_tool_calls"],
+          "properties": {
+            "max_subagents": { "type": "integer", "minimum": 1 },
+            "max_tool_calls": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+    "gc": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sweep", "artifacts", "conventions"],
+      "properties": {
+        "sweep": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["default_mode", "on_policy_error", "run_at_nodes"],
+          "properties": {
+            "default_mode": { "type": "string", "const": "dry-run", "description": "AK-052/AK-063: Dry-Run ist Default und darf nicht umkonfiguriert werden" },
+            "on_policy_error": { "type": "string", "const": "fail-safe", "description": "AK-056: fail-safe statt fail-silent" },
+            "run_at_nodes": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": { "type": "string", "pattern": "^N[0-7][a-c]?$" }
+            }
+          }
+        },
+        "artifacts": {
+          "type": "array",
+          "minItems": 9,
+          "description": "AK-051: je Artefakttyp Alters- UND Mengen-Cap. 0 bedeutet 'kein Cap' (siehe conventions).",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "path_glob", "max_age_days", "max_count", "keep_latest_per_key", "owner", "when"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+              "path_glob": { "type": "string", "minLength": 1 },
+              "max_age_days": { "type": "integer", "minimum": 0 },
+              "max_count": { "type": "integer", "minimum": 0 },
+              "keep_latest_per_key": { "type": "boolean" },
+              "owner": { "type": "string", "minLength": 1 },
+              "when": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "conventions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["max_age_days_0", "max_count_0", "compress_on_archive", "secret_scan_before_archive"],
+          "properties": {
+            "max_age_days_0": { "type": "string", "minLength": 1 },
+            "max_count_0": { "type": "string", "minLength": 1 },
+            "compress_on_archive": { "type": "boolean" },
+            "secret_scan_before_archive": { "type": "boolean", "const": true, "description": "AK-057 / CWE-532: Secret-Scan vor jeder Archivierung ist nicht abschaltbar" }
+          }
+        }
+      }
+    },
+    "vcs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "branch_pattern",
+        "platform_prefix",
+        "protected_branches",
+        "branch_max_age_hours",
+        "max_active_task_branches",
+        "worktree_prune_expire_days",
+        "reflog_expire_days_min",
+        "delete_remote_allowed",
+        "delete_local_merged_allowed",
+        "force_push_allowed",
+        "require_confirm_token"
+      ],
+      "properties": {
+        "branch_pattern": { "type": "string", "minLength": 1 },
+        "platform_prefix": { "type": "string" },
+        "protected_branches": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "branch_max_age_hours": { "type": "integer", "minimum": 1 },
+        "max_active_task_branches": { "type": "integer", "minimum": 1 },
+        "worktree_prune_expire_days": { "type": "integer", "minimum": 1 },
+        "reflog_expire_days_min": { "type": "integer", "minimum": 1 },
+        "delete_remote_allowed": { "type": "boolean", "const": false, "description": "D-3 / AK-070: nicht konfigurierbar auf true" },
+        "delete_local_merged_allowed": { "type": "boolean" },
+        "force_push_allowed": { "type": "boolean", "const": false, "description": "AK-066: push --force bleibt verboten" },
+        "require_confirm_token": { "type": "string", "minLength": 3 }
+      }
+    },
+    "enforcement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ci_min_steps",
+        "lint_checks_total",
+        "triage_fixtures_min",
+        "skip_exit_code_strict",
+        "fail_exit_code",
+        "allow_skip_flag",
+        "allow_skip_in_ci",
+        "mutation_must_fail",
+        "tla_jar_path",
+        "tla_jar_url"
+      ],
+      "properties": {
+        "ci_min_steps": { "type": "integer", "minimum": 6 },
+        "lint_checks_total": { "type": "integer", "minimum": 1 },
+        "triage_fixtures_min": { "type": "integer", "minimum": 1 },
+        "skip_exit_code_strict": { "type": "integer", "const": 2, "description": "ADR-009 §2: SKIP ist nie PASS; Exit 2 bedeutet 'NICHT NACHGEWIESEN'" },
+        "fail_exit_code": { "type": "integer", "const": 1 },
+        "allow_skip_flag": { "type": "string", "const": "--allow-skip" },
+        "allow_skip_in_ci": { "type": "boolean", "const": false, "description": "AK-083: in CI nie erlaubt" },
+        "mutation_must_fail": { "type": "boolean", "const": true },
+        "tla_jar_path": { "type": "string", "minLength": 1 },
+        "tla_jar_url": { "type": "string", "format": "uri" },
+        "tla_jar_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "Optional bis Risiko R8 geschlossen ist: Pruefsumme des TLA+-Werkzeugs" }
+      }
+    },
+    "_provenance": {
+      "type": "object",
+      "description": "JSON-Pointer -> Provenienz. Ein Eintrag deckt auch alle Nachfahren seines Pointers ab (z. B. /effort fuer /effort/feature/max_subagents).",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "patternProperties": {
+        "^/[A-Za-z0-9_/]*$": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["herkunft", "quelle"],
+          "properties": {
+            "herkunft": { "type": "string", "enum": ["belegt", "setzung"] },
+            "quelle": { "type": "string", "minLength": 10 }
+          }
+        }
+      }
+    }
+  }
+}

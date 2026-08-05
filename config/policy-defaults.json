@@ -1,0 +1,444 @@
+{
+  "$comment": "Zahlen-SSoT des Gesetzbuchs v2.0 (W-03/W-04, ADR-006/ADR-007/ADR-009). EINZIGE Quelle aller einstellbaren Zahlen. Normtexte nennen Werte nur als 'Default (siehe config)'. Zugriff ausschliesslich per jq (Annahme A-06). Provenienz jedes Zahlenwerts steht in _provenance, adressiert per JSON-Pointer; herkunft ist entweder 'belegt' (Quelle in quelle) oder 'setzung' (bewusste Festlegung mit Begruendung). Per-Dokument-Zeilencaps stehen NICHT hier, sondern in manifest.json#/documents (Struktur-SSoT); hier stehen nur die Klassen-Obergrenzen, gegen die manifest.json geprueft wird.",
+  "$schema_ref": "schemas/policy-defaults.schema.json",
+  "version": "2.0.0",
+  "lawbook_version": "2.0.0",
+  "caps": {
+    "bootstrap_mandatory_files": 1,
+    "core_max_lines": 200,
+    "core_max_bytes": 12000,
+    "module_max_lines": 500,
+    "role_card_max_lines": 80,
+    "role_lines_in_core_max": 1,
+    "toc_required_from_lines": 300,
+    "normative_total_max_lines": 2500,
+    "handover_max_lines": 150,
+    "handover_max_bytes": 12000,
+    "subagent_return_max_lines": 150,
+    "read_bytes_per_delegation_max": 32000,
+    "read_bytes_per_run_max": 120000,
+    "bytes_per_token_proxy": 4,
+    "bytes_per_line_proxy": 52,
+    "stub_max_lines": 10,
+    "promoted_adr_max_lines": 300,
+    "promoted_review_max_lines": 500
+  },
+  "budgets": {
+    "rotation": {
+      "bytes_read_max": 300000,
+      "files_read_max": 60,
+      "tool_calls_max": 120,
+      "turns_max": 60,
+      "artifact_bytes_max": 200000,
+      "percent_backstop": 80
+    },
+    "max_rotations_per_task": 12,
+    "max_total_spawned": 24,
+    "max_fanout": 4,
+    "max_depth": 4,
+    "max_concurrent_handovers": 8
+  },
+  "cycles": {
+    "max_attempts_per_back_edge": 3,
+    "max_attempts_total": 9,
+    "one_shot_max": 1,
+    "delivery_fix_max": 1
+  },
+  "effort": {
+    "answer": {
+      "max_subagents": 1,
+      "max_tool_calls": 10
+    },
+    "chore": {
+      "max_subagents": 1,
+      "max_tool_calls": 15
+    },
+    "revert": {
+      "max_subagents": 1,
+      "max_tool_calls": 15
+    },
+    "spike": {
+      "max_subagents": 2,
+      "max_tool_calls": 25
+    },
+    "incident": {
+      "max_subagents": 2,
+      "max_tool_calls": 30
+    },
+    "feature": {
+      "max_subagents": 4,
+      "max_tool_calls": 60
+    },
+    "flag_bonus": {
+      "max_subagents": 1,
+      "max_tool_calls": 15
+    }
+  },
+  "gc": {
+    "sweep": {
+      "default_mode": "dry-run",
+      "on_policy_error": "fail-safe",
+      "run_at_nodes": [
+        "N1",
+        "N7"
+      ]
+    },
+    "artifacts": [
+      {
+        "id": "active_handover",
+        "path_glob": "runtime/handovers/*.md",
+        "max_age_days": 0,
+        "max_count": 8,
+        "keep_latest_per_key": false,
+        "owner": "orchestrator",
+        "when": "Knotenwechsel"
+      },
+      {
+        "id": "archived_handover",
+        "path_glob": "runtime/archive/*/*.md.gz",
+        "max_age_days": 14,
+        "max_count": 50,
+        "keep_latest_per_key": false,
+        "owner": "sweep",
+        "when": "N1 und N7"
+      },
+      {
+        "id": "handover_index",
+        "path_glob": "runtime/handovers/index.jsonl",
+        "max_age_days": 365,
+        "max_count": 0,
+        "keep_latest_per_key": false,
+        "owner": "orchestrator",
+        "when": "je Uebergabe (append-only)"
+      },
+      {
+        "id": "active_state",
+        "path_glob": "runtime/state/*.json",
+        "max_age_days": 0,
+        "max_count": 1,
+        "keep_latest_per_key": true,
+        "owner": "orchestrator",
+        "when": "bis Terminalzustand, 1 je orchestrator_id"
+      },
+      {
+        "id": "state_snapshot",
+        "path_glob": "runtime/archive/*/state-*.json.gz",
+        "max_age_days": 30,
+        "max_count": 3,
+        "keep_latest_per_key": true,
+        "owner": "memory_curator",
+        "when": "N7 Consolidation"
+      },
+      {
+        "id": "proof_artifact",
+        "path_glob": "proof-artifacts/*.log",
+        "max_age_days": 30,
+        "max_count": 0,
+        "keep_latest_per_key": true,
+        "owner": "sweep",
+        "when": "N1 und N7"
+      },
+      {
+        "id": "report",
+        "path_glob": "runtime/reports/*.md",
+        "max_age_days": 180,
+        "max_count": 20,
+        "keep_latest_per_key": false,
+        "owner": "memory_curator",
+        "when": "Ingestion N1 (TTL-Pruefung)"
+      },
+      {
+        "id": "audit_log",
+        "path_glob": "runtime/audit.jsonl",
+        "max_age_days": 365,
+        "max_count": 0,
+        "keep_latest_per_key": false,
+        "owner": "orchestrator",
+        "when": "append-only"
+      },
+      {
+        "id": "scratch",
+        "path_glob": "runtime/tmp/**",
+        "max_age_days": 1,
+        "max_count": 0,
+        "keep_latest_per_key": false,
+        "owner": "sweep",
+        "when": "N1, N7 und Knotenabschluss"
+      }
+    ],
+    "conventions": {
+      "max_age_days_0": "kein Alters-Cap (Lebensende an ein Ereignis gebunden)",
+      "max_count_0": "kein Mengen-Cap",
+      "compress_on_archive": true,
+      "secret_scan_before_archive": true
+    }
+  },
+  "vcs": {
+    "branch_pattern": "^(cursor|agent)/[a-z0-9][a-z0-9._-]*$",
+    "platform_prefix": "cursor/",
+    "protected_branches": [
+      "main",
+      "master",
+      "develop",
+      "release/*"
+    ],
+    "branch_max_age_hours": 24,
+    "max_active_task_branches": 3,
+    "worktree_prune_expire_days": 14,
+    "reflog_expire_days_min": 90,
+    "delete_remote_allowed": false,
+    "delete_local_merged_allowed": true,
+    "force_push_allowed": false,
+    "require_confirm_token": "--i-know-what-i-do"
+  },
+  "enforcement": {
+    "ci_min_steps": 6,
+    "lint_checks_total": 25,
+    "triage_fixtures_min": 20,
+    "skip_exit_code_strict": 2,
+    "fail_exit_code": 1,
+    "allow_skip_flag": "--allow-skip",
+    "allow_skip_in_ci": false,
+    "mutation_must_fail": true,
+    "tla_jar_path": "lib/tla2tools.jar",
+    "tla_jar_url": "https://github.com/tlaplus/tlaplus/releases/download/v1.8.0/tla2tools.jar"
+  },
+  "_provenance": {
+    "/caps/bootstrap_mandatory_files": {
+      "herkunft": "belegt",
+      "quelle": "BR1 NFR-1 (Progressive Disclosure Level 1, R1 §1a/§1b)"
+    },
+    "/caps/core_max_lines": {
+      "herkunft": "belegt",
+      "quelle": "BR1 NFR-2 / AK-001; Claude-Code-Doku 'target under 200 lines'. Als hartes Gate uebernommen (Annahme A-03). Der engere Wert 195 ist der Dokument-Cap in manifest.json#/documents"
+    },
+    "/caps/core_max_bytes": {
+      "herkunft": "belegt",
+      "quelle": "BR1 NFR-3 (200 Z. x 51,7 B/Z. + 16 % Puffer)"
+    },
+    "/caps/module_max_lines": {
+      "herkunft": "belegt",
+      "quelle": "BR1 NFR-6 / AK-006; Cursor 'Keep rules under 500 lines', Agent-Skills-Spec"
+    },
+    "/caps/role_card_max_lines": {
+      "herkunft": "belegt",
+      "quelle": "BR1 NFR-7 / AK-008"
+    },
+    "/caps/role_lines_in_core_max": {
+      "herkunft": "belegt",
+      "quelle": "BR1 NFR-7 (eine Zeile je Rolle im Kern)"
+    },
+    "/caps/toc_required_from_lines": {
+      "herkunft": "belegt",
+      "quelle": "BR1 NFR-8 / AK-007; Agent-Skills-Spec TOC > 300 Zeilen"
+    },
+    "/caps/normative_total_max_lines": {
+      "herkunft": "belegt",
+      "quelle": "BR1 NFR-12 / AK-010 (3.082 - 650 Redundanz, 2.500 mit Puffer)"
+    },
+    "/caps/handover_max_lines": {
+      "herkunft": "belegt",
+      "quelle": "BR1 NFR-9 / AK-021 (Anthropic: 'often 1.000-2.000 tokens')"
+    },
+    "/caps/handover_max_bytes": {
+      "herkunft": "belegt",
+      "quelle": "BR1 NFR-10 (Handover <= 12.000 Bytes, gleiche Rechnung wie /caps/core_max_bytes)"
+    },
+    "/caps/subagent_return_max_lines": {
+      "herkunft": "belegt",
+      "quelle": "BR1 NFR-9 (Rueckgabe eines Sub-Agenten <= 150 Zeilen, identisch zum Handover-Cap)"
+    },
+    "/caps/read_bytes_per_delegation_max": {
+      "herkunft": "belegt",
+      "quelle": "BR1 NFR-4 / AK-013"
+    },
+    "/caps/read_bytes_per_run_max": {
+      "herkunft": "belegt",
+      "quelle": "BR1 NFR-5 / AK-014 (4 Agenten, Annahme A-13)"
+    },
+    "/caps/bytes_per_token_proxy": {
+      "herkunft": "belegt",
+      "quelle": "Annahme A-02: Token-Angaben sind Bytes/4-Proxys; normativ sind Zeilen und Bytes"
+    },
+    "/caps/bytes_per_line_proxy": {
+      "herkunft": "belegt",
+      "quelle": "ADR-006 §2 Byte-Rechnung ('80 Z. x 52 B/Z.') und BR1 NFR-3 (51,7 B/Z.). In WP-1 ergaenzt, damit manifest.json#/documents/tokens_est_max aus max_lines berechenbar statt geschaetzt ist"
+    },
+    "/caps/stub_max_lines": {
+      "herkunft": "belegt",
+      "quelle": "AK-114 / ADR-010 §2: 5 Stubs je <= 10 Zeilen. In WP-1 ergaenzt, weil der Linter eine Klassen-Obergrenze fuer kind=stub braucht"
+    },
+    "/caps/promoted_adr_max_lines": {
+      "herkunft": "belegt",
+      "quelle": "ADR-007 §6 Promotionstabelle (docs/adr <= 300 Z.). In WP-1 ergaenzt, weil --budget eine Klassen-Obergrenze fuer promovierte Artefakte braucht"
+    },
+    "/caps/promoted_review_max_lines": {
+      "herkunft": "belegt",
+      "quelle": "ADR-007 §6 Promotionstabelle (docs/review <= 500 Z.). In WP-1 ergaenzt, Begruendung wie oben"
+    },
+    "/budgets/rotation/bytes_read_max": {
+      "herkunft": "setzung",
+      "quelle": "Kein Messwert vorhanden (W-03). Ableitung: 300.000 B ~ 75k Token-Proxy ~ 40 % eines heute ueblichen Fensters; bewusst vor der Haelfte, weil Qualitaet schon vor dem Limit faellt (Context Rot, R1). Kalibrieren nach ersten Laeufen"
+    },
+    "/budgets/rotation/files_read_max": {
+      "herkunft": "setzung",
+      "quelle": "Ableitung: NFR-4-Leseliste umfasst 3-5 Dateien; 60 gelesene Dateien sind ein Vielfaches davon und damit ein glaubwuerdiges Sattheitssignal"
+    },
+    "/budgets/rotation/tool_calls_max": {
+      "herkunft": "setzung",
+      "quelle": "Ableitung aus effort.feature.max_tool_calls = 60: Rotation erst beim Doppelten des groessten Klassenbudgets"
+    },
+    "/budgets/rotation/turns_max": {
+      "herkunft": "setzung",
+      "quelle": "Ableitung: halber Wert von tool_calls_max, da nicht jeder Turn ein Werkzeug ruft"
+    },
+    "/budgets/rotation/artifact_bytes_max": {
+      "herkunft": "setzung",
+      "quelle": "Ableitung: 200.000 B entspricht ~25 Handover-Obergrenzen; darueber ist Inline-Kontext nie mehr sinnvoll"
+    },
+    "/budgets/rotation/percent_backstop": {
+      "herkunft": "belegt",
+      "quelle": "v1.3.1 Gesetz Kontext-Budget (80 %). In v2.0 nur Backstop und nur, wenn die Plattform einen Messwert liefert; nie Pflichtausloeser (AK-016, AK-019)"
+    },
+    "/budgets/max_rotations_per_task": {
+      "herkunft": "setzung",
+      "quelle": "Notwendig fuer das Terminierungsargument (Rotation ist die einzige Kante ohne Rangfortschritt). 12 = 4 x max_attempts_per_back_edge; ausdruecklich NICHT 3, weil Rotation kein Fix-Zyklus ist (AK-024)"
+    },
+    "/budgets/max_total_spawned": {
+      "herkunft": "setzung",
+      "quelle": "F-060 fordert eine Obergrenze, nennt keine. Ableitung: max_fanout 4 x max_depth 4 = 16 plus 8 Reserve fuer Ersatz-Sub-Agenten"
+    },
+    "/budgets/max_fanout": {
+      "herkunft": "belegt",
+      "quelle": "A1 F-060 Vorschlag tree.max_fanout = 4; Basis von NFR-11"
+    },
+    "/budgets/max_depth": {
+      "herkunft": "belegt",
+      "quelle": "v1.3.1 Tiefenlimit 4, unveraendert"
+    },
+    "/budgets/max_concurrent_handovers": {
+      "herkunft": "belegt",
+      "quelle": "BR1 NFR-11 / AK-050 (2 x max_fanout)"
+    },
+    "/cycles/max_attempts_per_back_edge": {
+      "herkunft": "belegt",
+      "quelle": "v1.3.1 Zykluslimit 3, unveraendert"
+    },
+    "/cycles/max_attempts_total": {
+      "herkunft": "setzung",
+      "quelle": "3 Kantentypen (test_fix, ui_fix, security_fix) x 3 Versuche. Notwendig, weil Fix-Zaehler bei Vorwaertsfortschritt nicht zuruecksetzen duerfen (Terminierung)"
+    },
+    "/cycles/one_shot_max": {
+      "herkunft": "belegt",
+      "quelle": "v1.3.1 One-shot-Eskalationen, unveraendert"
+    },
+    "/cycles/delivery_fix_max": {
+      "herkunft": "setzung",
+      "quelle": "Neue Kante N6b -> N4. 1 Versuch, weil ein zweiter Auslieferungsfehler auf eine Ursache ausserhalb des Codes deutet (Rechte, Plattform) und zum Nutzer eskaliert werden muss"
+    },
+    "/effort": {
+      "herkunft": "setzung",
+      "quelle": "BR1 NFR-17 / Annahme A-05: Startwerte aus Anthropics Research-Domaene (3-10 / 10-15 / > 10 Werkzeugaufrufe), nicht aus Coding-Messungen. Ausdruecklich kalibrierungsbeduerftig"
+    },
+    "/gc/sweep/default_mode": {
+      "herkunft": "belegt",
+      "quelle": "AK-052/AK-063, R2 §B.2/§E.5: Dry-Run-Default"
+    },
+    "/gc/sweep/on_policy_error": {
+      "herkunft": "belegt",
+      "quelle": "AK-056: fail-safe statt fail-silent (Claude-Code-Muster, R2 §B.2)"
+    },
+    "/gc/artifacts": {
+      "herkunft": "belegt",
+      "quelle": "BR1 NFR-18 Retention-Tabelle, abgeleitet aus Fremdsystem-Defaults (GitLab 30 d, GitHub 90 d, systemd-tmpfiles 10/30 d, Claude Code cleanupPeriodDays 30, logrotate, GitLab keep-latest). NICHT an diesem Repo gemessen (Annahme A-04) - daher konfigurierbar"
+    },
+    "/gc/conventions": {
+      "herkunft": "belegt",
+      "quelle": "ADR-007 §1/§3: Bedeutung der Nullwerte, Kompression und Secret-Scan vor Archivierung (AK-057, CWE-532)"
+    },
+    "/vcs/branch_pattern": {
+      "herkunft": "setzung",
+      "quelle": "Muster aus der Praxis dieses Repos (cursor/<name>) plus generischer agent/-Prefix; Plattform-Prefixes sind konfigurierbar, weil Cloud-Runner sie vorgeben"
+    },
+    "/vcs/platform_prefix": {
+      "herkunft": "setzung",
+      "quelle": "Plattform-Mandat (Cursor-Cloud-Umgebung) wird konfiguriert statt im Gesetzestext festgeschrieben"
+    },
+    "/vcs/protected_branches": {
+      "herkunft": "setzung",
+      "quelle": "Uebliche Default- und Release-Branchnamen; Ziel ist die Verbotsliste aus D-3, nicht Vollstaendigkeit"
+    },
+    "/vcs/branch_max_age_hours": {
+      "herkunft": "belegt",
+      "quelle": "BR1 NFR-20 / R2 §A.1/§C.1 (DORA, MinimumCD: 'Branch age < 24 hours')"
+    },
+    "/vcs/max_active_task_branches": {
+      "herkunft": "belegt",
+      "quelle": "BR1 NFR-20 / R2 §C.1 ('three or fewer active branches')"
+    },
+    "/vcs/worktree_prune_expire_days": {
+      "herkunft": "belegt",
+      "quelle": "AK-067 (git worktree prune --expire 14.days)"
+    },
+    "/vcs/reflog_expire_days_min": {
+      "herkunft": "belegt",
+      "quelle": "R2 §C.2#5: Recovery-Fenster nicht verkuerzen (AK-065 verbietet reflog expire und gc --prune=now in Skripten)"
+    },
+    "/vcs/delete_remote_allowed": {
+      "herkunft": "belegt",
+      "quelle": "Entscheidung D-3: Agenten loeschen keine Remote-Branches"
+    },
+    "/vcs/delete_local_merged_allowed": {
+      "herkunft": "belegt",
+      "quelle": "Entscheidung D-3: lokal hoechstens git branch -d (merged)"
+    },
+    "/vcs/force_push_allowed": {
+      "herkunft": "belegt",
+      "quelle": "AK-066: push --force ist im Werkzeugregister verboten"
+    },
+    "/vcs/require_confirm_token": {
+      "herkunft": "belegt",
+      "quelle": "AK-070: Remote-Ref-Loeschung nur mit explizitem Freigabe-Token"
+    },
+    "/enforcement/ci_min_steps": {
+      "herkunft": "belegt",
+      "quelle": "BR1 NFR-21 / AK-086 (>= 6 CI-Schritte)"
+    },
+    "/enforcement/lint_checks_total": {
+      "herkunft": "setzung",
+      "quelle": "ADR-009 spezifiziert 24 Pruefungen; WP-1 ergaenzt --fixtures-declared (Erwartungswert je Fixture, Tautologie-Schutz). 24 + 1 = 25; scripts/lint-lawbook.sh vergleicht diesen Wert mit der Zahl registrierter Pruefungen und meldet Abweichung als FAIL"
+    },
+    "/enforcement/triage_fixtures_min": {
+      "herkunft": "belegt",
+      "quelle": "AK-034 (--min 20)"
+    },
+    "/enforcement/skip_exit_code_strict": {
+      "herkunft": "setzung",
+      "quelle": "AK-082 verlangt nur Exit != 0. Getrennter Code 2 macht 'nicht nachgewiesen' von 'nachweislich gescheitert' (1) unterscheidbar - ohne diese Trennung ist CI-Diagnose blind"
+    },
+    "/enforcement/fail_exit_code": {
+      "herkunft": "setzung",
+      "quelle": "Shell-Konvention"
+    },
+    "/enforcement/allow_skip_flag": {
+      "herkunft": "belegt",
+      "quelle": "ADR-009 §2: --allow-skip existiert nur lokal"
+    },
+    "/enforcement/allow_skip_in_ci": {
+      "herkunft": "belegt",
+      "quelle": "AK-083 / F-033: SKIP darf nie als PASS zaehlen; in CI kein --allow-skip"
+    },
+    "/enforcement/mutation_must_fail": {
+      "herkunft": "belegt",
+      "quelle": "AK-096 / D-4: Mutationstest muss TLC-Exit != 0 liefern"
+    },
+    "/enforcement/tla_jar_path": {
+      "herkunft": "belegt",
+      "quelle": "bereits in scripts/verify-proofs.sh vorhanden (lib/tla2tools.jar)"
+    },
+    "/enforcement/tla_jar_url": {
+      "herkunft": "belegt",
+      "quelle": "bereits in scripts/verify-proofs.sh vorhanden (tlaplus v1.8.0 Release). Keine URL erfunden; Pruefsumme fehlt heute und ist nachzutragen (Risiko R8)"
+    }
+  }
+}

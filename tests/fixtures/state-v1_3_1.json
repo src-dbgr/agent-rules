@@ -1,0 +1,101 @@
+{
+  "$comment": "MIGRATIONS-EINGABE, kein v2-Fall (AK-112). Bewusst ein v1.3.1-Zustand mit allen Feldern, die scripts/migrate-state.sh abbilden oder entfernen muss: cfg.track, triage.decision, triage.complexity_score, freie triage.signals, ganzzahliger cfg.active_node, alte one_shot_escalations-Namen, context_budget. Gegen schemas/agent-state.schema.json (v2) ist diese Datei absichtlich INVALIDE - sie steht deshalb in manifest.json#/test_expectations/migration_inputs, nicht in positive/negative.",
+  "schema_version": "1.3.1",
+  "orchestrator_id": "00000000-0000-4000-8000-000000000042",
+  "original_user_prompt": "Halte Nutzer-Sitzungen kuenftig in Redis statt im Prozessspeicher, mit Sperren gegen Doppelverarbeitung.",
+  "phase": "executing",
+  "cfg": {
+    "active_node": 8,
+    "active_node_name": "N8_test_review",
+    "completed_nodes": [0, 1, 2, 4, 5, 6],
+    "track": "deep_track"
+  },
+  "triage": {
+    "decision": "deep",
+    "rationale": "Deep-Track wegen Nebenlaeufigkeit und Persistenzwechsel",
+    "complexity_score": 17,
+    "signals": ["concurrency", "data_migration", "quantum_entanglement"]
+  },
+  "tree": {
+    "current_depth": 2,
+    "max_depth": 4,
+    "total_spawned": 5
+  },
+  "cycles": {
+    "current_attempt": 2,
+    "max_attempts": 3,
+    "active_loop": "test_fix",
+    "one_shot_escalations": {
+      "requirements_gap_n5_n3b": true,
+      "architecture_drift_n5_n3c": false
+    },
+    "loop_history": [
+      {
+        "loop": "test_fix",
+        "attempt": 1,
+        "outcome": "failed",
+        "timestamp": "2026-07-06T09:00:00Z"
+      }
+    ]
+  },
+  "running_sub_agents": [
+    {
+      "id": "00000000-0000-4000-8000-000000000043",
+      "role": "tester_reviewer",
+      "depth": 2,
+      "status": "running",
+      "cfg_node": 8,
+      "parent_id": "00000000-0000-4000-8000-000000000042",
+      "spawned_at": "2026-07-06T09:05:00Z"
+    }
+  ],
+  "artifacts": {
+    "session_store_adr": {
+      "path": "runtime/reports/adr-session-store.md",
+      "type": "adr",
+      "role": "architect",
+      "created_at": "2026-07-06T08:40:00Z"
+    }
+  },
+  "memory": {
+    "active": [
+      {
+        "id": "mem-sem-001",
+        "layer": "semantic",
+        "scope": "project",
+        "trust": "trusted",
+        "source": "AGENTS.md",
+        "summary": "Projekt-Verfassung: 9 Gesetze, DoD via ausfuehrbare Nachweise",
+        "created_at": "2026-07-06T08:00:00Z",
+        "last_validated_at": "2026-07-06T08:00:00Z"
+      }
+    ],
+    "pending_writes": [],
+    "poisoning_checks": {
+      "source_validated": true,
+      "session_isolated": true,
+      "integrity_baseline": true,
+      "injection_scan": "passed",
+      "policy_action": "allow"
+    },
+    "store": {
+      "backend": "cursor_memories",
+      "namespace": "agent-rules"
+    }
+  },
+  "dod_gates": {
+    "N0": { "status": "passed", "proof_type": "manual_waiver", "verified_at": "2026-07-06T08:00:00Z" },
+    "N1": { "status": "passed", "proof_type": "manual_waiver", "verified_at": "2026-07-06T08:05:00Z" },
+    "N2": { "status": "passed", "proof_type": "manual_waiver", "verified_at": "2026-07-06T08:10:00Z" },
+    "N8": { "status": "failed" }
+  },
+  "blockers": [],
+  "context_budget": {
+    "orchestrator_utilization_percent": 63,
+    "handover_threshold_percent": 80
+  },
+  "timestamps": {
+    "created_at": "2026-07-06T08:00:00Z",
+    "updated_at": "2026-07-06T09:05:00Z"
+  }
+}
