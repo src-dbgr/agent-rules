@@ -8,6 +8,28 @@ Das Regelwerk verlangt für jede Änderung eine **bewusste Versionserhöhung**
 Format angelehnt an [Keep a Changelog](https://keepachangelog.com/);
 Versionierung semantisch (MAJOR.MINOR.PATCH) auf das Gesetzbuch als Ganzes.
 
+## [2.0.0] — 2026-08-06
+
+### Breaking
+- Bootstrap-Pflichtlektüre: nur noch `AGENTS.md` (≤200 Zeilen). Alte 5-Datei-Bootstrap-Pflicht entfällt.
+- Triage: Tracks `fast`/`standard`/`deep` und `complexity_score` ersetzt durch 6 Klassen
+  (`answer`/`chore`/`revert`/`spike`/`incident`/`feature`) + 9 Flags; ein Verfahren.
+- Gesetzes-IDs: benannte `LAW-*` statt kollidierender Nummern.
+- CFG: eine Knotenzählung (`N0…N7` mit `a/b/c`); erweiterte N8–N12-Nummerierung entfällt.
+- State-Schema `2.0.0`; Migration: `scripts/migrate-state.sh`.
+- Laufzeit: `runtime/` vollständig ephemer; Handovers unter `runtime/handovers/` mit Index + GC.
+- Nachweis-Semantik: SKIP / fehlendes Tool = Exit 2, nie PASS.
+
+### Added
+- `modules/*` (on-demand), `roles/*` (Karten), `manifest.json`, `config/policy-defaults.json`.
+- Skripte: `lint-lawbook.sh`, `context-budget.sh`, `gc-sweep.sh`, `branch-hygiene.sh`,
+  `check-triage.sh`, `validate-handovers.sh`, `state-lock.sh`, `snapshot.sh`, CI-Workflow.
+- `docs/migration-v1-to-v2.md`, MIT `LICENSE`.
+
+### Changed
+- Alte Top-Level-Normdateien sind Kompatibilitäts-Stubs (≤10 Zeilen) mit Verweis.
+- Bootstrap-Prompt und README auf v2 umgestellt.
+
 ## [1.3.1] — 2026-07-06
 
 ### Added
