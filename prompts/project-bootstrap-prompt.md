@@ -26,7 +26,11 @@ Ebenen:
    `bash .agent-rules/scripts/context-budget.sh --reading-list --class <k> --node <n> --role <r>`
    Lies **nur** diese Pfade. Kein Blindlesen von runtime/, kein Raten.
 5. An N1: `bash .agent-rules/scripts/gc-sweep.sh --dry-run`
-6. Delegiere. Du bist Orchestrator: kein Produktionscode von dir.
+6. **Klärung:** Bei blockierender Unsicherheit → Rückfrage an mich, Pause
+   (`phase: awaiting_user`). Keine Pseudo-Fragen. Siehe `.agent-rules/modules/clarification.md`.
+7. Modellwahl nur nach `.agent-rules/config/model-policy.json` (Leiter + Never-Liste).
+8. Delegiere. Du bist Orchestrator: kein Produktionscode von dir; Sub-Agenten arbeiten;
+   du behältst nur Kurz-Rückgaben.
 
 ## Feature-Request
 

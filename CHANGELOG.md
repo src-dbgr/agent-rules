@@ -25,10 +25,14 @@ Versionierung semantisch (MAJOR.MINOR.PATCH) auf das Gesetzbuch als Ganzes.
 - Skripte: `lint-lawbook.sh`, `context-budget.sh`, `gc-sweep.sh`, `branch-hygiene.sh`,
   `check-triage.sh`, `validate-handovers.sh`, `state-lock.sh`, `snapshot.sh`, CI-Workflow.
 - `docs/migration-v1-to-v2.md`, MIT `LICENSE`.
+- **`LAW-CLARIFY`** + `modules/clarification.md`: Pflicht-Rückfragen bei blockierender Unsicherheit; Anti-Pseudo-Fragen; Phase `awaiting_user`.
+- **`LAW-MODELS`** + `config/model-policy.json`: konfigurierbare LLM-Leiter und Never-Liste (kein Hardcode in AGENTS.md).
+- Main-Thread Context-Clean-Abschnitt in `AGENTS.md`.
 
 ### Changed
 - Alte Top-Level-Normdateien sind Kompatibilitäts-Stubs (≤10 Zeilen) mit Verweis.
 - Bootstrap-Prompt und README auf v2 umgestellt.
+- Knoten in `modules/workflow.md` mit Klartext-Namen (Eingang/Start/Einordnung/…).
 
 ## [1.3.1] — 2026-07-06
 
