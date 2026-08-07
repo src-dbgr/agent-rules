@@ -6,7 +6,7 @@
   "caps": {
     "bootstrap_mandatory_files": 1,
     "core_max_lines": 200,
-    "core_max_bytes": 12000,
+    "core_max_bytes": 14000,
     "module_max_lines": 500,
     "role_card_max_lines": 80,
     "role_lines_in_core_max": 1,
@@ -216,7 +216,7 @@
     },
     "/caps/core_max_bytes": {
       "herkunft": "belegt",
-      "quelle": "BR1 NFR-3 (200 Z. x 51,7 B/Z. + 16 % Puffer)"
+      "quelle": "v2.0: 14000 B — Kern inkl. Entry-Point-Verweis auf model-policy; zuvor 12000 (BR1 NFR-3) zu eng fuer LAW-Tabelle"
     },
     "/caps/module_max_lines": {
       "herkunft": "belegt",

@@ -21,12 +21,16 @@
 
 Maßgeblich und **allein** verbindlich: `config/model-policy.json` (`LAW-MODELS`).
 
-1. Leiter von Rank 1 aufwärts; Aufstieg nur mit kurzer Begründung im Handover.
-2. Einträge unter `never` sind hart verboten.
-3. Ist die API für externe Modelle erschöpft: nur
-   `fallback_when_external_api_exhausted.allowed_ids` (Composer / Grok laut Datei).
-4. Gewähltes Modell je Sub-Agent in State `model_usage[]` protokollieren.
-5. Datei bei Marktwechsel anpassen — **nicht** in `AGENTS.md` hardcoden.
+1. **Entry Point:** Main-Thread/Orchestrator (`N0`–`N2`, `N7`) startet mit
+   `entry_points.orchestrator_main_thread` — Default `grok-4.5-high`, nie Composer/Grok-Low.
+   Die Triage-Algebra ist deterministisch; die Erst-Klassifikation nicht.
+2. **Sub-Agenten:** Leiter von Rank 1 (Composer) aufwärts; Aufstieg nur mit kurzer
+   Begründung im Handover.
+3. Einträge unter `never` sind hart verboten (inkl. Composer-as-Orchestrator).
+4. API für externe Modelle erschöpft: `fallback_when_external_api_exhausted`
+   (Orchestrator bleibt auf Grok High; Sub-Agenten Composer→Grok).
+5. Gewähltes Modell in State `model_usage[]` protokollieren (`entry_point` setzen).
+6. Datei bei Marktwechsel anpassen — **nicht** in `AGENTS.md` hardcoden.
 
 ## Verifizierung {#verifizierung}
 

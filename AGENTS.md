@@ -59,7 +59,7 @@ das ist Orchestrator-Arbeit. Rollenwechsel in derselben Instanz ist verboten (`L
 | `LAW-VCS` | Der Arbeitsbranch ist registriert und endlich; Abräumen ist Dry-Run-First; vier Löschverbote gelten hart. | `modules/vcs.md` |
 | `LAW-DELIVERY` | Auslieferung ist Rollenpflicht an `N6b`, nie Sache des Orchestrators. | `modules/vcs.md#auslieferung` |
 | `LAW-CLARIFY` | Blockierende Unsicherheit → Rückfrage, Pause; keine Pseudo-Fragen; keine stillen Fehlannahmen. | `modules/clarification.md` |
-| `LAW-MODELS` | Modellwahl nur nach `config/model-policy.json`; Never-Liste ist hart; Aufstieg begründen. | `config/model-policy.json` |
+| `LAW-MODELS` | Modellwahl nur nach `config/model-policy.json` (Entry Points + Leiter + Never); Aufstieg begründen. | `config/model-policy.json` |
 | `LAW-QUALITY` | Regression by Design; Tests nur mit Risiko-Mehrwert; keine Suite-Aufblähung. | `modules/quality.md` |
 | `LAW-ASSIGN` | Jede Delegation hat `task_id` (UUID) im Assignment-Ledger; Rückgaben ohne ID abweisen. | `modules/ops.md#ledger` |
 | `LAW-OPS` | Resume, `irrev`-Approval, Kosten-/Zeitbudget, Audit-Log. | `modules/ops.md` |
@@ -124,7 +124,7 @@ Der Main-Thread bleibt dünn, sonst sterben lange Sessions:
 - **Arbeit** (Lesen großer Diffs, Suche, Implementierung, Tests) = Sub-Agenten.
 - Sub-Agent bekommt nur: Kern + eine Rollen-Karte + ein Handover + Leselisten-Anker.
 - Nach `N1` und `N7`: GC (`scripts/gc-sweep.sh`); tote Handovers und Scratch weg.
-- Modellwahl: `config/model-policy.json` (nicht raten, nicht hardcoden).
+- Modellwahl: `config/model-policy.json` (Main-Thread = `entry_points`; Sub-Agenten = Leiter).
 - Kontext ~60 %: **Warnung an Nutzer**. ~70 % oder Proxy-Cap: Fortsetzungs-Prompt ausgeben
   (`scripts/emit-continuation-prompt.sh`) und STOPPEN — neuer Agent mit frischem Kontext
   (`prompts/continuation-prompt.md`, `modules/context.md#rotation`).

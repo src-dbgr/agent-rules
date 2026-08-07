@@ -1,36 +1,53 @@
 {
   "$comment": "LLM-Nutzungsregeln — EINZIGE Quelle für Modellwahl. Normtexte verweisen nur hierher. Bei Marktwechsel diese Datei anpassen, nicht AGENTS.md.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "updated_at": "2026-08-07",
-  "policy_id": "model-policy-v1",
+  "policy_id": "model-policy-v1.1",
+
+  "entry_points": {
+    "$comment": "Die Triage-Algebra (Klasse→Gates) ist deterministisch; die Erst-Klassifikation der Nutzeranfrage an N2 ist es nicht. Fixtures prüfen Ableitung, nicht LLM-Klassifikation (Annahme A-12). Deshalb darf der Main-Thread/Orchestrator nicht auf Composer starten.",
+    "orchestrator_main_thread": {
+      "roles": ["orchestrator", "sub_orchestrator"],
+      "nodes": ["N0", "N1", "N2", "N7"],
+      "default_model_id": "grok-4.5-high",
+      "min_rank": 3,
+      "allowed_ids": ["grok-4.5-high", "gpt-5.6-sol-high", "claude-opus-5-high"],
+      "forbidden_at_entry": ["composer-2.5", "grok-4.5-low"],
+      "rule": "Main-Thread startet immer mit grok-4.5-high (oder höher nach Dead-End). Composer und Grok Low sind für Orchestrator-Triage/Clarify/Aggregation verboten.",
+      "rationale": "Falsche Klasse/Flags an N2 → korrekte Algebra am falschen Ziel. Mitigation: starkes Modell am Eingang + LAW-CLARIFY; nicht Fixtures."
+    }
+  },
 
   "ladder": [
     {
       "rank": 1,
       "id": "composer-2.5",
       "label": "Composer 2.5",
-      "when": "Standard für Coding, Tests und klar definierte Arbeit",
-      "roles_preferred": ["developer", "tester_reviewer", "documentation_specialist", "devops_sre"]
+      "when": "Standard für Coding-, Test- und klar definierte Sub-Agenten-Arbeit (nicht Orchestrator/N2)",
+      "roles_preferred": ["developer", "tester_reviewer", "documentation_specialist", "devops_sre"],
+      "not_for": ["orchestrator", "sub_orchestrator", "N2"]
     },
     {
       "rank": 2,
       "id": "grok-4.5-low",
       "label": "Grok 4.5 Low",
-      "when": "Nur wenn Composer steckenbleibt oder breite Exploration nötig ist",
-      "requires": "documented_composer_stall_or_exploration_need"
+      "when": "Nur Sub-Agenten: wenn Composer steckenbleibt oder breite Exploration nötig ist",
+      "requires": "documented_composer_stall_or_exploration_need",
+      "not_for": ["orchestrator_main_thread_entry"]
     },
     {
       "rank": 3,
       "id": "grok-4.5-high",
       "label": "Grok 4.5 High",
-      "when": "Schwere, lange Agent-Aufgaben (komplexe Bugs, Matrix, Migrationen); erst nach ernsthaftem Composer-Versuch ODER wenn von Anfang an außergewöhnlich komplex",
-      "requires": "composer_attempt_or_exceptional_complexity"
+      "when": "Default für Orchestrator-Main-Thread (N0–N2, N7). Für Sub-Agenten: schwere/lange Aufgaben nach Composer-Versuch oder von Anfang an außergewöhnlich komplex",
+      "requires": "orchestrator_entry_or_composer_attempt_or_exceptional_complexity",
+      "roles_preferred": ["orchestrator", "sub_orchestrator", "business_analyst", "architect", "researcher"]
     },
     {
       "rank": 4,
       "id": "gpt-5.6-sol-high",
       "label": "GPT-5.6 Sol High",
-      "when": "Nur wenn Grok falschen Ansatz verfolgt oder nicht weiterkommt",
+      "when": "Nur wenn Grok High falschen Ansatz verfolgt oder nicht weiterkommt (auch Orchestrator-Escalation)",
       "requires": "documented_grok_dead_end"
     },
     {
@@ -44,7 +61,7 @@
           "id": "architect_review",
           "when": "Architect-Triage / Architektur-Review laut live_matrix model_policy.architect_review",
           "model_id": "claude-opus-5-high",
-          "note": "Wie bisherige N5Q-Wellen — Ausnahme zur Leiter, nicht Ersatz für Rank 1–4 bei Coding"
+          "note": "Ausnahme zur Leiter für gezieltes Architektur-Review — nicht Ersatz für Rank 1 bei Coding-Sub-Agenten"
         }
       ]
     }
@@ -54,7 +71,9 @@
     { "id": "composer-fast", "reason": "zu flach / Qualitätsrisiko" },
     { "id": "grok-fast", "reason": "zu flach / Qualitätsrisiko" },
     { "id": "grok-high-fast", "reason": "Fast-Variante verboten" },
-    { "id": "grok-for-trivial", "reason": "Grok nicht für triviale Tasks — Composer nutzen" },
+    { "id": "composer-as-orchestrator", "reason": "Composer nicht für Main-Thread/Triage (N2) — entry_points.orchestrator_main_thread" },
+    { "id": "grok-low-as-orchestrator", "reason": "Grok Low zu schwach für Erst-Klassifikation an N2" },
+    { "id": "grok-for-trivial-coding", "reason": "Grok nicht für triviale Coding-Sub-Tasks — Composer nutzen" },
     { "id": "sol-max", "reason": "Kosten/Übermaß" },
     { "id": "opus-max", "reason": "Kosten/Übermaß" },
     { "id": "claude-fable", "reason": "nicht freigegeben" },
@@ -62,16 +81,18 @@
   ],
 
   "fallback_when_external_api_exhausted": {
-    "description": "Wenn die API für externe Modelle (GPT/Claude o. Ä.) ausgeschöpft ist: nur noch die internen/verfügbaren Stufen der Leiter nutzen.",
-    "allowed_ids": ["composer-2.5", "grok-4.5-low", "grok-4.5-high"],
-    "rule": "Dieselbe Abstufung wie oben (1→2→3); Rank 4 und 5 entfallen bis die API wieder verfügbar ist."
+    "description": "Wenn die API für externe Modelle (GPT/Claude o. Ä.) ausgeschöpft ist: nur noch die internen/verfügbaren Stufen nutzen.",
+    "orchestrator_allowed_ids": ["grok-4.5-high"],
+    "subagent_allowed_ids": ["composer-2.5", "grok-4.5-low", "grok-4.5-high"],
+    "rule": "Orchestrator bleibt auf grok-4.5-high. Sub-Agenten: Leiter 1→2→3. Rank 4 und 5 entfallen bis die API wieder verfügbar ist."
   },
 
   "enforcement": {
     "source_of_truth": "config/model-policy.json",
-    "orchestrator_must": "Gewähltes Modell je Sub-Agent in State unter model_usage[] protokollieren (id, rank, reason).",
+    "orchestrator_must": "Gewähltes Modell je Sub-Agent und für den Main-Thread in State unter model_usage[] protokollieren (id, rank, reason, entry_point).",
     "upgrade_requires": "Kurze Begründung im Handover (warum Rank n nicht reichte).",
     "downgrade_preferred": true,
+    "downgrade_exception": "Kein Downgrade des Main-Threads unter grok-4.5-high.",
     "hard_block_never_list": true
   }
 }

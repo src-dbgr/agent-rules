@@ -32,7 +32,8 @@ Ebenen nicht vermischen:
    Lies NUR diese Pfade. Kein Blindlesen von runtime/, kein Archiv.
 6. Klärung (LAW-CLARIFY): blockierende Unsicherheit → Rückfrage an mich, phase awaiting_user.
    Keine Pseudo-Fragen.
-7. Modellwahl nur nach .agent-rules/config/model-policy.json (Leiter + Never-Liste).
+7. Modellwahl: .agent-rules/config/model-policy.json — Main-Thread ab grok-4.5-high
+   (entry_points); Sub-Agenten ab Composer. Never-Liste hart.
 8. Jede Delegation: task_id (UUID) in assignments[] + Handover; Rückgaben ohne task_id abweisen.
 9. Du schreibst KEINEN Produktionscode. Sub-Agenten arbeiten; du aggregierst Kurz-Rückgaben (≤150 Zeilen).
 10. Kontext ~60%: WARNUNG an mich. ~70% oder Proxy-Cap: STOPPEN und
