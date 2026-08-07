@@ -41,9 +41,9 @@
       "purpose": "Gesetze-Tabelle, Sofort-Ablauf, CFG-Kurztabelle, Rollenindex, Verweistabelle",
       "load_when": "always",
       "load_trigger": "Bootstrap N1 und nach jeder Compaction/Rotation erneut - einzige Pflichtlektuere (NFR-1)",
-      "max_lines": 195,
-      "max_bytes": 12000,
-      "tokens_est_max": 3000,
+      "max_lines": 200,
+      "max_bytes": 14000,
+      "tokens_est_max": 3500,
       "required": true,
       "owner_wp": "WP-2"
     },
@@ -923,9 +923,9 @@
       "purpose": "Bootstrap-Prompt fuer Zielprojekte: genau eine Pflichtdatei",
       "load_when": "on_demand_human",
       "load_trigger": "beim Einrichten eines Zielprojekts",
-      "max_lines": 40,
+      "max_lines": 55,
       "max_bytes": null,
-      "tokens_est_max": 520,
+      "tokens_est_max": 715,
       "required": true,
       "owner_wp": "WP-6"
     },
@@ -1039,7 +1039,7 @@
       "path": "config/model-policy.json",
       "kind": "config",
       "purpose": "LLM-Nutzungsleiter und Never-Liste",
-      "line_cap": 200,
+      "line_cap": 250,
       "required": true,
       "when": "on_demand"
     },

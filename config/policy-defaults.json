@@ -6,7 +6,7 @@
   "caps": {
     "bootstrap_mandatory_files": 1,
     "core_max_lines": 200,
-    "core_max_bytes": 12000,
+    "core_max_bytes": 14000,
     "module_max_lines": 500,
     "role_card_max_lines": 80,
     "role_lines_in_core_max": 1,
