@@ -8,6 +8,41 @@ Das Regelwerk verlangt für jede Änderung eine **bewusste Versionserhöhung**
 Format angelehnt an [Keep a Changelog](https://keepachangelog.com/);
 Versionierung semantisch (MAJOR.MINOR.PATCH) auf das Gesetzbuch als Ganzes.
 
+## [2.0.0] — 2026-08-06
+
+### Breaking
+- Bootstrap-Pflichtlektüre: nur noch `AGENTS.md` (≤200 Zeilen). Alte 5-Datei-Bootstrap-Pflicht entfällt.
+- Triage: Tracks `fast`/`standard`/`deep` und `complexity_score` ersetzt durch 6 Klassen
+  (`answer`/`chore`/`revert`/`spike`/`incident`/`feature`) + 9 Flags; ein Verfahren.
+- Gesetzes-IDs: benannte `LAW-*` statt kollidierender Nummern.
+- CFG: eine Knotenzählung (`N0…N7` mit `a/b/c`); erweiterte N8–N12-Nummerierung entfällt.
+- State-Schema `2.0.0`; Migration: `scripts/migrate-state.sh`.
+- Laufzeit: `runtime/` vollständig ephemer; Handovers unter `runtime/handovers/` mit Index + GC.
+- Nachweis-Semantik: SKIP / fehlendes Tool = Exit 2, nie PASS.
+
+### Added
+- `modules/*` (on-demand), `roles/*` (Karten), `manifest.json`, `config/policy-defaults.json`.
+- Skripte: `lint-lawbook.sh`, `context-budget.sh`, `gc-sweep.sh`, `branch-hygiene.sh`,
+  `check-triage.sh`, `validate-handovers.sh`, `state-lock.sh`, `snapshot.sh`, CI-Workflow.
+- `docs/migration-v1-to-v2.md`, MIT `LICENSE`.
+- **`LAW-CLARIFY`** + `modules/clarification.md`: Pflicht-Rückfragen bei blockierender Unsicherheit; Anti-Pseudo-Fragen; Phase `awaiting_user`.
+- **`LAW-MODELS`** + `config/model-policy.json`
+- **`LAW-QUALITY`** + `modules/quality.md`: Regression by Design, Test-Disziplin (kein Suite-Bloat)
+- **`LAW-ASSIGN`/`LAW-OPS`** + `modules/ops.md`: Assignment-Ledger mit task_id (UUID), Resume, irrev-Approval, Kosten, Audit-Log: konfigurierbare LLM-Leiter und Never-Liste (kein Hardcode in AGENTS.md).
+- Main-Thread Context-Clean-Abschnitt in `AGENTS.md`.
+
+### Changed
+- Alte Top-Level-Normdateien sind Kompatibilitäts-Stubs (≤10 Zeilen) mit Verweis.
+- Bootstrap-Prompt und README auf v2 umgestellt.
+- Knoten in `modules/workflow.md` mit Klartext-Namen (Eingang/Start/Einordnung/…).
+- `templates/handover-filled-example.md` und `templates/skill-template/SKILL.md` auf v2-Sprache/`task_id` gezogen.
+
+### Removed
+- Root-State-Datei (`<.agent-state.json>`) (verbotener Legacy-Pfad; Beispiel nur noch unter `examples/`).
+- `<workflows/triage-decision-matrix.md>` (ersetzt durch `modules/triage.md`).
+- `<proofs/termination-proof.md>` (ersetzt durch `modules/workflow.md` (Rank-Funktion) + `specs/coverage.md`).
+- `<templates/handover-example.md>` (veraltetes Doppelbeispiel).
+
 ## [1.3.1] — 2026-07-06
 
 ### Added
@@ -21,20 +56,20 @@ Versionierung semantisch (MAJOR.MINOR.PATCH) auf das Gesetzbuch als Ganzes.
 ### Changed
 - `workflow-cfg.md` §5.3 (One-shot-Eskalations-Tracking), §8 Orchestrator-Pflichten;
   `AGENTS.md` Gesetz-2-Zykluslimit und Gesetz-4-Zustandsfeld-Tabelle;
-  `proofs/termination-proof.md` §7 (Laufzeit-Enforcement-Hinweis).
+  `<proofs/termination-proof.md>` §7 (Laufzeit-Enforcement-Hinweis).
 - Versions-Bump aller Kerndokumente auf **1.3.1** (`AGENTS.md`, `README.md`,
   `workflow-cfg.md`, `memory-policy.md`, `skills-policy.md`, `tools-registry.md`,
-  `handover-template.md`, `workflows/triage-decision-matrix.md`,
-  `proofs/termination-proof.md`).
+  `handover-template.md`, `<workflows/triage-decision-matrix.md>`,
+  `<proofs/termination-proof.md>`).
 - `schemas/agent-state.schema.json` (`schema_version` const) und alle Instanzen/Beispiele
-  (`.agent-state.json`, `handover-template.md`, `templates/handover-filled-example.md`) auf
+  (`<.agent-state.json>`, `handover-template.md`, `templates/handover-filled-example.md`) auf
   `1.3.1` gehoben.
 
 ### Unchanged (bewusst)
 - **`specs/workflow.tla` / `specs/workflow.cfg` nicht geändert:** One-shot-Eskalationen
   bleiben im TLA+-Modell als knoten-lokale, endliche Aktionen abstrahiert; die neuen
   Schema-Flags sind Laufzeit-Enforcement für Orchestrator/Engine, keine Topologieänderung
-  (`proofs/termination-proof.md` §7).
+  (`<proofs/termination-proof.md>` §7).
 
 ## [1.3.0] — 2026-07-06
 
@@ -58,13 +93,13 @@ Versionierung semantisch (MAJOR.MINOR.PATCH) auf das Gesetzbuch als Ganzes.
   Konformität (Drift-Check) gilt auf Standard + Deep. Verankert in `AGENTS.md`
   (§2.5, §3.3, §3.5, §6-DoD-Tabelle N8), `workflow-cfg.md` (§1 ASCII, §2 N5-DoD,
   §3.1–3.3 Track-Pfade, §4, §5.1 Rückkanal-Tabelle, §6.3 Terminierung) und
-  `workflows/triage-decision-matrix.md` (Rollen-Ketten, Anti-Overengineering-Regel 4).
+  `<workflows/triage-decision-matrix.md>` (Rollen-Ketten, Anti-Overengineering-Regel 4).
 - Versions-Bump aller Kerndokumente auf **1.3.0** (`AGENTS.md`, `README.md`,
   `workflow-cfg.md`, `memory-policy.md`, `skills-policy.md`, `tools-registry.md`,
-  `handover-template.md`, `workflows/triage-decision-matrix.md`,
-  `proofs/termination-proof.md`).
+  `handover-template.md`, `<workflows/triage-decision-matrix.md>`,
+  `<proofs/termination-proof.md>`).
 - `schemas/agent-state.schema.json` (`schema_version` const) und alle Instanzen/Beispiele
-  (`.agent-state.json`, `handover-template.md`, `templates/handover-filled-example.md`) auf
+  (`<.agent-state.json>`, `handover-template.md`, `templates/handover-filled-example.md`) auf
   `1.3.0` gehoben. **Keine strukturelle Schemaänderung** — nur Versionskennung.
 
 ### Unchanged (bewusst)
@@ -73,7 +108,7 @@ Versionierung semantisch (MAJOR.MINOR.PATCH) auf das Gesetzbuch als Ganzes.
   bestehende N5 → N3b — im formalen Modell als knoten-lokale, endliche Aktion
   abstrahiert. Die geprüften Invarianten (`InvCycle` `cycle ≤ 3`, `InvDepth`
   `depth ≤ 4`, `InvTerminal`) und der Terminierungs-/Deadlock-Beweis bleiben
-  unverändert gültig (Begründung: `workflow-cfg.md` §6.3, `proofs/termination-proof.md` §7).
+  unverändert gültig (Begründung: `workflow-cfg.md` §6.3, `<proofs/termination-proof.md>` §7).
   Die CFG-Topologie ändert sich damit **nicht materiell**.
 
 ## [1.2.0] — 2026-07-06
@@ -94,12 +129,12 @@ Versionierung semantisch (MAJOR.MINOR.PATCH) auf das Gesetzbuch als Ganzes.
 ### Changed
 - Versions-Bump aller Kerndokumente auf **1.2.0** (`AGENTS.md`, `README.md`,
   `workflow-cfg.md`, `memory-policy.md`, `tools-registry.md`, `handover-template.md`,
-  `workflows/triage-decision-matrix.md`, `proofs/termination-proof.md`).
+  `<workflows/triage-decision-matrix.md>`, `<proofs/termination-proof.md>`).
 - Querverweise auf `skills-policy.md` ergänzt in `AGENTS.md` (§3.14, §9 Quellen),
   `README.md` (Struktur + Skills-Abschnitt), `memory-policy.md` (§1, §7, §8-Cursor-Tabelle)
   und `tools-registry.md` (§3.9).
 - `schemas/agent-state.schema.json` (`schema_version` const) und alle Instanzen/Beispiele
-  (`.agent-state.json`, `handover-template.md`, `templates/handover-filled-example.md`) auf
+  (`<.agent-state.json>`, `handover-template.md`, `templates/handover-filled-example.md`) auf
   `1.2.0` gehoben. **Keine strukturelle Schemaänderung** — nur Versionskennung.
 
 ## [1.1.0] — 2026-07-06

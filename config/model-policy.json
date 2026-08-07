@@ -1,0 +1,77 @@
+{
+  "$comment": "LLM-Nutzungsregeln — EINZIGE Quelle für Modellwahl. Normtexte verweisen nur hierher. Bei Marktwechsel diese Datei anpassen, nicht AGENTS.md.",
+  "version": "1.0.0",
+  "updated_at": "2026-08-07",
+  "policy_id": "model-policy-v1",
+
+  "ladder": [
+    {
+      "rank": 1,
+      "id": "composer-2.5",
+      "label": "Composer 2.5",
+      "when": "Standard für Coding, Tests und klar definierte Arbeit",
+      "roles_preferred": ["developer", "tester_reviewer", "documentation_specialist", "devops_sre"]
+    },
+    {
+      "rank": 2,
+      "id": "grok-4.5-low",
+      "label": "Grok 4.5 Low",
+      "when": "Nur wenn Composer steckenbleibt oder breite Exploration nötig ist",
+      "requires": "documented_composer_stall_or_exploration_need"
+    },
+    {
+      "rank": 3,
+      "id": "grok-4.5-high",
+      "label": "Grok 4.5 High",
+      "when": "Schwere, lange Agent-Aufgaben (komplexe Bugs, Matrix, Migrationen); erst nach ernsthaftem Composer-Versuch ODER wenn von Anfang an außergewöhnlich komplex",
+      "requires": "composer_attempt_or_exceptional_complexity"
+    },
+    {
+      "rank": 4,
+      "id": "gpt-5.6-sol-high",
+      "label": "GPT-5.6 Sol High",
+      "when": "Nur wenn Grok falschen Ansatz verfolgt oder nicht weiterkommt",
+      "requires": "documented_grok_dead_end"
+    },
+    {
+      "rank": 5,
+      "id": "claude-opus-5-high",
+      "label": "Claude Opus 5 High",
+      "when": "Letzter Ausweg; Aufgabe eng eingrenzen",
+      "requires": "last_resort_narrow_scope",
+      "exceptions": [
+        {
+          "id": "architect_review",
+          "when": "Architect-Triage / Architektur-Review laut live_matrix model_policy.architect_review",
+          "model_id": "claude-opus-5-high",
+          "note": "Wie bisherige N5Q-Wellen — Ausnahme zur Leiter, nicht Ersatz für Rank 1–4 bei Coding"
+        }
+      ]
+    }
+  ],
+
+  "never": [
+    { "id": "composer-fast", "reason": "zu flach / Qualitätsrisiko" },
+    { "id": "grok-fast", "reason": "zu flach / Qualitätsrisiko" },
+    { "id": "grok-high-fast", "reason": "Fast-Variante verboten" },
+    { "id": "grok-for-trivial", "reason": "Grok nicht für triviale Tasks — Composer nutzen" },
+    { "id": "sol-max", "reason": "Kosten/Übermaß" },
+    { "id": "opus-max", "reason": "Kosten/Übermaß" },
+    { "id": "claude-fable", "reason": "nicht freigegeben" },
+    { "id": "unlimited-cloud-jobs", "reason": "keine unbegrenzten Cloud-Aufträge" }
+  ],
+
+  "fallback_when_external_api_exhausted": {
+    "description": "Wenn die API für externe Modelle (GPT/Claude o. Ä.) ausgeschöpft ist: nur noch die internen/verfügbaren Stufen der Leiter nutzen.",
+    "allowed_ids": ["composer-2.5", "grok-4.5-low", "grok-4.5-high"],
+    "rule": "Dieselbe Abstufung wie oben (1→2→3); Rank 4 und 5 entfallen bis die API wieder verfügbar ist."
+  },
+
+  "enforcement": {
+    "source_of_truth": "config/model-policy.json",
+    "orchestrator_must": "Gewähltes Modell je Sub-Agent in State unter model_usage[] protokollieren (id, rank, reason).",
+    "upgrade_requires": "Kurze Begründung im Handover (warum Rank n nicht reichte).",
+    "downgrade_preferred": true,
+    "hard_block_never_list": true
+  }
+}

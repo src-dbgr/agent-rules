@@ -1,0 +1,215 @@
+{
+  "$comment": "Positiv (AK-080): Sub-Buchstaben-Knoten N3b ist als active_node erlaubt.",
+  "$schema_ref": "schemas/agent-state.schema.json",
+  "schema_version": "2.0.0",
+  "orchestrator_id": "orc-7f3a",
+  "orchestrator_lineage": [
+    {
+      "orchestrator_id": "orc-1c02",
+      "from": "2026-08-05T10:00:00Z",
+      "to": "2026-08-05T12:20:00Z",
+      "reason": "context_rotation",
+      "handover_ref": "runtime/handovers/hv-0c81.md",
+      "state_snapshot": "runtime/archive/dark-mode/state-20260805T1220Z.json.gz"
+    }
+  ],
+  "original_user_prompt": "Baue einen Dark-Mode-Umschalter in die Einstellungen ein.",
+  "phase": "executing",
+  "cfg": {
+    "active_node": "N3b",
+    "active_node_name": "REQUIREMENTS",
+    "completed_nodes": [
+      "N0",
+      "N1",
+      "N2"
+    ]
+  },
+  "triage": {
+    "change_class": "feature",
+    "signals": [
+      "ui"
+    ],
+    "rationale": "Regel 6 (Catch-all): keine der Regeln 1 bis 5 greift. Flag ui, weil die Oberflaeche sichtbar geaendert wird - dadurch kommt N5b hinzu."
+  },
+  "tree": {
+    "current_depth": 1,
+    "max_depth": 4,
+    "max_fanout": 4,
+    "total_spawned": 2,
+    "total_spawned_before_rotation": 2
+  },
+  "cycles": {
+    "attempts": {
+      "test_fix": 0,
+      "ui_fix": 0,
+      "security_fix": 0,
+      "delivery_fix": 0
+    },
+    "one_shot_escalations": {
+      "requirements_gap": false,
+      "architecture_drift": false
+    },
+    "rotations": 1,
+    "loop_history": [
+      {
+        "loop": "handover_rotation",
+        "attempt": 1,
+        "outcome": "rotated",
+        "timestamp": "2026-08-05T12:20:00Z",
+        "from_node": "N4",
+        "to_node": "N4"
+      }
+    ]
+  },
+  "budget": {
+    "files_read": 12,
+    "bytes_read": 148000,
+    "tool_calls": 41,
+    "turns": 18,
+    "subagents_spawned": 2,
+    "rotations": 1,
+    "artifact_bytes": 26000,
+    "utilization_percent": "unavailable"
+  },
+  "running_sub_agents": [
+    {
+      "id": "sub-9a11",
+      "role": "developer",
+      "depth": 1,
+      "status": "running",
+      "cfg_node": "N4",
+      "parent_id": "orc-7f3a",
+      "spawned_at": "2026-08-05T12:25:00Z",
+      "handover_path": "runtime/handovers/hv-3d47.md"
+    }
+  ],
+  "handovers": [
+    {
+      "id": "hv-3d47",
+      "path": "runtime/handovers/hv-3d47.md",
+      "node": "N4",
+      "role": "developer",
+      "reason": "delegation",
+      "from_agent_id": "orc-7f3a",
+      "to_agent_id": "sub-9a11",
+      "bytes": 8100,
+      "created_at": "2026-08-05T12:25:00Z",
+      "expires_at": "2026-08-06T12:25:00Z",
+      "status": "active",
+      "gc_id": "active_handover"
+    }
+  ],
+  "artifacts": {
+    "requirements": {
+      "path": "runtime/reports/br-dark-mode-requirements.md",
+      "type": "requirements",
+      "role": "business_analyst",
+      "bytes": 9400,
+      "created_at": "2026-08-05T11:10:00Z",
+      "expires_at": "2027-02-01T00:00:00Z",
+      "gc_id": "report"
+    }
+  },
+  "memory": {
+    "active": [
+      {
+        "id": "mem-sem-001",
+        "layer": "semantic",
+        "scope": "project",
+        "trust": "trusted",
+        "source": "AGENTS.md",
+        "summary": "Projekt-Verfassung: benannte LAW-IDs, Gates nur mit ausgefuehrtem Nachweis",
+        "created_at": "2026-08-05T10:00:00Z",
+        "last_validated_at": "2026-08-05T12:20:00Z"
+      }
+    ],
+    "pending_writes": [
+      {
+        "id": "mem-epi-014",
+        "layer": "episodic",
+        "scope": "project",
+        "candidate": "Der Theme-Umschalter braucht ein data-Attribut am html-Element; CSS-Variablen allein genuegen nicht.",
+        "status": "pending"
+      }
+    ],
+    "poisoning_checks": {
+      "source_validated": true,
+      "session_isolated": true,
+      "integrity_baseline": true,
+      "injection_scan": "passed",
+      "policy_action": "allow"
+    },
+    "store": {
+      "backend": "none"
+    }
+  },
+  "dod_gates": {
+    "N1": {
+      "status": "passed",
+      "proof_type": "lint",
+      "proof_command": "./scripts/lint-lawbook.sh --version-consistency",
+      "proof_exit_code": 0,
+      "verified_at": "2026-08-05T10:05:00Z"
+    },
+    "N2": {
+      "status": "passed",
+      "proof_type": "unit_test",
+      "proof_command": "./scripts/check-triage.sh",
+      "proof_exit_code": 0,
+      "verified_at": "2026-08-05T10:12:00Z"
+    },
+    "N3b": {
+      "status": "passed",
+      "proof_type": "manual_waiver",
+      "verified_at": "2026-08-05T11:10:00Z"
+    },
+    "N4": {
+      "status": "pending"
+    },
+    "N5a": {
+      "status": "pending"
+    },
+    "N5b": {
+      "status": "pending"
+    },
+    "N6b": {
+      "status": "pending"
+    },
+    "N7": {
+      "status": "pending"
+    }
+  },
+  "blockers": [],
+  "vcs": {
+    "default_branch": "main",
+    "branches": [
+      {
+        "name": "cursor/feature/dark-mode-7f3a",
+        "created_at": "2026-08-05T10:15:00Z",
+        "base": "main",
+        "purpose": "N4/N6b",
+        "pushed": false,
+        "pr_url": null,
+        "worktree": null,
+        "protected": false
+      }
+    ]
+  },
+  "delivery": {
+    "node": "N6b",
+    "status": "pending",
+    "branch": "cursor/feature/dark-mode-7f3a",
+    "commits": [],
+    "pr_url": null,
+    "executed_by_role": "developer"
+  },
+  "lock": {
+    "holder": "orc-7f3a",
+    "acquired_at": "2026-08-05T12:20:00Z",
+    "path": "runtime/state/orc-7f3a.json.lock"
+  },
+  "timestamps": {
+    "created_at": "2026-08-05T10:00:00Z",
+    "updated_at": "2026-08-05T12:25:00Z"
+  }
+}

@@ -2,322 +2,861 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://agent-rules.local/schemas/agent-state.schema.json",
   "title": "AgentState",
-  "description": "Maschinenlesbarer globaler Zustand für Multi-Agenten-Orchestrierung. Der Orchestrator ist Eigentümer und alleiniger Schreiber.",
+  "description": "Maschinenlesbarer Zustand eines Anfrage-Baums, Gesetzbuch v2.0 (LAW-STATE). Genau eine Instanz je orchestrator_id unter runtime/state/<orchestrator_id>.json. Der aktive Orchestrator ist Eigentuemer und alleiniger Schreiber. Zahlenschranken in diesem Schema spiegeln config/policy-defaults.json; scripts/lint-lawbook.sh --no-prose-numbers prueft die Uebereinstimmung ueber registrierte Waechter (manifest.json#/prose_number_guards), weil JSON Schema keine externe Konfiguration lesen kann.",
   "type": "object",
+  "additionalProperties": false,
   "required": [
     "schema_version",
     "orchestrator_id",
+    "orchestrator_lineage",
     "original_user_prompt",
     "phase",
     "cfg",
     "triage",
     "tree",
     "cycles",
+    "budget",
     "running_sub_agents",
+    "handovers",
     "artifacts",
     "memory",
+    "dod_gates",
     "blockers",
+    "vcs",
     "timestamps"
   ],
-  "additionalProperties": false,
+  "$defs": {
+    "agent_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,63}$",
+      "description": "Dateinamensicher, weil orchestrator_id Teil des State-Pfads ist. UUIDs sind erlaubt, aber nicht erzwungen (ADR-006 nutzt Kurz-IDs wie orc-7f3a)."
+    },
+    "node_id": {
+      "type": "string",
+      "pattern": "^N[0-7][a-c]?$"
+    },
+    "terminal_id": {
+      "type": "string",
+      "pattern": "^t_(done|blocked|abort)$"
+    },
+    "gate_key": {
+      "type": "string",
+      "pattern": "^(N[0-7][a-c]?|dod:[a-z_]+)$",
+      "description": "Knoten-ID aus der Whitelist oder DoD-Schluessel dod:<name> (AK-081: erfundene Schluessel sind ungueltig)."
+    },
+    "change_class": {
+      "type": "string",
+      "enum": [
+        "incident",
+        "revert",
+        "answer",
+        "spike",
+        "chore",
+        "feature"
+      ],
+      "description": "Genau 6 Klassen, geschlossene Enumeration (AK-028); Reihenfolge der Regelliste steht in modules/triage.md."
+    },
+    "signal": {
+      "type": "string",
+      "enum": [
+        "sec",
+        "data",
+        "legal",
+        "ui",
+        "api",
+        "conc",
+        "arch",
+        "perf",
+        "irrev"
+      ],
+      "description": "9 orthogonale Flags (AK-039). Flags beschreiben die Aenderung, nicht das Thema."
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "orchestrator",
+        "researcher",
+        "business_analyst",
+        "architect",
+        "developer",
+        "tester_reviewer",
+        "ux_ui_expert",
+        "security_auditor",
+        "data_engineer",
+        "devops_sre",
+        "documentation_specialist",
+        "performance_engineer",
+        "compliance_governance",
+        "memory_curator",
+        "sub_orchestrator",
+        "other"
+      ],
+      "description": "Rollenraum: orchestrator (ohne Karte - der Kern regelt ihn), die 14 Rollen-Karten und other. Deckungsgleich mit manifest.json#/$defs/role plus other (AK-092: erweiterbar, aber nur mit role_label). running_sub_agents nutzt ihn fuer delegierte Rollen, artifacts/handovers auch fuer den Orchestrator selbst."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "task_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUID der Aufgabe — Korrelation Spawn/Handover/Return (LAW-ASSIGN)"
+    }
+  },
   "properties": {
     "$comment": {
       "type": "string",
-      "description": "Optionale Annotation (z.B. Hinweis, dass dies eine Beispiel-Instanz ist)"
+      "description": "Optionale Annotation, z. B. Hinweis auf eine Beispiel-Instanz"
+    },
+    "$schema_ref": {
+      "type": "string"
     },
     "schema_version": {
       "type": "string",
-      "const": "1.3.1",
-      "description": "Schema-Version dieses Gesetzbuchs"
+      "pattern": "^2\\.[0-9]+\\.[0-9]+$",
+      "description": "AK-111: Muster statt const, damit ein Gesetzbuch-Pull mitten im Lauf keine Instanz invalidiert. MAJOR = Feldentfall oder Bedeutungsaenderung."
     },
     "orchestrator_id": {
-      "type": "string",
-      "format": "uuid",
-      "description": "Eindeutige ID des Orchestrators für diesen Anfrage-Baum"
+      "$ref": "#/$defs/agent_id",
+      "description": "Der aktuell AKTIVE Orchestrator (LAW-LINEAGE)"
+    },
+    "orchestrator_lineage": {
+      "type": "array",
+      "description": "Amtskette abgeloester Orchestratoren (ADR-006 §4). Der Anfrage-Baum bleibt identisch; nur die Amtskette wird fortgeschrieben. Leeres Array = noch keine Amtsuebergabe.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "orchestrator_id",
+          "from",
+          "reason"
+        ],
+        "properties": {
+          "orchestrator_id": {
+            "$ref": "#/$defs/agent_id"
+          },
+          "from": {
+            "$ref": "#/$defs/timestamp"
+          },
+          "to": {
+            "$ref": "#/$defs/timestamp"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "context_rotation",
+              "failure",
+              "user_request"
+            ]
+          },
+          "handover_ref": {
+            "type": "string",
+            "description": "Pfad des Uebergabe-Handovers"
+          },
+          "state_snapshot": {
+            "type": "string",
+            "description": "Pfad des Snapshots, der vor der Uebergabe abgelegt wurde"
+          }
+        }
+      }
     },
     "original_user_prompt": {
       "type": "string",
       "minLength": 1,
-      "description": "Unveränderter Original-Prompt des Nutzers (Node 0)"
+      "description": "Unveraenderter Prompt des Nutzers (N0); ueberlebt jede Rotation"
     },
     "phase": {
       "type": "string",
-      "enum": ["bootstrapping", "triage", "executing", "aggregating", "done", "blocked", "handover_pending"],
-      "description": "Globale Lebenszyklusphase"
+      "enum": [
+        "bootstrapping",
+        "triage",
+        "awaiting_user",
+        "awaiting_continuation",
+        "executing",
+        "aggregating",
+        "done",
+        "blocked",
+        "abort"
+      ],
+      "description": "awaiting_user = Pause wegen LAW-CLARIFY (echte Rückfrage). Terminal: done/blocked/abort."
     },
     "cfg": {
       "type": "object",
-      "required": ["active_node", "active_node_name", "completed_nodes", "track"],
       "additionalProperties": false,
+      "required": [
+        "active_node",
+        "active_node_name",
+        "completed_nodes"
+      ],
       "properties": {
         "active_node": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 99,
-          "description": "Aktueller CFG-Knoten (siehe workflow-cfg.md)"
+          "type": "string",
+          "pattern": "^(N[0-7][a-c]?|t_(done|blocked|abort))$",
+          "description": "AK-080: String-ID, damit Sub-Knoten wie N3b darstellbar sind. Terminalzustaende sind zulaessige Werte."
         },
         "active_node_name": {
           "type": "string",
-          "description": "Menschenlesbarer Knotenname, z.B. N4_implementation"
+          "pattern": "^[A-Z][A-Z_]*$",
+          "description": "Knotenname aus manifest.json#/cfg/nodes, z. B. IMPLEMENTATION"
         },
         "completed_nodes": {
           "type": "array",
-          "items": { "type": "integer" },
           "uniqueItems": true,
-          "description": "Abgeschlossene CFG-Knoten (DoD erfüllt)"
-        },
-        "track": {
-          "type": "string",
-          "enum": ["fast", "standard", "deep", "undecided"],
-          "description": "Gewählter Triage-Pfad nach Knoten N2"
+          "items": {
+            "$ref": "#/$defs/node_id"
+          },
+          "description": "Knoten mit erfuelltem DoD; Vorwaertsfortschritt ist die Regel (LAW-CFG)"
         }
       }
     },
     "triage": {
       "type": "object",
-      "required": ["decision", "rationale", "complexity_score"],
       "additionalProperties": false,
+      "required": [
+        "change_class",
+        "signals",
+        "rationale"
+      ],
+      "description": "Ergebnis von N2. Es gibt genau EIN Feld fuer die Klassenentscheidung (AK-035); cfg.track, triage.decision und triage.complexity_score existieren nicht mehr.",
       "properties": {
-        "decision": {
-          "type": "string",
-          "enum": ["fast_track", "standard_track", "deep_track", "pending"],
-          "description": "Ergebnis der Triage-Bewertung"
-        },
-        "rationale": {
-          "type": "string",
-          "description": "Begründung der Track-Wahl (Anti-Overengineering-Nachweis)"
-        },
-        "complexity_score": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 10,
-          "description": "1=trivial, 10=architekturkritisch/konkurrierend"
+        "change_class": {
+          "$ref": "#/$defs/change_class"
         },
         "signals": {
           "type": "array",
-          "items": { "type": "string" },
-          "description": "Erkannte Signale, z.B. concurrency, ui_change, security_surface"
+          "uniqueItems": true,
+          "maxItems": 9,
+          "items": {
+            "$ref": "#/$defs/signal"
+          }
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Nennt die getroffene Regelzeile der geordneten Regelliste und die Begruendung je Flag"
+        },
+        "deferred_gates": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/node_id"
+          },
+          "description": "Zeitversetzt zu erfuellende Gates. Nur Klasse incident darf hier Eintraege haben (D-6)."
+        },
+        "followup_ref": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Referenz der Nacharbeit (Issue, Ticket). Pflicht, sobald phase done und change_class incident (D-6, AK-107/AK-108)."
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "change_class": {
+                "const": "incident"
+              }
+            },
+            "required": [
+              "change_class"
+            ]
+          },
+          "else": {
+            "properties": {
+              "deferred_gates": {
+                "type": "array",
+                "maxItems": 0
+              }
+            }
+          }
+        }
+      ]
     },
     "tree": {
       "type": "object",
-      "required": ["current_depth", "max_depth", "total_spawned"],
       "additionalProperties": false,
+      "required": [
+        "current_depth",
+        "max_depth",
+        "max_fanout",
+        "total_spawned"
+      ],
       "properties": {
         "current_depth": {
           "type": "integer",
           "minimum": 0,
-          "maximum": 4,
-          "description": "Aktuelle maximale Baumtiefe im laufenden Teilbaum"
+          "maximum": 4
         },
         "max_depth": {
           "type": "integer",
           "const": 4,
-          "description": "Hartes Gesetzeslimit"
+          "description": "Hartes Limit (LAW-HIERARCHY); Spiegel von config/policy-defaults.json#/budgets/max_depth"
+        },
+        "max_fanout": {
+          "type": "integer",
+          "const": 4,
+          "description": "Spiegel von config/policy-defaults.json#/budgets/max_fanout"
         },
         "total_spawned": {
           "type": "integer",
           "minimum": 0,
-          "description": "Gesamtzahl gespawnter Sub-Agenten in diesem Baum"
+          "maximum": 24,
+          "description": "AK-093: Spiegel von config/policy-defaults.json#/budgets/max_total_spawned. Ueberschreitung ist ein Blocker, keine stille Fortsetzung."
+        },
+        "total_spawned_before_rotation": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "AK-023: Zaehlerstand vor der letzten Rotation. Rotation ist kein Spawn, deshalb muss dieser Wert gleich total_spawned sein."
         }
       }
     },
     "cycles": {
       "type": "object",
-      "required": ["current_attempt", "max_attempts", "active_loop", "one_shot_escalations"],
       "additionalProperties": false,
+      "required": [
+        "attempts",
+        "one_shot_escalations",
+        "rotations"
+      ],
+      "description": "Fix-Zaehler sind kumulativ je Kantentyp und Aufgabe und werden durch Vorwaertsfortschritt NICHT zurueckgesetzt - ohne diese Regel traegt das Rank-Argument nicht.",
       "properties": {
-        "current_attempt": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 3,
-          "description": "Aktueller Versuch im begrenzten Zyklus (1-basiert)"
-        },
-        "max_attempts": {
-          "type": "integer",
-          "const": 3,
-          "description": "Hartes Zykluslimit"
-        },
-        "active_loop": {
-          "type": "string",
-          "enum": ["none", "test_fix", "review_fix", "security_fix", "handover_rotation"],
-          "description": "Welcher begrenzte Rückkanal-Zyklus aktiv ist (max 3×). One-shot-Eskalationen (N5→N3b/N3c) sind nicht in dieser Enum — sie werden über one_shot_escalations getrackt."
-        },
-        "one_shot_escalations": {
+        "attempts": {
           "type": "object",
-          "required": ["requirements_gap_n5_n3b", "architecture_drift_n5_n3c"],
           "additionalProperties": false,
-          "description": "Maschinenlesbare One-shot-Eskalations-Flags (workflow-cfg.md §5.1, §5.3). Orchestrator prüft vor Transition; bei true → reguläre Nutzer-Eskalation statt erneutem Rückkanal.",
+          "required": [
+            "test_fix",
+            "ui_fix",
+            "security_fix",
+            "delivery_fix"
+          ],
           "properties": {
-            "requirements_gap_n5_n3b": {
-              "type": "boolean",
-              "description": "N5 → N3b (Anforderungslücke) bereits ausgelöst — max 1× je Ausführung"
+            "test_fix": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3,
+              "description": "Kante N5a->N4"
             },
-            "architecture_drift_n5_n3c": {
-              "type": "boolean",
-              "description": "N5 → N3c (Architektur-Drift / Konformitäts-Gate) bereits ausgelöst — max 1× je Ausführung"
+            "ui_fix": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3,
+              "description": "Kante N5b->N4"
+            },
+            "security_fix": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3,
+              "description": "Kante N6a->N4"
+            },
+            "delivery_fix": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Kante N6b->N4 (abgelehnte Auslieferung)"
             }
           }
         },
+        "one_shot_escalations": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "requirements_gap",
+            "architecture_drift"
+          ],
+          "properties": {
+            "requirements_gap": {
+              "type": "boolean",
+              "description": "Kante N5a->N3b, hoechstens einmal je Aufgabe"
+            },
+            "architecture_drift": {
+              "type": "boolean",
+              "description": "Kante N5a->N3c, hoechstens einmal je Aufgabe"
+            }
+          }
+        },
+        "rotations": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12,
+          "description": "AK-024: Rotation ist NICHT auf 3 gedeckelt. Spiegel von config/policy-defaults.json#/budgets/max_rotations_per_task."
+        },
         "loop_history": {
           "type": "array",
-          "description": "Audit-Trail für Rückkanäle und One-shot-Eskalationen",
+          "description": "Audit-Spur der Rueckkanaele, Eskalationen und Rotationen",
           "items": {
             "type": "object",
-            "required": ["loop", "attempt", "outcome", "timestamp"],
             "additionalProperties": false,
+            "required": [
+              "loop",
+              "attempt",
+              "outcome",
+              "timestamp"
+            ],
             "properties": {
               "loop": {
                 "type": "string",
                 "enum": [
                   "test_fix",
-                  "review_fix",
+                  "ui_fix",
                   "security_fix",
+                  "delivery_fix",
                   "handover_rotation",
-                  "requirements_escalation",
-                  "architecture_escalation"
-                ],
-                "description": "Rückkanal-Typ; requirements_escalation / architecture_escalation für One-shot-Eskalationen (attempt immer 1)"
+                  "requirements_gap",
+                  "architecture_drift"
+                ]
               },
-              "attempt": { "type": "integer", "minimum": 1, "maximum": 3 },
-              "outcome": { "type": "string", "enum": ["pass", "fail", "escalate", "abort"] },
-              "timestamp": { "type": "string", "format": "date-time" },
-              "from_node": { "type": "integer", "minimum": 0, "maximum": 99, "description": "CFG-Knoten vor Transition, z.B. 5 für N5" },
-              "to_node": { "type": "integer", "minimum": 0, "maximum": 99, "description": "CFG-Knoten nach Transition, z.B. 31 für N3b" }
+              "attempt": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 12,
+                "description": "Obergrenze folgt dem groessten Zaehler (Rotation); die kantenspezifischen Limits stehen in cycles.attempts"
+              },
+              "outcome": {
+                "type": "string",
+                "enum": [
+                  "pass",
+                  "fail",
+                  "escalate",
+                  "abort",
+                  "rotated"
+                ]
+              },
+              "timestamp": {
+                "$ref": "#/$defs/timestamp"
+              },
+              "from_node": {
+                "$ref": "#/$defs/node_id"
+              },
+              "to_node": {
+                "$ref": "#/$defs/node_id"
+              }
             }
           }
         }
       }
     },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "files_read",
+        "bytes_read",
+        "tool_calls",
+        "turns",
+        "subagents_spawned",
+        "rotations",
+        "artifact_bytes"
+      ],
+      "description": "AK-018: zaehlbare Proxies sind Pflicht. Ein Prozentwert ist NIE Ausloeser einer Pflicht (AK-016, AK-019); Schwellwerte stehen unter config/policy-defaults.json#/budgets/rotation.",
+      "properties": {
+        "files_read": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bytes_read": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tool_calls": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "turns": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "subagents_spawned": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rotations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "artifact_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "utilization_percent": {
+          "description": "AK-017: optionaler Backstop. Zahl 0..100, wenn die Plattform einen Messwert liefert, sonst die Zeichenkette unavailable.",
+          "oneOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            {
+              "type": "string",
+              "const": "unavailable"
+            }
+          ]
+        }
+      }
+    },
     "running_sub_agents": {
       "type": "array",
-      "description": "Aktuell laufende Sub-Agenten (Orchestrator-Sicht)",
+      "description": "Laufende Sub-Agenten aus Orchestrator-Sicht. Anzahl mit Status running = Anzahl aktiver Handover (AK-050).",
       "items": {
         "type": "object",
-        "required": ["id", "role", "depth", "status", "cfg_node", "spawned_at"],
         "additionalProperties": false,
+        "required": [
+          "id",
+          "role",
+          "depth",
+          "status",
+          "cfg_node",
+          "spawned_at"
+        ],
         "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "role": {
-            "type": "string",
-            "enum": [
-              "researcher",
-              "business_analyst",
-              "architect",
-              "developer",
-              "tester_reviewer",
-              "ux_ui_expert",
-              "security_auditor",
-              "data_engineer",
-              "devops_sre",
-              "documentation_specialist",
-              "performance_engineer",
-              "compliance_governance",
-              "memory_curator",
-              "sub_orchestrator"
-            ]
+          "id": {
+            "$ref": "#/$defs/agent_id"
           },
-          "depth": { "type": "integer", "minimum": 1, "maximum": 4 },
+          "role": {
+            "$ref": "#/$defs/role"
+          },
+          "role_label": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Klartextname, wenn role den Wert other hat (AK-092)"
+          },
+          "depth": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4
+          },
           "status": {
             "type": "string",
-            "enum": ["spawning", "running", "blocked", "completed", "failed", "handover_out"]
+            "enum": [
+              "spawning",
+              "running",
+              "blocked",
+              "completed",
+              "failed",
+              "handover_out",
+              "rotated"
+            ]
           },
-          "cfg_node": { "type": "integer" },
-          "parent_id": { "type": "string", "format": "uuid" },
-          "spawned_at": { "type": "string", "format": "date-time" },
-          "context_utilization_percent": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 100
+          "cfg_node": {
+            "$ref": "#/$defs/node_id"
+          },
+          "parent_id": {
+            "$ref": "#/$defs/agent_id"
+          },
+          "spawned_at": {
+            "$ref": "#/$defs/timestamp"
           },
           "handover_path": {
             "type": "string",
-            "description": "Pfad zum zugehörigen Handover-Dokument"
+            "description": "Pfad des zugehoerigen Handovers unter runtime/handovers/"
+          },
+          "task_id": {
+            "$ref": "#/$defs/task_id"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "role": {
+                  "const": "other"
+                }
+              },
+              "required": [
+                "role"
+              ]
+            },
+            "then": {
+              "required": [
+                "role_label"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "handovers": {
+      "type": "array",
+      "description": "Register der Uebergaben mit Retention-Feldern. Spiegelt runtime/handovers/index.jsonl (AK-048, AK-049); die Orientierung erfolgt hierueber, nie durch Lesen alter Handover (kein Self-Re-Ingest).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "path",
+          "node",
+          "role",
+          "reason",
+          "bytes",
+          "created_at",
+          "expires_at",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/agent_id"
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "node": {
+            "$ref": "#/$defs/node_id"
+          },
+          "role": {
+            "$ref": "#/$defs/role"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "delegation",
+              "return",
+              "escalation",
+              "context_rotation"
+            ]
+          },
+          "from_agent_id": {
+            "$ref": "#/$defs/agent_id"
+          },
+          "to_agent_id": {
+            "$ref": "#/$defs/agent_id"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "created_at": {
+            "$ref": "#/$defs/timestamp"
+          },
+          "expires_at": {
+            "$ref": "#/$defs/timestamp"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "archived",
+              "expired"
+            ]
+          },
+          "gc_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "description": "Retention-Klasse aus config/policy-defaults.json#/gc/artifacts"
+          },
+          "task_id": {
+            "$ref": "#/$defs/task_id"
           }
         }
       }
     },
     "artifacts": {
       "type": "object",
-      "description": "Referenzen auf erzeugte Artefakte (Pfade, keine Inline-Duplikation)",
+      "description": "Referenzen auf erzeugte Artefakte - Pfade statt Inline-Duplikation. Retention-Felder machen den Sweep pruefbar.",
       "additionalProperties": {
         "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "type",
+          "created_at"
+        ],
         "properties": {
-          "path": { "type": "string" },
-          "type": { "type": "string" },
-          "role": { "type": "string" },
-          "checksum": { "type": "string" },
-          "created_at": { "type": "string", "format": "date-time" }
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "role": {
+            "$ref": "#/$defs/role"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "checksum": {
+            "type": "string"
+          },
+          "created_at": {
+            "$ref": "#/$defs/timestamp"
+          },
+          "expires_at": {
+            "$ref": "#/$defs/timestamp"
+          },
+          "gc_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "promoted_to": {
+            "type": "string",
+            "description": "Zielpfad unter docs/, wenn das Artefakt an N7 promoviert wurde"
+          }
         }
       }
     },
     "memory": {
       "type": "object",
-      "description": "Gedächtnis-Zustand (Gesetz 9, siehe memory-policy.md). Trennt persistentes Gedächtnis vom flüchtigen Kontext.",
-      "required": ["active", "pending_writes", "poisoning_checks"],
+      "description": "Gedaechtnis-Zustand (LAW-MEMORY, normativ in modules/memory.md). Persistentes Gedaechtnis ist strikt vom fluechtigen Kontext getrennt.",
+      "required": [
+        "active",
+        "pending_writes",
+        "poisoning_checks"
+      ],
       "additionalProperties": false,
       "properties": {
         "active": {
           "type": "array",
-          "description": "Aktuell geladene/aktive Memory-Einträge (nach Ingestion an N1)",
+          "description": "Nach der Ingestion an N1 aktive Eintraege",
           "items": {
             "type": "object",
-            "required": ["id", "layer", "scope", "trust"],
+            "required": [
+              "id",
+              "layer",
+              "scope",
+              "trust"
+            ],
             "additionalProperties": false,
             "properties": {
-              "id": { "type": "string" },
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
               "layer": {
                 "type": "string",
-                "enum": ["working", "episodic", "semantic", "procedural"],
+                "enum": [
+                  "working",
+                  "episodic",
+                  "semantic",
+                  "procedural"
+                ],
                 "description": "CoALA-Schicht"
               },
               "scope": {
                 "type": "string",
-                "enum": ["thread", "project", "user", "global"],
-                "description": "Gesetz 9.1 — Sichtbarkeitsbereich"
+                "enum": [
+                  "thread",
+                  "project",
+                  "user",
+                  "global"
+                ],
+                "description": "LAW-MEMORY.1 - ohne Scope ist ein Eintrag ungueltig"
               },
               "trust": {
                 "type": "string",
-                "enum": ["trusted", "unverified", "untrusted"],
-                "description": "Gesetz 9.4 — Provenienz-Vertrauensstufe"
+                "enum": [
+                  "trusted",
+                  "unverified",
+                  "untrusted"
+                ],
+                "description": "LAW-MEMORY.4 - Provenienz"
               },
-              "source": { "type": "string", "description": "Herkunft (Pfad/URL/Store)" },
-              "summary": { "type": "string" },
-              "created_at": { "type": "string", "format": "date-time" },
-              "valid_until": { "type": "string", "format": "date-time", "description": "TTL (Gesetz 9.3); leer = keine feste TTL" },
-              "superseded_by": { "type": "string", "description": "ID des ablösenden Eintrags (bi-temporal)" },
-              "last_validated_at": { "type": "string", "format": "date-time" }
+              "source": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "created_at": {
+                "$ref": "#/$defs/timestamp"
+              },
+              "valid_until": {
+                "$ref": "#/$defs/timestamp"
+              },
+              "superseded_by": {
+                "type": "string"
+              },
+              "last_validated_at": {
+                "$ref": "#/$defs/timestamp"
+              }
             }
           }
         },
         "pending_writes": {
           "type": "array",
-          "description": "Consolidation-Kandidaten, die an N7 geprüft und ggf. persistiert werden",
+          "description": "Consolidation-Kandidaten, die an N7 geprueft und ggf. persistiert werden",
           "items": {
             "type": "object",
-            "required": ["id", "layer", "scope", "status"],
+            "required": [
+              "id",
+              "layer",
+              "scope",
+              "status"
+            ],
             "additionalProperties": false,
             "properties": {
-              "id": { "type": "string" },
-              "layer": { "type": "string", "enum": ["episodic", "semantic", "procedural"] },
-              "scope": { "type": "string", "enum": ["thread", "project", "user", "global"] },
-              "candidate": { "type": "string", "description": "Kurzbeschreibung des zu schreibenden Wissens" },
-              "status": { "type": "string", "enum": ["pending", "written", "quarantined", "rejected", "deduped"] }
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "layer": {
+                "type": "string",
+                "enum": [
+                  "episodic",
+                  "semantic",
+                  "procedural"
+                ]
+              },
+              "scope": {
+                "type": "string",
+                "enum": [
+                  "thread",
+                  "project",
+                  "user",
+                  "global"
+                ]
+              },
+              "candidate": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "written",
+                  "quarantined",
+                  "rejected",
+                  "deduped"
+                ]
+              }
             }
           }
         },
         "poisoning_checks": {
           "type": "object",
-          "description": "ASI06-Abwehr (memory-policy.md §5). Ergebnisse der Ingestion-/Write-Kontrollen.",
+          "description": "ASI06-Abwehr: Ergebnisse der Ingestion- und Write-Kontrollen",
           "additionalProperties": false,
           "properties": {
-            "source_validated": { "type": "boolean" },
-            "session_isolated": { "type": "boolean" },
-            "integrity_baseline": { "type": "boolean", "description": "SHA-256-Baseline unveränderlicher Schlüssel geprüft" },
-            "injection_scan": { "type": "string", "enum": ["passed", "failed", "not_run"] },
-            "policy_action": { "type": "string", "enum": ["allow", "redact", "quarantine", "block"] },
-            "snapshot_ref": { "type": "string", "description": "Pfad zum Forensik-/Rollback-Snapshot" }
+            "source_validated": {
+              "type": "boolean"
+            },
+            "session_isolated": {
+              "type": "boolean"
+            },
+            "integrity_baseline": {
+              "type": "boolean"
+            },
+            "injection_scan": {
+              "type": "string",
+              "enum": [
+                "passed",
+                "failed",
+                "not_run"
+              ]
+            },
+            "policy_action": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "redact",
+                "quarantine",
+                "block"
+              ]
+            },
+            "snapshot_ref": {
+              "type": "string"
+            }
           }
         },
         "store": {
@@ -325,63 +864,512 @@
           "description": "Optional: externer Memory-Store des Zielprojekts",
           "additionalProperties": false,
           "properties": {
-            "backend": { "type": "string", "enum": ["none", "langgraph_store", "mem0", "zep", "letta", "cursor_memories", "mcp", "other"] },
-            "namespace": { "type": "string" }
+            "backend": {
+              "type": "string",
+              "enum": [
+                "none",
+                "langgraph_store",
+                "mem0",
+                "zep",
+                "letta",
+                "cursor_memories",
+                "mcp",
+                "other"
+              ]
+            },
+            "namespace": {
+              "type": "string"
+            }
           }
         }
       }
     },
     "dod_gates": {
       "type": "object",
-      "description": "Nachweis-Status je CFG-Knoten",
+      "description": "AK-091: Nachweistraeger ist Pflicht. Schluessel sind Knoten-IDs oder dod:<name> (AK-081). Der Status deferred ist ausschliesslich fuer Klasse incident zulaessig und nur mit triage.followup_ref (D-6).",
+      "propertyNames": {
+        "$ref": "#/$defs/gate_key"
+      },
       "additionalProperties": {
         "type": "object",
-        "required": ["status"],
+        "additionalProperties": false,
+        "required": [
+          "status"
+        ],
         "properties": {
-          "status": { "type": "string", "enum": ["pending", "passed", "failed", "waived"] },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "passed",
+              "failed",
+              "waived",
+              "deferred"
+            ]
+          },
           "proof_type": {
             "type": "string",
-            "enum": ["unit_test", "integration_test", "e2e_test", "visual_regression", "tla_verify", "sast", "sca", "memory_scan", "manual_waiver"]
+            "enum": [
+              "unit_test",
+              "integration_test",
+              "e2e_test",
+              "visual_regression",
+              "tla_probe",
+              "sast",
+              "sca",
+              "secret_scan",
+              "memory_scan",
+              "lint",
+              "benchmark",
+              "command",
+              "artifact",
+              "manual_waiver"
+            ],
+            "description": "command/artifact deckt Gates ohne Testsuite ab (N6b Auslieferung: git push; dod:rollback_snapshot: Snapshot-Pfad). Ohne diese Werte waere ein dokumentiertes Gate nicht nachweisbar - genau der Blocker F-025."
           },
-          "proof_command": { "type": "string" },
-          "proof_exit_code": { "type": "integer" },
-          "proof_artifact_path": { "type": "string" },
-          "verified_at": { "type": "string", "format": "date-time" }
-        }
+          "proof_command": {
+            "type": "string"
+          },
+          "proof_exit_code": {
+            "type": "integer"
+          },
+          "proof_artifact_path": {
+            "type": "string"
+          },
+          "waiver_reason": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Pflicht bei status waived - eine Ausnahme ohne Begruendung ist ein stiller Regelverstoss"
+          },
+          "verified_at": {
+            "$ref": "#/$defs/timestamp"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "waived"
+                }
+              },
+              "required": [
+                "status"
+              ]
+            },
+            "then": {
+              "required": [
+                "waiver_reason"
+              ]
+            }
+          }
+        ]
       }
     },
     "blockers": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "severity", "message", "created_at"],
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "severity",
+          "message",
+          "created_at"
+        ],
         "properties": {
-          "id": { "type": "string" },
-          "severity": { "type": "string", "enum": ["info", "warning", "error", "critical"] },
-          "message": { "type": "string" },
-          "cfg_node": { "type": "integer" },
-          "agent_id": { "type": "string" },
-          "created_at": { "type": "string", "format": "date-time" },
-          "resolved_at": { "type": "string", "format": "date-time" }
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "law_violation",
+              "requirement_conflict",
+              "missing_tool_right",
+              "security_violation",
+              "budget_exceeded",
+              "platform_mandate",
+              "depth_limit",
+              "cycle_limit",
+              "other"
+            ],
+            "description": "platform_mandate dokumentiert den Ausnahmefall aus ADR-008 §7 (Push durch den empfangenden Agenten)"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "info",
+              "warning",
+              "error",
+              "critical"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "cfg_node": {
+            "type": "string",
+            "pattern": "^(N[0-7][a-c]?|t_(done|blocked|abort))$"
+          },
+          "agent_id": {
+            "$ref": "#/$defs/agent_id"
+          },
+          "command": {
+            "type": "string",
+            "description": "Betroffenes Kommando, z. B. bei platform_mandate"
+          },
+          "created_at": {
+            "$ref": "#/$defs/timestamp"
+          },
+          "resolved_at": {
+            "$ref": "#/$defs/timestamp"
+          }
         }
       }
     },
-    "context_budget": {
+    "vcs": {
       "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "default_branch",
+        "branches"
+      ],
+      "description": "AK-061: der Arbeitsbranch ist registriert (Manifest-Prinzip). Loeschverbote und Zustaendigkeit stehen in modules/vcs.md.",
       "properties": {
-        "orchestrator_utilization_percent": { "type": "number", "minimum": 0, "maximum": 100 },
-        "handover_threshold_percent": { "type": "number", "const": 80 },
-        "last_handover_at": { "type": "string", "format": "date-time" }
+        "default_branch": {
+          "type": "string",
+          "minLength": 1
+        },
+        "branches": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "created_at",
+              "base",
+              "purpose",
+              "pushed"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "created_at": {
+                "$ref": "#/$defs/timestamp"
+              },
+              "base": {
+                "type": "string",
+                "minLength": 1
+              },
+              "purpose": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Knoten oder Zweck, z. B. N4/N6b"
+              },
+              "pushed": {
+                "type": "boolean"
+              },
+              "pr_url": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "worktree": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "protected": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "delivery": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Ergebnis des Auslieferungsknotens N6b (LAW-DELIVERY). Fehlt bei Klasse answer.",
+      "required": [
+        "node",
+        "status"
+      ],
+      "properties": {
+        "node": {
+          "$ref": "#/$defs/node_id"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "pushed",
+            "pr_open",
+            "rejected",
+            "not_applicable"
+          ]
+        },
+        "branch": {
+          "type": "string"
+        },
+        "commits": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 4
+          }
+        },
+        "pr_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "report_path": {
+          "type": "string",
+          "description": "Pfad des Branch-Hygiene-Berichts"
+        },
+        "executed_by_role": {
+          "$ref": "#/$defs/role"
+        }
+      }
+    },
+    "lock": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optionaler Spiegel der Lock-Datei runtime/state/<orchestrator_id>.json.lock (AK-106)",
+      "required": [
+        "holder",
+        "acquired_at"
+      ],
+      "properties": {
+        "holder": {
+          "$ref": "#/$defs/agent_id"
+        },
+        "acquired_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "path": {
+          "type": "string"
+        }
       }
     },
     "timestamps": {
       "type": "object",
-      "required": ["created_at", "updated_at"],
+      "additionalProperties": false,
+      "required": [
+        "created_at",
+        "updated_at"
+      ],
       "properties": {
-        "created_at": { "type": "string", "format": "date-time" },
-        "updated_at": { "type": "string", "format": "date-time" },
-        "completed_at": { "type": "string", "format": "date-time" }
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "updated_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "completed_at": {
+          "$ref": "#/$defs/timestamp"
+        }
+      }
+    },
+    "model_usage": {
+      "type": "array",
+      "description": "Protokoll der Modellwahl laut config/model-policy.json (LAW-MODELS)",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "model_id",
+          "rank",
+          "reason"
+        ],
+        "properties": {
+          "model_id": {
+            "type": "string"
+          },
+          "rank": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "reason": {
+            "type": "string"
+          },
+          "agent_role": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "description": "Nicht-blockierende dokumentierte Annahmen (LAW-CLARIFY)",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "statement"
+        ],
+        "properties": {
+          "statement": {
+            "type": "string"
+          },
+          "refutable_if": {
+            "type": "string"
+          },
+          "blocking": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      }
+    },
+    "assignments": {
+      "type": "array",
+      "description": "Assignment-Ledger des Orchestrators (modules/ops.md#ledger)",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "task_id",
+          "agent_id",
+          "role",
+          "cfg_node",
+          "handover_out_id",
+          "status",
+          "created_at"
+        ],
+        "properties": {
+          "task_id": {
+            "$ref": "#/$defs/task_id"
+          },
+          "agent_id": {
+            "$ref": "#/$defs/agent_id"
+          },
+          "role": {
+            "$ref": "#/$defs/role"
+          },
+          "cfg_node": {
+            "$ref": "#/$defs/node_id"
+          },
+          "handover_out_id": {
+            "$ref": "#/$defs/agent_id"
+          },
+          "handover_return_id": {
+            "$ref": "#/$defs/agent_id"
+          },
+          "parent_task_id": {
+            "$ref": "#/$defs/task_id"
+          },
+          "write_paths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "model_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "running",
+              "returned",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "created_at": {
+            "$ref": "#/$defs/timestamp"
+          },
+          "returned_at": {
+            "$ref": "#/$defs/timestamp"
+          }
+        }
+      }
+    },
+    "approvals": {
+      "type": "array",
+      "description": "Human-Approvals fuer irrev u. ae. (modules/ops.md#approval)",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "scope",
+          "granted"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "task_id": {
+            "$ref": "#/$defs/task_id"
+          },
+          "granted": {
+            "type": "boolean"
+          },
+          "granted_at": {
+            "$ref": "#/$defs/timestamp"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "$comment": "D-6 / AK-107 / AK-108: Abschluss einer incident-Aufgabe nur mit Nacharbeits-Referenz.",
+      "if": {
+        "properties": {
+          "phase": {
+            "const": "done"
+          },
+          "triage": {
+            "type": "object",
+            "properties": {
+              "change_class": {
+                "const": "incident"
+              }
+            },
+            "required": [
+              "change_class"
+            ]
+          }
+        },
+        "required": [
+          "phase",
+          "triage"
+        ]
+      },
+      "then": {
+        "properties": {
+          "triage": {
+            "type": "object",
+            "required": [
+              "followup_ref"
+            ]
+          }
+        }
+      }
+    }
+  ]
 }

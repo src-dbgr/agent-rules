@@ -1,12 +1,13 @@
-# Agent runtime state (project-specific, not law book)
-**/runtime/.agent-state.json
-**/runtime/handover-*.md
+# Agent runtime (ephemer, nie committen)
+runtime/
+proof-artifacts/
 
-# OS
+# Verbotene Legacy-State-Pfade (v2: runtime/state/<orchestrator_id>.json)
+.agent-state.json
+
+# OS / Editor
 .DS_Store
 Thumbs.db
-
-# Editor
 .idea/
 .vscode/
 *.swp
@@ -18,19 +19,19 @@ Thumbs.db
 tmp/
 .temp/
 
-# Test & proof artifacts (generated at runtime in target projects)
-proof-artifacts/
+# TLA+ / tools
 .tla-checkpoints/
 specs/workflow_TTrace_*
 states/
 lib/tla2tools.jar
+lib/gitleaks
 .tools/
 coverage/
 htmlcov/
 .pytest_cache/
 node_modules/
 
-# Secrets — never commit
+# Secrets
 .env
 .env.*
 *.pem

@@ -1,0 +1,693 @@
+{
+  "$comment": "Regressionsnetz der Triage-Algebra v2.0 (ADR-003, AK-034). Geprueft von scripts/check-triage.sh gegen manifest.json#/triage/gate_matrix. Inhaltlich uebernommen aus runtime/architecture/triage-v2-fixtures.json; ergaenzt um needs_external_source (macht die N3a-Zusatzregel maschinell ableitbar statt geraten) und also_matches (macht die Erst-Treffer-Ordnung pruefbar). Was diese Datei NICHT beweist: dass ein LLM aus prompt dieselbe Klasse waehlt (Annahme A-12) - geprueft wird die Ableitung Klasse+Flags -> Gates, die Ordnung und die Nicht-Zirkularitaet der Ausloeser.",
+  "version": "2.0.0",
+  "algebra_source": "manifest.json#/triage/gate_matrix",
+  "class_order": [
+    {
+      "rule_no": 1,
+      "class": "incident",
+      "trigger": "Betrieb oder Nutzer sind JETZT beeintraechtigt; Behebung ist eilig"
+    },
+    {
+      "rule_no": 2,
+      "class": "revert",
+      "trigger": "Anfrage benennt eine bestimmte fruehere Aenderung, die zurueckgenommen werden soll"
+    },
+    {
+      "rule_no": 3,
+      "class": "answer",
+      "trigger": "Anfrage verlangt Auskunft, Analyse oder Bericht - keine Aenderung am Repository"
+    },
+    {
+      "rule_no": 4,
+      "class": "spike",
+      "trigger": "Ergebnis ist Erkenntnis oder Prototyp und soll ausdruecklich nicht im Trunk verbleiben"
+    },
+    {
+      "rule_no": 5,
+      "class": "chore",
+      "trigger": "Aenderung ohne beobachtbare Verhaltensaenderung des Produkts (Text, Doku, Format, Werkzeug, Konfiguration, Abhaengigkeits-Bump ohne API-Aenderung)"
+    },
+    {
+      "rule_no": 6,
+      "class": "feature",
+      "trigger": "Alles Uebrige (Catch-all, garantiert Totalitaet)"
+    }
+  ],
+  "cases": [
+    {
+      "id": "TF-01",
+      "prompt": "Erklaere mir, wie das Retry-Verhalten des HTTP-Clients in src/http/client.ts funktioniert.",
+      "expected_class": "answer",
+      "expected_flags": [],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N7"
+      ],
+      "rationale": "Regel 3 greift zuerst: keine Aenderung am Repository verlangt."
+    },
+    {
+      "id": "TF-02",
+      "prompt": "Recherchiere, welche Rate-Limit-Header der zugrundeliegende Standard vorschreibt, und antworte mit einer Empfehlung.",
+      "expected_class": "answer",
+      "expected_flags": [],
+      "needs_external_source": true,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N3a",
+        "N7"
+      ],
+      "rationale": "answer plus N3a, weil ohne externe Norm nicht beantwortbar (Zusatzregel N3a)."
+    },
+    {
+      "id": "TF-03",
+      "prompt": "Korrigiere den Tippfehler 'Konfiguartion' in README.md.",
+      "expected_class": "chore",
+      "expected_flags": [],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N4",
+        "N5a",
+        "N6b",
+        "N7"
+      ],
+      "rationale": "Aenderung ohne Verhaltensaenderung; N5a bleibt, weil auch ein Textfix die Suite nicht brechen darf - aber ohne Architektur-Konformitaets-Gate."
+    },
+    {
+      "id": "TF-04",
+      "prompt": "Hebe die Abhaengigkeit lodash von 4.17.20 auf 4.17.21 wegen einer gemeldeten Schwachstelle; keine API-Aenderung.",
+      "expected_class": "chore",
+      "expected_flags": [
+        "sec"
+      ],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N4",
+        "N5a",
+        "N6a",
+        "N6b",
+        "N7"
+      ],
+      "rationale": "Bump ohne API-Aenderung bleibt chore; sec hebt das Gate-Niveau um N6a (High-Water-Mark)."
+    },
+    {
+      "id": "TF-05",
+      "prompt": "Lass Prettier ueber src/ laufen, damit die Formatierung einheitlich ist; keine Logikaenderung.",
+      "expected_class": "chore",
+      "expected_flags": [],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N4",
+        "N5a",
+        "N6b",
+        "N7"
+      ],
+      "rationale": "Reine Formatierung."
+    },
+    {
+      "id": "TF-06",
+      "prompt": "Repariere die CI: der Job lint findet rg nicht mehr.",
+      "expected_class": "chore",
+      "expected_flags": [],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N4",
+        "N5a",
+        "N6b",
+        "N7"
+      ],
+      "rationale": "Grenzfall: rote CI ist kein incident, weil kein Nutzer und kein Betrieb beeintraechtigt ist. Werkzeugkette aendert das Produktverhalten nicht."
+    },
+    {
+      "id": "TF-07",
+      "prompt": "Rotiere das Datenbank-Passwort und passe die Deploy-Konfiguration an.",
+      "expected_class": "chore",
+      "expected_flags": [
+        "sec",
+        "irrev"
+      ],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N4",
+        "N5a",
+        "N6a",
+        "N6b",
+        "N7",
+        "dod:rollback_snapshot"
+      ],
+      "rationale": "Konfigurationsaenderung ohne Produktverhaltensaenderung; Geheimniswechsel ist sicherheitsrelevant und praktisch nicht folgenlos ruecknehmbar."
+    },
+    {
+      "id": "TF-08",
+      "prompt": "Gleiche den Lizenz-Header in allen Dateien an und stelle das Build-Skript dabei auf parallele Ausfuehrung um.",
+      "expected_class": "chore",
+      "expected_flags": [
+        "conc"
+      ],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N3c",
+        "N4",
+        "N5a",
+        "N6b",
+        "N7"
+      ],
+      "rationale": "Beleg fuer High-Water-Mark: die Klasse bleibt chore, das Gate-Niveau erreicht durch conc den Architekten (N3c) wie bei einem feature."
+    },
+    {
+      "id": "TF-09",
+      "prompt": "Nimm die Aenderung aus Commit abc123 zurueck, sie hat die Suche messbar verlangsamt.",
+      "expected_class": "revert",
+      "expected_flags": [
+        "perf"
+      ],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N4",
+        "N5a",
+        "N6b",
+        "N7",
+        "dod:perf_budget",
+        "dod:revert_diff_only"
+      ],
+      "rationale": "Benannte fruehere Aenderung, kein aktiver Vorfall; perf, weil das Performance-Budget der Anlass ist."
+    },
+    {
+      "id": "TF-10",
+      "prompt": "Rolle Migration 0042 zurueck, sie hat die Spalte falsch benannt.",
+      "expected_class": "revert",
+      "expected_flags": [
+        "data",
+        "irrev"
+      ],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N4",
+        "N5a",
+        "N6a",
+        "N6b",
+        "N7",
+        "dod:revert_diff_only",
+        "dod:rollback_snapshot"
+      ],
+      "rationale": "Rueckname einer Schemamigration: data und irrev, weil Datenverlust moeglich ist."
+    },
+    {
+      "id": "TF-11",
+      "prompt": "Die Produktion ist seit zehn Minuten unten, nimm bitte sofort Commit def456 zurueck.",
+      "expected_class": "incident",
+      "expected_flags": [],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N4",
+        "N5a",
+        "N6b",
+        "N7",
+        "dod:followup_ref"
+      ],
+      "rationale": "Ordnungstest: incident (Regel 1) schlaegt revert (Regel 2), weil das Gate-Profil der Eile folgen muss. Die Ruecknahme bleibt die Technik, nicht die Klasse. Ordnungstest: also_matches revert hat Regel 2, incident Regel 1 - der erste Treffer gewinnt.",
+      "also_matches": [
+        "revert"
+      ]
+    },
+    {
+      "id": "TF-12",
+      "prompt": "Der Produktiv-Login schlaegt seit zehn Minuten fuer alle Nutzer fehl; bitte sofort beheben.",
+      "expected_class": "incident",
+      "expected_flags": [
+        "sec"
+      ],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N4",
+        "N5a",
+        "N6a",
+        "N6b",
+        "N7",
+        "dod:followup_ref"
+      ],
+      "rationale": "Aktive Beeintraechtigung; Auth-Pfad also sec. N6a darf bei incident zeitversetzt (deferred) erfuellt werden, aber nur mit followup_ref."
+    },
+    {
+      "id": "TF-13",
+      "prompt": "Der Zahlungs-Webhook liefert seit dem Deployment 500er, Kunden koennen nicht bezahlen.",
+      "expected_class": "incident",
+      "expected_flags": [
+        "api"
+      ],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N4",
+        "N5a",
+        "N5c",
+        "N6b",
+        "N7",
+        "dod:followup_ref"
+      ],
+      "rationale": "Aktive Kundenbeeintraechtigung; oeffentliche Schnittstelle betroffen."
+    },
+    {
+      "id": "TF-14",
+      "prompt": "Pruefe in einem Wegwerf-Prototyp, ob polars unsere CSV-Pipeline beschleunigt; das Ergebnis wird nicht ausgeliefert.",
+      "expected_class": "spike",
+      "expected_flags": [
+        "perf"
+      ],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N3a",
+        "N4",
+        "N7",
+        "dod:perf_budget",
+        "dod:spike_disposal"
+      ],
+      "rationale": "Erkenntnis statt Auslieferung; kein N6b in den Trunk, Push nur auf einen spike-Branch."
+    },
+    {
+      "id": "TF-15",
+      "prompt": "Vergleiche zwei Zeichenketten-Bibliotheken an einem Prototyp und verwirf ihn danach.",
+      "expected_class": "spike",
+      "expected_flags": [],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N3a",
+        "N4",
+        "N7",
+        "dod:spike_disposal"
+      ],
+      "rationale": "Reiner Spike ohne Zusatzachsen."
+    },
+    {
+      "id": "TF-16",
+      "prompt": "Baue einen Dark-Mode-Umschalter in die Einstellungen ein.",
+      "expected_class": "feature",
+      "expected_flags": [
+        "ui"
+      ],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N3b",
+        "N4",
+        "N5a",
+        "N5b",
+        "N6b",
+        "N7"
+      ],
+      "rationale": "Catch-all feature; ui erzwingt visuelle Regression (N5b)."
+    },
+    {
+      "id": "TF-17",
+      "prompt": "Stelle einen neuen REST-Endpunkt POST /v1/exports inklusive Dokumentation bereit.",
+      "expected_class": "feature",
+      "expected_flags": [
+        "api"
+      ],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N3b",
+        "N4",
+        "N5a",
+        "N5c",
+        "N6b",
+        "N7"
+      ],
+      "rationale": "Neue oeffentliche Schnittstelle."
+    },
+    {
+      "id": "TF-18",
+      "prompt": "Halte Nutzer-Sitzungen kuenftig in Redis statt im Prozessspeicher, mit Sperren gegen Doppelverarbeitung.",
+      "expected_class": "feature",
+      "expected_flags": [
+        "conc",
+        "data"
+      ],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N3b",
+        "N3c",
+        "N4",
+        "N5a",
+        "N6a",
+        "N6b",
+        "N7"
+      ],
+      "rationale": "Nebenlaeufigkeit und Persistenz: conc zieht N3c (mit Nebenlaeufigkeitsmodell, hier auch TLC), data zieht N6a."
+    },
+    {
+      "id": "TF-19",
+      "prompt": "Fuehre Passwort-Reset per E-Mail-Token ein.",
+      "expected_class": "feature",
+      "expected_flags": [
+        "sec",
+        "api"
+      ],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N3b",
+        "N4",
+        "N5a",
+        "N5c",
+        "N6a",
+        "N6b",
+        "N7"
+      ],
+      "rationale": "Auth-Erweiterung mit neuer Schnittstelle."
+    },
+    {
+      "id": "TF-20",
+      "prompt": "Erweitere die Tabelle orders um deleted_at und migriere die Altdaten.",
+      "expected_class": "feature",
+      "expected_flags": [
+        "data",
+        "irrev"
+      ],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N3b",
+        "N4",
+        "N5a",
+        "N6a",
+        "N6b",
+        "N7",
+        "dod:rollback_snapshot"
+      ],
+      "rationale": "Schemamigration mit Datenwanderung."
+    },
+    {
+      "id": "TF-21",
+      "prompt": "Schneide den monolithischen Zahlungsdienst in ein eigenes Modul mit klarer Schnittstelle heraus.",
+      "expected_class": "feature",
+      "expected_flags": [
+        "arch",
+        "api"
+      ],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N3b",
+        "N3c",
+        "N4",
+        "N5a",
+        "N5c",
+        "N6b",
+        "N7"
+      ],
+      "rationale": "Neue Komponentengrenze: arch zieht die Architektur-Autorschaft (ADR) vorab."
+    },
+    {
+      "id": "TF-22",
+      "prompt": "Parallelisiere die Auftragsverarbeitung; die Reihenfolge muss garantiert bleiben.",
+      "expected_class": "feature",
+      "expected_flags": [
+        "conc",
+        "perf"
+      ],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N3b",
+        "N3c",
+        "N4",
+        "N5a",
+        "N6b",
+        "N7",
+        "dod:perf_budget"
+      ],
+      "rationale": "Nebenlaeufigkeit mit Ordnungsgarantie plus Durchsatzziel."
+    },
+    {
+      "id": "TF-23",
+      "prompt": "Sende Nutzungsdaten an einen neuen Analytics-Anbieter, DSGVO-konform.",
+      "expected_class": "feature",
+      "expected_flags": [
+        "sec",
+        "data",
+        "legal"
+      ],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N3b",
+        "N4",
+        "N5a",
+        "N6a",
+        "N6b",
+        "N7"
+      ],
+      "rationale": "Drei Flags, ein Zusatzknoten: sec, data und legal zeigen alle auf N6a, dessen DoD sich je Flag erweitert (Vereinigung, keine Addition)."
+    },
+    {
+      "id": "TF-24",
+      "prompt": "Bringe die Kontrastwerte der Formulare auf WCAG-Niveau.",
+      "expected_class": "feature",
+      "expected_flags": [
+        "ui",
+        "legal"
+      ],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N3b",
+        "N4",
+        "N5a",
+        "N5b",
+        "N6a",
+        "N6b",
+        "N7"
+      ],
+      "rationale": "Grenzfall: sichtbare Aenderung ist kein chore; Barrierefreiheit ist zugleich rechtlich relevant."
+    },
+    {
+      "id": "TF-25",
+      "prompt": "Entferne das Feature-Flag new_checkout dauerhaft; der alte Pfad faellt weg.",
+      "expected_class": "feature",
+      "expected_flags": [
+        "irrev"
+      ],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N3b",
+        "N4",
+        "N5a",
+        "N6b",
+        "N7",
+        "dod:rollback_snapshot"
+      ],
+      "rationale": "Codepfad-Entfernung aendert Verhalten und ist nicht per Flag zurueckdrehbar."
+    },
+    {
+      "id": "TF-26",
+      "prompt": "Schalte die alte /v0-API ab und leite Clients auf /v1 um.",
+      "expected_class": "feature",
+      "expected_flags": [
+        "api",
+        "irrev"
+      ],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N3b",
+        "N4",
+        "N5a",
+        "N5c",
+        "N6b",
+        "N7",
+        "dod:rollback_snapshot"
+      ],
+      "rationale": "Abschaltung einer oeffentlichen Schnittstelle."
+    },
+    {
+      "id": "TF-27",
+      "prompt": "Erklaere, wie die Zugriffskontrolle im Auth-Modul heute funktioniert.",
+      "expected_class": "answer",
+      "expected_flags": [],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N7"
+      ],
+      "rationale": "Beleg fuer die Flag-Semantik: das Thema ist Auth, die Aenderung ist keine - also kein sec-Flag."
+    },
+    {
+      "id": "TF-28",
+      "prompt": "Fasse die drei Zahlungs-Adapter hinter einer gemeinsamen Schnittstelle zusammen, ohne das beobachtbare Verhalten zu aendern.",
+      "expected_class": "chore",
+      "expected_flags": [
+        "arch"
+      ],
+      "needs_external_source": false,
+      "expected_gates": [
+        "N1",
+        "N2",
+        "N3c",
+        "N4",
+        "N5a",
+        "N6b",
+        "N7"
+      ],
+      "rationale": "Zweiter High-Water-Mark-Beleg: Klasse bleibt chore, arch zieht N3c hinzu - Gate-Niveau eines feature ohne Klassenwechsel."
+    }
+  ],
+  "coverage": {
+    "classes": {
+      "answer": [
+        "TF-01",
+        "TF-02",
+        "TF-27"
+      ],
+      "chore": [
+        "TF-03",
+        "TF-04",
+        "TF-05",
+        "TF-06",
+        "TF-07",
+        "TF-08",
+        "TF-28"
+      ],
+      "revert": [
+        "TF-09",
+        "TF-10"
+      ],
+      "incident": [
+        "TF-11",
+        "TF-12",
+        "TF-13"
+      ],
+      "spike": [
+        "TF-14",
+        "TF-15"
+      ],
+      "feature": [
+        "TF-16",
+        "TF-17",
+        "TF-18",
+        "TF-19",
+        "TF-20",
+        "TF-21",
+        "TF-22",
+        "TF-23",
+        "TF-24",
+        "TF-25",
+        "TF-26"
+      ]
+    },
+    "flags": {
+      "sec": [
+        "TF-04",
+        "TF-07",
+        "TF-12",
+        "TF-19",
+        "TF-23"
+      ],
+      "irrev": [
+        "TF-07",
+        "TF-10",
+        "TF-20",
+        "TF-25",
+        "TF-26"
+      ],
+      "conc": [
+        "TF-08",
+        "TF-18",
+        "TF-22"
+      ],
+      "perf": [
+        "TF-09",
+        "TF-14",
+        "TF-22"
+      ],
+      "data": [
+        "TF-10",
+        "TF-18",
+        "TF-20",
+        "TF-23"
+      ],
+      "api": [
+        "TF-13",
+        "TF-17",
+        "TF-19",
+        "TF-21",
+        "TF-26"
+      ],
+      "ui": [
+        "TF-16",
+        "TF-24"
+      ],
+      "arch": [
+        "TF-21",
+        "TF-28"
+      ],
+      "legal": [
+        "TF-23",
+        "TF-24"
+      ]
+    },
+    "special": {
+      "order_test": [
+        "TF-11"
+      ],
+      "high_water_mark": [
+        "TF-08",
+        "TF-23",
+        "TF-28"
+      ],
+      "edge_cases": [
+        "TF-06",
+        "TF-24",
+        "TF-27"
+      ],
+      "n3a_extra": [
+        "TF-02"
+      ]
+    },
+    "total": 28,
+    "min_required": 20
+  }
+}
