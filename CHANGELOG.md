@@ -39,6 +39,8 @@ Versionierung semantisch (MAJOR.MINOR.PATCH) auf das Gesetzbuch als Ganzes.
 - UI-Qualität (`modules/quality.md#ui`): Playwright-/E2E schmal bei Flag `ui`; bildbasiertes Agent-Review bei komplexer UI; Verifikations-Screenshots nur ephemer (`proof-artifacts/` / `runtime/tmp/`), nie committen.
 - Architektur-Kern in `modules/quality.md#by-design`: SOLID-Kurzabsatz (SoC/SRP/ISP/DIP, keine Zyklen; optionale Cycle-Tools nur im Zielprojekt).
 - **Model-Policy v1.1:** Main-Thread/Orchestrator (`N0`–`N2`, `N7`) startet verpflichtend mit `grok-4.5-high` (`entry_points.orchestrator_main_thread`); Composer bleibt Standard für Coding-Sub-Agenten. Begründung: Triage-Algebra ist deterministisch, Erst-Klassifikation nicht (A-12).
+- **Stall-Watchdog** (`modules/ops.md#stall`): `last_progress_at`; Stall nach `assignment_stall_minutes` (15); Hard-Timeout 90; max. 1 Retry — Main-Thread wartet nicht endlos auf hängende Sub-Agenten.
+- **Mini-Tasks:** nach Pflicht-Triage leichte Klassen `answer`/`chore` (nicht vorschnell `feature`); Effort-Caps bleiben führend.
 
 ### Removed
 - Root-State-Datei (`<.agent-state.json>`) (verbotener Legacy-Pfad; Beispiel nur noch unter `examples/`).

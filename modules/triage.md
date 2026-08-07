@@ -127,6 +127,17 @@ je Klasse `max_subagents` und `max_tool_calls`, je gesetztem Flag der Zuschlag a
 einen Sub-Agenten und keinen dreifachen Bootstrap. Überschreitung ist ein Blocker-Eintrag, keine
 stille Fortsetzung (`modules/context.md#budget`).
 
+**Mini-Tasks (Konsistenz ohne Bloat):** Bootstrap + Triage (`N1`/`N2`) bleiben Pflicht.
+Danach gilt die leichte Klasse — nicht „sicherheitshalber `feature`“:
+
+| Anlass | Klasse | Pfad-Skizze |
+|--------|--------|-------------|
+| nur Auskunft / Analyse, kein Repo-Diff | `answer` | `N1→N2→N7` (kein Spawn nötig, wenn Orchestrator selbst antworten kann) |
+| Text/Doku/Format/Config ohne Verhaltensänderung | `chore` | ein Developer, schmale Caps; kein Architect |
+| Verhaltensänderung / neues Verhalten | `feature` (+ Flags) | volle Gates laut Matrix |
+
+Main-Thread bleibt stark (`entry_points`); der **Pfad nach** `N2` wird leicht, nicht der Einstieg.
+
 ## 7. Kompatibilitäts-Mapping alt→neu
 
 Nur zum Lesen von Altbeständen (Zustandsdateien, Handover, Commit-Nachrichten aus v1.3.1). Die
@@ -147,6 +158,7 @@ Verfahren und Skript der Umstellung: `docs/migration-v1-to-v2.md`.
 
 1. **Klasse nach Auslöser, nicht nach Gefühl.** Die Regelliste ist abschließend; „lieber
    vorsichtshalber die schwerere Klasse" ist kein Grund, sondern eine Flag-Frage.
+   Mini-Tasks sind `answer` oder `chore`, nicht automatisch `feature` (§6).
 2. **Grenzfall: Flag setzen, nicht Klasse heben.** Ein Abhängigkeits-Bump wegen einer Schwachstelle
    bleibt Wartungsarbeit mit `sec` — er wird kein Vorhaben mit Anforderungsanalyse.
 3. **Kein Gate auf Vorrat.** Ein Flag wird nur gesetzt, wenn sein Anlass beobachtbar ist; die

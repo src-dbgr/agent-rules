@@ -1295,6 +1295,19 @@
           "created_at": {
             "$ref": "#/$defs/timestamp"
           },
+          "last_progress_at": {
+            "$ref": "#/$defs/timestamp",
+            "description": "Letzter Fortschrittsimpuls; Stall-Watchdog (modules/ops.md#stall)"
+          },
+          "progress_note": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "stall_count": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Wie oft dieses Assignment wegen Stall auf failed gesetzt wurde"
+          },
           "returned_at": {
             "$ref": "#/$defs/timestamp"
           }
