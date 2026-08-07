@@ -35,11 +35,13 @@ Wiederaufnahme:
 
 1. Lock prüfen (`state-lock.sh`); fremder Lock → `t_blocked`.
 2. State laden; `phase` und `cfg.active_node` sind maßgeblich.
-3. Offene `assignments` mit `status=running` und fehlendem Return: entweder
+3. **GC:** `scripts/gc-sweep.sh --apply` — Scratch und abgelaufene Artefakte weg
+   (kein Kontext-Müll aus der Vorgänger-Instanz).
+4. Offene `assignments` mit `status=running` und fehlendem Return: entweder
    Timeout laut config → `failed` + Neu-Delegation, oder auf Return warten.
-4. `awaiting_user`: **keine** Implementation bis Antwort; dann Annahmen/Antworten
-   eintragen und Gates fortsetzen.
-5. Nie Archiv-Handovers als Wahrheit — nur State + Index + aktive Assignments.
+5. `awaiting_user` / `awaiting_continuation`: **keine** Implementation bis Antwort
+   bzw. bis der neue Agent den Prompt übernommen hat.
+6. Nie Archiv-Handovers als Wahrheit — nur State + Index + aktive Assignments.
 
 ## 3. Human-Approval bei `irrev` {#approval}
 
