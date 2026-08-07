@@ -223,9 +223,9 @@
       "purpose": "Mandat, DoD, Werkzeuge, Rueckgabeformat der Rolle tester_reviewer",
       "load_when": "reading_list",
       "load_trigger": "Delegation an Rolle tester_reviewer",
-      "max_lines": 60,
+      "max_lines": 65,
       "max_bytes": null,
-      "tokens_est_max": 780,
+      "tokens_est_max": 845,
       "required": true,
       "owner_wp": "WP-2"
     },
@@ -237,9 +237,9 @@
       "purpose": "Mandat, DoD, Werkzeuge, Rueckgabeformat der Rolle ux_ui_expert",
       "load_when": "reading_list",
       "load_trigger": "Delegation an Rolle ux_ui_expert",
-      "max_lines": 38,
+      "max_lines": 42,
       "max_bytes": null,
-      "tokens_est_max": 494,
+      "tokens_est_max": 546,
       "required": true,
       "owner_wp": "WP-2"
     },

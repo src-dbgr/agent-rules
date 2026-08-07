@@ -34,7 +34,9 @@ Fehlt statt Architektur eine Anforderung, gilt derselbe Weg über `N5a → N3b`.
 | Jedes Akzeptanzkriterium hat mindestens einen zugeordneten Testfall | `proof_type: artifact` — Zuordnungstabelle im Bericht |
 | Testsuite läuft grün | `proof_type: unit_test` oder `integration_test`, Exit 0 in `dod_gates` |
 | Negativ-, Grenzwert- und Regressionsfälle sind abgedeckt | `proof_type: artifact` |
-| Bei sichtbarer Oberflächenänderung: automatisierte visuelle Regression grün; Sichtprüfung allein genügt nicht | `proof_type: visual_regression`, Exit 0 |
+| Bei sichtbarer Oberflächenänderung (`ui`): schmale Playwright-/E2E-Pfade + visuelle Regression grün (`modules/quality.md#ui`) | `proof_type: e2e_test` / `visual_regression`, Exit 0 |
+| Komplexe UI: bildbasiertes Review (Screenshots + Auswertung gegen AKs); Sichtprüfung allein genügt nicht | `proof_type: artifact` — Pfade unter `proof-artifacts/` |
+| Review-Captures nicht versioniert (nur Produkt-Suite-Baselines im Zielprojekt) | Diff ohne ephemere Screenshots |
 | Architektur-Konformität / Drift | Review + ggf. Eskalation `N5a→N3c` |
 | **Test-Disziplin** (`modules/quality.md`) | Bloat abgelehnt; nur risikotragende Tests; Vermerk „warum / warum nicht“ |
 | Kein offener blockierender Reviewpunkt | Review |
@@ -55,5 +57,5 @@ Maßgeblich ist `modules/tools.md#tester_reviewer`; hier steht nur die Kurzform.
 
 - Handover mit Grund `return` nach `templates/handover.md`; Rückgabe ≤ 150 Zeilen.
 - Pflichtinhalt: Ergebnis je Akzeptanzkriterium, Nachweise mit Exit-Code, Ergebnis des Konformitäts-Gates, blockierende gegenüber nicht blockierenden Punkten.
-- Testausgaben und Bildvergleiche nur als Pfad unter `proof-artifacts/`, nie inline.
+- Testausgaben und Bildvergleiche nur als Pfad unter `proof-artifacts/` (oder `runtime/tmp/`), nie inline; Verifikations-Screenshots **nicht** committen.
 - Bei Eskalation: Grund `escalation`, betroffene Kante und Begründung ausdrücklich nennen.

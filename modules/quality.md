@@ -42,7 +42,27 @@ Pflicht (je Akzeptanzkriterium mindestens eines, wo sinnvoll):
 | Gezielte Regression | genau der Bug/die Klasse, die schon weh tat | nach jedem Fix |
 | E2E / visuell | wenige kritische Nutzerpfade | nicht jeder Klick |
 
-UI: automatisierte visuelle Regression nur bei sichtbarer Änderung — Pflicht, aber schmal.
+## 2a. Oberflächen (GUI) — Playwright und bildbasiertes Review {#ui}
+
+Gilt bei Flag `ui` bzw. sichtbarer Oberflächenänderung (Gate `N5b`). Sichtet derselben
+Disziplin wie §2/§3: **schmal und risikotragend**, keine Klick- und Snapshot-Wände.
+
+1. **Produkt-Suite (Playwright oder Äquivalent).** Wenige kritische Nutzerpfade
+   automatisiert (Happy Path + relevante Leer-/Fehlerzustände). Sichtbare Änderung
+   ohne grünen E2E-/visuellen Lauf → Gate nicht bestanden. Bevorzugt das im Zielprojekt
+   etablierte Werkzeug (typisch Playwright); kein Zweit-Framework „nur für Agenten“.
+2. **Visuelle Regression.** Nur dort, wo Layout/Look regressionsanfällig ist — schmale
+   Snapshots, keine Vollseiten-Wände ohne Aussage (`§3`). Baselines der **Produkt-Suite**
+   versioniert das Zielprojekt nach dessen Konvention.
+3. **Bildbasiertes Agent-Review (Pflicht bei komplexer UI).** Zusätzlich zur Suite prüft
+   Tester/`N5b` mit Browser: Screenshots (Desktop/relevant mobil), Auswertung gegen
+   Akzeptanzkriterien und Design-Konsistenz (Zustände, Hierarchie, offensichtliche
+   A11y-Brüche). Manuelle Sichtprüfung *ohne* Artefaktpfad und ohne Suite reicht nicht.
+4. **Ephemere Verifikationsbilder — nie committen.** Screenshots und Agent-Review-Captures
+   liegen nur unter `proof-artifacts/` oder `runtime/tmp/` (gitignored, GC). Sie gehören
+   **nicht** ins VCS. Im Handover nur **Pfade**, keine Inline-Bilder.
+   Ausnahme: versionierte Baselines der Produkt-Suite im Zielprojekt — das sind
+   Suite-Artefakte, keine Review-Captures.
 
 ## 3. Was nicht getestet werden darf {#anti-bloat}
 
@@ -64,6 +84,8 @@ Sonst streichen oder auf die richtige Ebene heben.
 |-------|---------|
 | Architect (`N3c`) | Entwurf erfüllt §1; Verträge und Abhängigkeitsrichtung benannt |
 | Developer (`N4`) | Änderung driftfrei; Selbsttest nur für **neue** Risiken; keine Suite-Müllcommits |
-| Tester (`N5a`) | Traceability AK→Test; Konformitäts-Gate; **Test-Review**: Bloat ablehnen; fehlende Vertrags-/Regressionsfälle blockierend |
+| Tester (`N5a`) | Traceability AK→Test; Konformitäts-Gate; **Test-Review**: Bloat ablehnen; fehlende Vertrags-/Regressionsfälle blockierend; bei `ui`: Playwright-/E2E-Disziplin + bildbasiertes Review (§2a) |
+| UX/UI (`N5b`) | Visuelle Regression + A11y-Mindestmaß; komplexe UI mit Screenshot-Evaluation; keine Review-Captures committen |
 
 Nachweis: Suite Exit 0 **und** kurzer Vermerk „warum diese Tests, was bewusst nicht“.
+Bei `ui`: zusätzlich Exit 0 der visuellen/E2E-Läufe und Artefaktpfade des bildbasierten Reviews.
