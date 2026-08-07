@@ -26,7 +26,28 @@ wird über `scripts/context-budget.sh --reading-list` geladen.
 | `handover-template.md` | Stub → `templates/handover.md` + `modules/lifecycle.md` |
 | `memory-policy.md` | Stub → `modules/memory.md` |
 | `skills-policy.md` | Stub → `modules/skills.md` |
-| `workflows/triage-decision-matrix.md` | Stub → `modules/triage.md` |
+| `.gitignore` | beibehalten / erweitert (`runtime/`, `states/`, …) |
+| `CHANGELOG.md` | fortgeschrieben |
+| `README.md` | auf v2 umgestellt |
+| `prompts/README.md` | fortgeschrieben |
+| `prompts/project-bootstrap-prompt.md` | auf v2 umgestellt |
+| `schemas/agent-state.schema.json` | Schema `2.0.0` |
+| `scripts/verify-proofs.sh` | beibehalten (TLA+/Coverage) |
+| `specs/workflow.cfg` / `specs/workflow.tla` | beibehalten; Norm-Beweis in `modules/workflow.md` (Rank-Funktion) + `specs/coverage.md` |
+| `templates/handover-filled-example.md` | auf v2-Template/`task_id` gezogen |
+| `templates/skill-template/SKILL.md` | Verweise auf `modules/skills.md` |
+
+## Gelöscht (kein Stub — Inhalt ersetzt oder Altlast)
+
+| Datei | Grund |
+|-------|-------|
+| `<.agent-state.json>` | Live-/Beispiel-State im Root verboten; Ersatz: `examples/agent-state.example.json` und `runtime/state/<id>.json` |
+| `<workflows/triage-decision-matrix.md>` | Scoring-Matrix ersetzt durch `modules/triage.md` (nicht verschoben) |
+| `<proofs/termination-proof.md>` | ersetzt durch Rank-Argument in `modules/workflow.md` plus `specs/coverage.md` |
+| `<templates/handover-example.md>` | veraltetes Doppelbeispiel; kanonisch: `templates/handover.md` + `templates/handover-filled-example.md` |
+
+Kompatibilitäts-Stubs (kurz, mit Verweis) bleiben: `workflow-cfg.md`, `tools-registry.md`,
+`memory-policy.md`, `handover-template.md`, `skills-policy.md`.
 
 ## State migrieren
 
@@ -39,6 +60,6 @@ wird über `scripts/context-budget.sh --reading-list` geladen.
 
 1. Vendor pullen: `cd .agent-rules && git pull`
 2. Bootstrap-Prompt aus `prompts/project-bootstrap-prompt.md` verwenden
-3. `runtime/` gitignorieren (kompletter Baum)
+3. `runtime/` gitignorieren (kompletter Baum); Root-State-Datei (`<.agent-state.json>`) nicht anlegen
 4. Optional: einmal `./scripts/gc-sweep.sh --apply` für Alt-Müll
 5. Prüfen: `bash scripts/lint-lawbook.sh --all --strict`

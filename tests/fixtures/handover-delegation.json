@@ -29,9 +29,9 @@
     "git reset"
   ],
   "task_boundaries": [
-    "Keine Aenderung an AGENTS.md, workflow-cfg.md, tools-registry.md, memory-policy.md",
+    "Keine Aenderung an AGENTS.md oder modules/*",
     "Nichts unter runtime/ schreiben, nur lesen",
-    "Keine bestehende Datei loeschen, auch nicht die Root-.agent-state.json"
+    "Kein Root-.agent-state.json anlegen (verbotener Legacy-Pfad)"
   ],
   "done_criteria": [
     "bash -n ueber alle geaenderten Skripte endet mit Exit 0",

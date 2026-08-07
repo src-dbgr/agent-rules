@@ -2,6 +2,9 @@
 runtime/
 proof-artifacts/
 
+# Verbotene Legacy-State-Pfade (v2: runtime/state/<orchestrator_id>.json)
+.agent-state.json
+
 # OS / Editor
 .DS_Store
 Thumbs.db
