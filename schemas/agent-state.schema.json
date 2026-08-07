@@ -96,6 +96,11 @@
     "timestamp": {
       "type": "string",
       "format": "date-time"
+    },
+    "task_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUID der Aufgabe — Korrelation Spawn/Handover/Return (LAW-ASSIGN)"
     }
   },
   "properties": {
@@ -542,6 +547,9 @@
           "handover_path": {
             "type": "string",
             "description": "Pfad des zugehoerigen Handovers unter runtime/handovers/"
+          },
+          "task_id": {
+            "$ref": "#/$defs/task_id"
           }
         },
         "allOf": [
@@ -633,6 +641,9 @@
             "type": "string",
             "pattern": "^[a-z][a-z0-9_]*$",
             "description": "Retention-Klasse aus config/policy-defaults.json#/gc/artifacts"
+          },
+          "task_id": {
+            "$ref": "#/$defs/task_id"
           }
         }
       }
@@ -1220,6 +1231,104 @@
           "blocking": {
             "type": "boolean",
             "default": false
+          }
+        }
+      }
+    },
+    "assignments": {
+      "type": "array",
+      "description": "Assignment-Ledger des Orchestrators (modules/ops.md#ledger)",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "task_id",
+          "agent_id",
+          "role",
+          "cfg_node",
+          "handover_out_id",
+          "status",
+          "created_at"
+        ],
+        "properties": {
+          "task_id": {
+            "$ref": "#/$defs/task_id"
+          },
+          "agent_id": {
+            "$ref": "#/$defs/agent_id"
+          },
+          "role": {
+            "$ref": "#/$defs/role"
+          },
+          "cfg_node": {
+            "$ref": "#/$defs/node_id"
+          },
+          "handover_out_id": {
+            "$ref": "#/$defs/agent_id"
+          },
+          "handover_return_id": {
+            "$ref": "#/$defs/agent_id"
+          },
+          "parent_task_id": {
+            "$ref": "#/$defs/task_id"
+          },
+          "write_paths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "model_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "running",
+              "returned",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "created_at": {
+            "$ref": "#/$defs/timestamp"
+          },
+          "returned_at": {
+            "$ref": "#/$defs/timestamp"
+          }
+        }
+      }
+    },
+    "approvals": {
+      "type": "array",
+      "description": "Human-Approvals fuer irrev u. ae. (modules/ops.md#approval)",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "scope",
+          "granted"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "task_id": {
+            "$ref": "#/$defs/task_id"
+          },
+          "granted": {
+            "type": "boolean"
+          },
+          "granted_at": {
+            "$ref": "#/$defs/timestamp"
+          },
+          "note": {
+            "type": "string"
           }
         }
       }

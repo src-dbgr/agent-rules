@@ -443,11 +443,22 @@
     "/clarification/max_questions_per_pause": {
       "herkunft": "setzung",
       "quelle": "Auftraggeber: knappe Rueckfragen, keine Batterie"
+    },
+    "/ops/max_wall_clock_minutes": {
+      "herkunft": "setzung",
+      "quelle": "Auftraggeber: teure/lange Laeufe begrenzen; kalibrierbar"
     }
   },
   "clarification": {
     "max_questions_per_pause": 5,
     "pseudo_questions_forbidden": true,
     "blocking_requires_awaiting_user": true
+  },
+  "ops": {
+    "max_wall_clock_minutes": 240,
+    "assignment_running_timeout_minutes": 90,
+    "require_approval_for_irrev": true,
+    "audit_log_path": "runtime/audit.jsonl",
+    "max_model_rank_default": 3
   }
 }

@@ -35,9 +35,9 @@ Fehlt statt Architektur eine Anforderung, gilt derselbe Weg über `N5a → N3b`.
 | Testsuite läuft grün | `proof_type: unit_test` oder `integration_test`, Exit 0 in `dod_gates` |
 | Negativ-, Grenzwert- und Regressionsfälle sind abgedeckt | `proof_type: artifact` |
 | Bei sichtbarer Oberflächenänderung: automatisierte visuelle Regression grün; Sichtprüfung allein genügt nicht | `proof_type: visual_regression`, Exit 0 |
-| Konformitäts-Gate bestanden: keine unbegründete Drift, kein neuer Abhängigkeitszyklus | Review, Ergebnis im Handover benannt |
-| Echter Architekturbedarf ist entweder verneint oder eskaliert | `proof_type: artifact` — Eskalationsvermerk |
-| Kein offener blockierender Reviewpunkt; Feedback ist konkret und priorisiert | Review |
+| Architektur-Konformität / Drift | Review + ggf. Eskalation `N5a→N3c` |
+| **Test-Disziplin** (`modules/quality.md`) | Bloat abgelehnt; nur risikotragende Tests; Vermerk „warum / warum nicht“ |
+| Kein offener blockierender Reviewpunkt | Review |
 
 Ein Gate ohne ausgeführten Nachweis bleibt `pending`; „NICHT NACHGEWIESEN" heißt
 Exit 2 und gilt nicht als bestanden (`LAW-DOD`). Fix-Zyklen sind kumulativ und

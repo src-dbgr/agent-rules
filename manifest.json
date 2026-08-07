@@ -1042,6 +1042,22 @@
       "line_cap": 200,
       "required": true,
       "when": "on_demand"
+    },
+    {
+      "path": "modules/quality.md",
+      "kind": "module",
+      "purpose": "Regression by design + Test-Disziplin",
+      "line_cap": 160,
+      "required": true,
+      "when": "on_demand"
+    },
+    {
+      "path": "modules/ops.md",
+      "kind": "module",
+      "purpose": "Assignment-Ledger, Resume, Approval, Kosten, Observability",
+      "line_cap": 160,
+      "required": true,
+      "when": "on_demand"
     }
   ],
   "manifest_scope": {
@@ -1572,6 +1588,18 @@
     {
       "id": "LAW-MODELS",
       "module": "config/model-policy.json"
+    },
+    {
+      "id": "LAW-QUALITY",
+      "module": "modules/quality.md"
+    },
+    {
+      "id": "LAW-ASSIGN",
+      "module": "modules/ops.md"
+    },
+    {
+      "id": "LAW-OPS",
+      "module": "modules/ops.md"
     }
   ],
   "phases": [

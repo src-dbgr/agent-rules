@@ -68,9 +68,11 @@ Verboten: Elternhistorie, Geschwister-Handover, Archiv-Scan, blindes
 Jede Delegation / Rückgabe / Eskalation / Rotation ist ein Handover
 (`templates/handover.md`, Schema `schemas/handover.schema.json`). Pflicht:
 
+- `task_id` (UUID) — Korrelation im Assignment-Ledger (`modules/ops.md#ledger`),
 - globales Ziel unverändert,
 - CFG-Knoten und DoD,
 - Artefakt-**Pfade** (keine Inline-Logs),
+- `write_paths` bei paralleler Arbeit,
 - exakter Startpunkt für den Empfänger,
 - Rückgabe ≤ `caps.subagent_return_max_lines` Zeilen.
 

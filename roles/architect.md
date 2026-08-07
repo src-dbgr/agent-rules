@@ -22,8 +22,9 @@ Du tust **nicht**: Anforderungen erfinden (Business Analyst), Produktionscode sc
 |-----------|----------|
 | Je wesentlicher Entscheidung eine Entscheidungsnotiz mit Kontext, Optionen, Wahl, Folgen | `proof_type: artifact` — Notiz unter `runtime/reports/` |
 | Der Entwurf deckt jedes Akzeptanzkriterium des Business Analyst ab | Review, Zuordnung im Handover |
-| Keine Zirkelabhängigkeit zwischen Komponenten; Abhängigkeitsrichtung ist benannt | `proof_type: artifact` |
-| Schnittstellen sind so geschnitten, dass Developer unabhängig parallel arbeiten können | Review |
+| Keine Zirkelabhängigkeit; Abhängigkeitsrichtung benannt (`modules/quality.md#by-design`) | `proof_type: artifact` |
+| Verträge schmal/stabil; Breaking → `irrev` + Approval-Pfad | Review |
+| Schnittstellen erlauben parallele Developer mit disjunkten Schreibpfaden | Review |
 | Sicherheits- und Datenschutzwirkung des Entwurfs ist bewertet, nicht vertagt | `proof_type: artifact` |
 | Formale Verifikation nur bei kritischer Nebenläufigkeit; dann Modellprüfer mit Exit 0 | `proof_type: tla_probe`, Kommando und Exit-Code in `dod_gates` |
 

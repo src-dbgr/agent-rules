@@ -22,8 +22,9 @@ mergen oder Auto-Merge setzen, Remote-Refs löschen.
 |-----------|----------|
 | Code baut und läuft; kein toter Codepfad, kein unbegründetes TODO | `proof_type: command`, Bau- oder Startkommando mit Exit 0 |
 | Linter und Formatprüfung des Projekts sind sauber | `proof_type: lint`, Kommando und Exit-Code in `dod_gates` |
-| Selbsttest vor Übergabe ausgeführt, nicht nur behauptet | `proof_type: unit_test` |
-| Die spezifizierte Schnittstelle ist eingehalten | Review gegen Entwurf |
+| Selbsttest vor Übergabe — nur für **neue Risiken**, kein Suite-Müll (`modules/quality.md`) | `proof_type: unit_test` |
+| Dependency-Regel / Verträge eingehalten; keine stillen Breaking Changes | Review gegen Entwurf |
+| Assignment `write_paths` nicht überschritten | Review / Diff |
 | Keine Geheimnisse im Code, in Logs oder in der Historie | `proof_type: secret_scan`, `gitleaks detect --no-git --redact` mit Exit 0 |
 | Änderungen sind atomar und nachvollziehbar beschrieben | `proof_type: artifact` — Commit-Historie |
 | An `N6b`: Branch registriert, Push erfolgt, Pull Request oder Bericht vorhanden | `proof_type: command`, Exit-Code in `dod_gates` |

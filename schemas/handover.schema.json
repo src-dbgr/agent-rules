@@ -21,12 +21,22 @@
     "budget",
     "artifacts",
     "open_gates",
-    "dead_ends"
+    "dead_ends",
+    "task_id"
   ],
   "$defs": {
-    "agent_id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,63}$" },
-    "node_id": { "type": "string", "pattern": "^N[0-7][a-c]?$" },
-    "gate_key": { "type": "string", "pattern": "^(N[0-7][a-c]?|dod:[a-z_]+)$" },
+    "agent_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,63}$"
+    },
+    "node_id": {
+      "type": "string",
+      "pattern": "^N[0-7][a-c]?$"
+    },
+    "gate_key": {
+      "type": "string",
+      "pattern": "^(N[0-7][a-c]?|dod:[a-z_]+)$"
+    },
     "role": {
       "type": "string",
       "enum": [
@@ -50,64 +60,171 @@
     }
   },
   "properties": {
-    "$comment": { "type": "string", "description": "Optionale Annotation, z. B. Hinweis auf eine Beispiel- oder Fixture-Instanz" },
-    "handover_id": { "$ref": "#/$defs/agent_id" },
-    "parent_agent_id": { "$ref": "#/$defs/agent_id", "description": "ID des Elternagenten; Eskalation geht immer nach oben, nie seitwaerts" },
-    "agent_id": { "$ref": "#/$defs/agent_id", "description": "ID des empfangenden Agenten, sofern bereits bekannt" },
-    "role": { "$ref": "#/$defs/role" },
-    "role_label": { "type": "string", "minLength": 1, "description": "Klartextname, wenn role den Wert other hat" },
-    "depth": { "type": "integer", "minimum": 0, "maximum": 4, "description": "Baumtiefe des empfangenden Agenten; 4 ist das harte Limit (LAW-HIERARCHY)" },
-    "node": { "$ref": "#/$defs/node_id" },
-    "class": { "type": "string", "enum": ["incident", "revert", "answer", "spike", "chore", "feature"] },
+    "$comment": {
+      "type": "string",
+      "description": "Optionale Annotation, z. B. Hinweis auf eine Beispiel- oder Fixture-Instanz"
+    },
+    "handover_id": {
+      "$ref": "#/$defs/agent_id"
+    },
+    "parent_agent_id": {
+      "$ref": "#/$defs/agent_id",
+      "description": "ID des Elternagenten; Eskalation geht immer nach oben, nie seitwaerts"
+    },
+    "agent_id": {
+      "$ref": "#/$defs/agent_id",
+      "description": "ID des empfangenden Agenten, sofern bereits bekannt"
+    },
+    "role": {
+      "$ref": "#/$defs/role"
+    },
+    "role_label": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Klartextname, wenn role den Wert other hat"
+    },
+    "depth": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4,
+      "description": "Baumtiefe des empfangenden Agenten; 4 ist das harte Limit (LAW-HIERARCHY)"
+    },
+    "node": {
+      "$ref": "#/$defs/node_id"
+    },
+    "class": {
+      "type": "string",
+      "enum": [
+        "incident",
+        "revert",
+        "answer",
+        "spike",
+        "chore",
+        "feature"
+      ]
+    },
     "flags": {
       "type": "array",
       "uniqueItems": true,
       "maxItems": 9,
-      "items": { "type": "string", "enum": ["sec", "data", "legal", "ui", "api", "conc", "arch", "perf", "irrev"] }
+      "items": {
+        "type": "string",
+        "enum": [
+          "sec",
+          "data",
+          "legal",
+          "ui",
+          "api",
+          "conc",
+          "arch",
+          "perf",
+          "irrev"
+        ]
+      }
     },
     "reason": {
       "type": "string",
-      "enum": ["delegation", "return", "escalation", "context_rotation"],
+      "enum": [
+        "delegation",
+        "return",
+        "escalation",
+        "context_rotation"
+      ],
       "description": "context_rotation ist kein Spawn: Rolle und Tiefe bleiben gleich (AK-023)"
     },
-    "goal": { "type": "string", "minLength": 10, "description": "Auftrag in einem Satz; unveraendert abgeleitet vom globalen Ziel" },
-    "output_format": { "type": "string", "minLength": 5, "description": "AK-090: erwartetes Rueckgabeformat, sonst ist die Rueckgabe nicht pruefbar" },
+    "goal": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Auftrag in einem Satz; unveraendert abgeleitet vom globalen Ziel"
+    },
+    "output_format": {
+      "type": "string",
+      "minLength": 5,
+      "description": "AK-090: erwartetes Rueckgabeformat, sonst ist die Rueckgabe nicht pruefbar"
+    },
     "tools_allowed": {
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": { "type": "string", "minLength": 1 },
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
       "description": "Abschliessende Liste; verwiesen wird auf modules/tools.md#<rolle>, dupliziert wird nicht"
     },
-    "tools_forbidden": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "tools_forbidden": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
     "task_boundaries": {
       "type": "array",
       "minItems": 1,
-      "items": { "type": "string", "minLength": 3 },
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
       "description": "AK-090: was ausdruecklich NICHT Auftrag ist (Dateimengen, Verbote)"
     },
     "done_criteria": {
       "type": "array",
-      "items": { "type": "string", "minLength": 3 },
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
       "description": "Nachweisbare Abnahmekriterien; bei Klasse ohne Business-Analyst das Mini-Akzeptanzkriterium"
     },
     "budget": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["files_read", "bytes_read", "tool_calls", "turns"],
+      "required": [
+        "files_read",
+        "bytes_read",
+        "tool_calls",
+        "turns"
+      ],
       "description": "Zaehlbare Proxies des uebergebenden Agenten (ADR-006 §1). Ein Prozentwert ist nie Pflichtausloeser (AK-016).",
       "properties": {
-        "files_read": { "type": "integer", "minimum": 0 },
-        "bytes_read": { "type": "integer", "minimum": 0 },
-        "tool_calls": { "type": "integer", "minimum": 0 },
-        "turns": { "type": "integer", "minimum": 0 },
-        "artifact_bytes": { "type": "integer", "minimum": 0 },
-        "bytes_max": { "type": "integer", "minimum": 1, "description": "Lesebudget dieser Delegation aus der Leseliste" },
+        "files_read": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bytes_read": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tool_calls": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "turns": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "artifact_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bytes_max": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Lesebudget dieser Delegation aus der Leseliste"
+        },
         "context_utilization_percent": {
           "description": "AK-016/AK-017: optional; Zahl 0..100 oder die Zeichenkette unavailable",
           "oneOf": [
-            { "type": "number", "minimum": 0, "maximum": 100 },
-            { "type": "string", "const": "unavailable" }
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            {
+              "type": "string",
+              "const": "unavailable"
+            }
           ]
         }
       }
@@ -115,7 +232,10 @@
     "reading_list": {
       "type": "array",
       "uniqueItems": true,
-      "items": { "type": "string", "minLength": 2 },
+      "items": {
+        "type": "string",
+        "minLength": 2
+      },
       "description": "Ausgabe von scripts/context-budget.sh --reading-list; der Empfaenger liest ausschliesslich diese Pfade und Anker"
     },
     "artifacts": {
@@ -124,19 +244,36 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["path", "type"],
+        "required": [
+          "path",
+          "type"
+        ],
         "properties": {
-          "path": { "type": "string", "minLength": 1 },
-          "type": { "type": "string", "minLength": 1 },
-          "bytes": { "type": "integer", "minimum": 0 },
-          "created_at": { "type": "string", "format": "date-time" }
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       }
     },
     "open_gates": {
       "type": "array",
       "uniqueItems": true,
-      "items": { "$ref": "#/$defs/gate_key" },
+      "items": {
+        "$ref": "#/$defs/gate_key"
+      },
       "description": "Noch nicht erfuellte Gates der Aufgabe (Knoten oder dod:<name>)"
     },
     "dead_ends": {
@@ -145,33 +282,102 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["attempt", "outcome"],
+        "required": [
+          "attempt",
+          "outcome"
+        ],
         "properties": {
-          "attempt": { "type": "string", "minLength": 3 },
-          "outcome": { "type": "string", "minLength": 3 },
-          "artifact": { "type": "string", "description": "Pfad zum Fehlerlog statt Inline-Ausgabe" }
+          "attempt": {
+            "type": "string",
+            "minLength": 3
+          },
+          "outcome": {
+            "type": "string",
+            "minLength": 3
+          },
+          "artifact": {
+            "type": "string",
+            "description": "Pfad zum Fehlerlog statt Inline-Ausgabe"
+          }
         }
       }
     },
-    "start_point": { "type": "string", "minLength": 5, "description": "Exakter Startpunkt fuer den empfangenden Agenten" },
-    "created_at": { "type": "string", "format": "date-time" },
-    "expires_at": { "type": "string", "format": "date-time", "description": "Retention aus config/policy-defaults.json#/gc/artifacts" }
+    "start_point": {
+      "type": "string",
+      "minLength": 5,
+      "description": "Exakter Startpunkt fuer den empfangenden Agenten"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Retention aus config/policy-defaults.json#/gc/artifacts"
+    },
+    "task_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Korrelations-UUID (LAW-ASSIGN)"
+    }
   },
   "allOf": [
     {
       "$comment": "Eine Delegation ohne Auftragsgrenzen und ohne Abnahmekriterium ist kein Delegationsbrief (AK-090).",
-      "if": { "properties": { "reason": { "const": "delegation" } }, "required": ["reason"] },
-      "then": { "required": ["done_criteria", "start_point"] }
+      "if": {
+        "properties": {
+          "reason": {
+            "const": "delegation"
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "then": {
+        "required": [
+          "done_criteria",
+          "start_point"
+        ]
+      }
     },
     {
       "$comment": "Eine Kontext-Rotation muss den Nachfolger verorten koennen.",
-      "if": { "properties": { "reason": { "const": "context_rotation" } }, "required": ["reason"] },
-      "then": { "required": ["start_point", "open_gates"] }
+      "if": {
+        "properties": {
+          "reason": {
+            "const": "context_rotation"
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "then": {
+        "required": [
+          "start_point",
+          "open_gates"
+        ]
+      }
     },
     {
       "$comment": "Rolle other verlangt einen Klartextnamen.",
-      "if": { "properties": { "role": { "const": "other" } }, "required": ["role"] },
-      "then": { "required": ["role_label"] }
+      "if": {
+        "properties": {
+          "role": {
+            "const": "other"
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "then": {
+        "required": [
+          "role_label"
+        ]
+      }
     }
   ]
 }

@@ -60,6 +60,9 @@ das ist Orchestrator-Arbeit. Rollenwechsel in derselben Instanz ist verboten (`L
 | `LAW-DELIVERY` | Auslieferung ist Rollenpflicht an `N6b`, nie Sache des Orchestrators. | `modules/vcs.md#auslieferung` |
 | `LAW-CLARIFY` | Blockierende Unsicherheit → Rückfrage, Pause; keine Pseudo-Fragen; keine stillen Fehlannahmen. | `modules/clarification.md` |
 | `LAW-MODELS` | Modellwahl nur nach `config/model-policy.json`; Never-Liste ist hart; Aufstieg begründen. | `config/model-policy.json` |
+| `LAW-QUALITY` | Regression by Design; Tests nur mit Risiko-Mehrwert; keine Suite-Aufblähung. | `modules/quality.md` |
+| `LAW-ASSIGN` | Jede Delegation hat `task_id` (UUID) im Assignment-Ledger; Rückgaben ohne ID abweisen. | `modules/ops.md#ledger` |
+| `LAW-OPS` | Resume, `irrev`-Approval, Kosten-/Zeitbudget, Audit-Log. | `modules/ops.md` |
 
 Gesetze sind für Sub-Agenten nicht verhandelbar. Details nur in der genannten Datei.
 Unterregeln `LAW-MEMORY.1`–`.6`: `modules/memory.md`.
@@ -122,6 +125,7 @@ Der Main-Thread bleibt dünn, sonst sterben lange Sessions:
 - Sub-Agent bekommt nur: Kern + eine Rollen-Karte + ein Handover + Leselisten-Anker.
 - Nach `N1` und `N7`: GC (`scripts/gc-sweep.sh`); tote Handovers und Scratch weg.
 - Modellwahl: `config/model-policy.json` (nicht raten, nicht hardcoden).
+- Jede Delegation: neuer `task_id` (UUID) in `assignments[]` + Handover-IDs; Antworten nur über diese Korrelation annehmen (`modules/ops.md#ledger`).
 
 ## Delegation und Handover
 
@@ -168,6 +172,8 @@ Karten entstehen nicht im Lauf.
 | `modules/vcs.md` | Branch-Lebenszyklus, Löschverbote, Zuständigkeit, Auslieferung |
 | `modules/skills.md` | Entscheidung zwischen Skill, Rule und MCP |
 | `modules/clarification.md` | Wann Rückfragen Pflicht sind; Anti-Pseudo-Fragen |
+| `modules/quality.md` | Architektur gegen Regression; was getestet wird / nicht |
+| `modules/ops.md` | Assignment-UUID-Ledger, Resume, Approval, Kosten |
 | `config/model-policy.json` | Erlaubte/verbotene LLMs und Aufstiegsleiter |
 
 ## Terminal und Abbruch

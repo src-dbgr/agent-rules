@@ -26,7 +26,9 @@ Versionierung semantisch (MAJOR.MINOR.PATCH) auf das Gesetzbuch als Ganzes.
   `check-triage.sh`, `validate-handovers.sh`, `state-lock.sh`, `snapshot.sh`, CI-Workflow.
 - `docs/migration-v1-to-v2.md`, MIT `LICENSE`.
 - **`LAW-CLARIFY`** + `modules/clarification.md`: Pflicht-Rückfragen bei blockierender Unsicherheit; Anti-Pseudo-Fragen; Phase `awaiting_user`.
-- **`LAW-MODELS`** + `config/model-policy.json`: konfigurierbare LLM-Leiter und Never-Liste (kein Hardcode in AGENTS.md).
+- **`LAW-MODELS`** + `config/model-policy.json`
+- **`LAW-QUALITY`** + `modules/quality.md`: Regression by Design, Test-Disziplin (kein Suite-Bloat)
+- **`LAW-ASSIGN`/`LAW-OPS`** + `modules/ops.md`: Assignment-Ledger mit task_id (UUID), Resume, irrev-Approval, Kosten, Audit-Log: konfigurierbare LLM-Leiter und Never-Liste (kein Hardcode in AGENTS.md).
 - Main-Thread Context-Clean-Abschnitt in `AGENTS.md`.
 
 ### Changed

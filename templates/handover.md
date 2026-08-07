@@ -1,7 +1,8 @@
 ---
 handover_id: "<uuid>"
-parent_agent_id: "<uuid>"
-child_agent_id: "<uuid-or-empty>"
+task_id: "<uuid>"
+parent_agent_id: "<id>"
+child_agent_id: "<id-or-empty>"
 handover_type: delegation
 role_assigned: developer
 cfg_node: N4
@@ -11,7 +12,7 @@ files_read: 0
 bytes_read: 0
 tool_calls: 0
 turns: 0
-created_at: "2026-08-06T00:00:00Z"
+created_at: "2026-08-07T00:00:00Z"
 schema_version: "2.0.0"
 ---
 
@@ -21,6 +22,7 @@ schema_version: "2.0.0"
 **Original-Prompt:** `[unverändert]`
 **Out-of-scope:** …
 **Klasse / Flags:** `feature` + `[…]`
+**task_id:** `[UUID — Pflicht, Korrelation zum Assignment-Ledger]`
 
 ## 2. CFG-Knoten
 Knoten: `N?` | Vorher: … | Nächster bei Erfolg: …
@@ -31,15 +33,19 @@ DoD: `- [ ] …` Nachweis: `` `befehl` `` → Exit 0
 |----------|------|------|
 | … | `…` | … |
 
-## 4. Sackgassen
+## 4. Schreibrechte (Parallelität)
+`write_paths:` … (disjunkt zu Geschwistern) | sonst: Eskalation
+
+## 5. Sackgassen
 Keine | oder Tabelle Versuch / Warum verworfen / Log-Pfad
 
-## 5. Startpunkt (Empfänger)
+## 6. Startpunkt (Empfänger)
 Rolle: …
 1. Lies: `[pfade]`
 2. Führe aus: `[befehl]`
 3. Erwarte: `[ergebnis]`
 Schreibzugriff: … | Nur lesen: … | Verboten: …
 
-## 6. Rückgabe
+## 7. Rückgabe
 An: `parent_agent_id` | Format: `handover_type: return` | Max. 150 Zeilen
+**Dieselbe `task_id` wiederholen** — sonst weist der Orchestrator ab.
