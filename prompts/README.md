@@ -1,18 +1,10 @@
 # Verbraucher-Vorlagen (Nicht-Gesetzbuch)
 
-> **Dieses Verzeichnis ist kein Teil des Gesetzbuchs.**  
-> Die Dateien hier sind **paste-ready Prompts** für Nutzer:innen — Kopier-Vorlagen, die in Zielprojekte oder Chat-Sessions eingefügt werden. Sie **referenzieren** die normativen Dokumente (`AGENTS.md`, `workflow-cfg.md`, …), ersetzen oder duplizieren sie aber nicht.
+Paste-ready Prompts — **kein** Normtext. Kopieren, Request einfügen, Chat starten.
 
-| Was | Wo |
-|-----|-----|
-| **Gesetzbuch (normativ)** | Repo-Root: `AGENTS.md`, `workflow-cfg.md`, … |
-| **Verbraucher-Vorlagen** | `prompts/` (dieses Verzeichnis) |
-| **Weitere Beispiele/Templates** | `templates/` (Handover, Skills) |
+| Datei | Wann |
+|-------|------|
+| [`project-bootstrap-prompt.md`](project-bootstrap-prompt.md) | **Neues Projekt / neuer Auftrag** — Standard-Start |
+| [`continuation-prompt.md`](continuation-prompt.md) | Kontext voll (~70%) — Vorlage; besser per `scripts/emit-continuation-prompt.sh` aus dem State erzeugen |
 
-## Vorlagen
-
-| Datei | Zweck |
-|-------|-------|
-| [`project-bootstrap-prompt.md`](project-bootstrap-prompt.md) | Standard-Prompt für Feature-Arbeit im Zielprojekt: Bootstrap (CFG N1) zuerst, dann Nutzeranfrage |
-
-Details zum Vendor-Muster und den drei Ebenen: `README.md` § „Konsum im Zielprojekt“.
+Vendor-Muster: Root-`README.md` § „Konsum im Zielprojekt“.

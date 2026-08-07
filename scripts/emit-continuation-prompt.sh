@@ -75,7 +75,7 @@ repl = {
     "findings_bullets": findings_txt,
     "next_step": f"Setze an Knoten {cfg.get('active_node','N2')} fort; offene Assignments prüfen; nicht blind bei N0 neu starten.",
     "budget_json": json.dumps(budget, ensure_ascii=False),
-    "created_at": datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z",
+    "created_at": datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
 }
 out = body
 for k, v in repl.items():
