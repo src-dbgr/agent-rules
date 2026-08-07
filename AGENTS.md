@@ -125,6 +125,9 @@ Der Main-Thread bleibt dünn, sonst sterben lange Sessions:
 - Sub-Agent bekommt nur: Kern + eine Rollen-Karte + ein Handover + Leselisten-Anker.
 - Nach `N1` und `N7`: GC (`scripts/gc-sweep.sh`); tote Handovers und Scratch weg.
 - Modellwahl: `config/model-policy.json` (nicht raten, nicht hardcoden).
+- Kontext ~60 %: **Warnung an Nutzer**. ~70 % oder Proxy-Cap: Fortsetzungs-Prompt ausgeben
+  (`scripts/emit-continuation-prompt.sh`) und STOPPEN — neuer Agent mit frischem Kontext
+  (`prompts/continuation-prompt.md`, `modules/context.md#rotation`).
 - Jede Delegation: neuer `task_id` (UUID) in `assignments[]` + Handover-IDs; Antworten nur über diese Korrelation annehmen (`modules/ops.md#ledger`).
 
 ## Delegation und Handover

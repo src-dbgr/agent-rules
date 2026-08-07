@@ -171,6 +171,7 @@
         "bootstrapping",
         "triage",
         "awaiting_user",
+        "awaiting_continuation",
         "executing",
         "aggregating",
         "done",

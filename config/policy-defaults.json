@@ -30,7 +30,9 @@
       "tool_calls_max": 120,
       "turns_max": 60,
       "artifact_bytes_max": 200000,
-      "percent_backstop": 80
+      "percent_backstop": 70,
+      "percent_warn": 60,
+      "percent_handoff": 70
     },
     "max_rotations_per_task": 12,
     "max_total_spawned": 24,
@@ -297,8 +299,8 @@
       "quelle": "Ableitung: 200.000 B entspricht ~25 Handover-Obergrenzen; darueber ist Inline-Kontext nie mehr sinnvoll"
     },
     "/budgets/rotation/percent_backstop": {
-      "herkunft": "belegt",
-      "quelle": "v1.3.1 Gesetz Kontext-Budget (80 %). In v2.0 nur Backstop und nur, wenn die Plattform einen Messwert liefert; nie Pflichtausloeser (AK-016, AK-019)"
+      "herkunft": "setzung",
+      "quelle": "Gleich percent_handoff (70); frueher 80 war zu spaet"
     },
     "/budgets/max_rotations_per_task": {
       "herkunft": "setzung",
@@ -447,6 +449,14 @@
     "/ops/max_wall_clock_minutes": {
       "herkunft": "setzung",
       "quelle": "Auftraggeber: teure/lange Laeufe begrenzen; kalibrierbar"
+    },
+    "/budgets/rotation/percent_warn": {
+      "herkunft": "setzung",
+      "quelle": "Auftraggeber: Qualitaet leidet ab ~60-70% Kontextfuellung"
+    },
+    "/budgets/rotation/percent_handoff": {
+      "herkunft": "setzung",
+      "quelle": "Auftraggeber: ab ~70% Pflicht-Handoff mit Copy-Paste-Prompt"
     }
   },
   "clarification": {

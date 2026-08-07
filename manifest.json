@@ -1058,6 +1058,22 @@
       "line_cap": 160,
       "required": true,
       "when": "on_demand"
+    },
+    {
+      "path": "prompts/continuation-prompt.md",
+      "kind": "prompt",
+      "purpose": "Copy-Paste Fortsetzungs-Prompt bei Kontext-Handoff",
+      "required": true,
+      "when": "on_demand",
+      "line_cap": 120
+    },
+    {
+      "path": "scripts/emit-continuation-prompt.sh",
+      "kind": "script",
+      "purpose": "Erzeugt Fortsetzungs-Prompt aus State",
+      "required": true,
+      "when": "on_demand",
+      "line_cap": 120
     }
   ],
   "manifest_scope": {
@@ -1606,6 +1622,7 @@
     "bootstrapping",
     "triage",
     "awaiting_user",
+    "awaiting_continuation",
     "executing",
     "aggregating",
     "done",

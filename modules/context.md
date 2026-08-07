@@ -78,13 +78,32 @@ Jede Delegation / Rückgabe / Eskalation / Rotation ist ein Handover
 
 Format und Retention: `modules/lifecycle.md#handover`.
 
-## Rotation {#rotation}
+## Rotation & Kontext-Handoff {#rotation}
 
-Erreicht ein Proxy seinen Schwellwert:
+Kontextqualität bricht **vor** 100 % ein. Defaults (siehe `config/policy-defaults.json`):
 
-1. Atomare Teilaufgabe abschließen.
-2. Handover `handover_type: context_rotation` an gleiche Rolle/Tiefe.
-3. `cycles.rotations` erhöhen; Grenze `budgets.max_rotations_per_task`.
-4. Nach Rotation: Kern erneut lesen (`LAW-CONTEXT`).
+| Schwelle | Config-Schlüssel | Aktion |
+|----------|------------------|--------|
+| Warnung | `budgets.rotation.percent_warn` (60) | Agent **meldet dem Nutzer**: Kontext wird kritisch |
+| Pflicht-Handoff | `budgets.rotation.percent_handoff` (70) | Pausieren, Fortsetzungs-Prompt ausgeben, STOPPEN |
 
-Rotation zählt **nicht** gegen `tree.total_spawned`.
+Zusätzlich: Proxy-Caps (`bytes_read`, `files_read`, `tool_calls`, `turns`,
+`artifact_bytes`) — Cap erreicht = Pflicht-Handoff. Prozente ohne Zähler raten = verboten.
+
+### Main-Thread (Orchestrator)
+
+1. Warnung: eine klare Zeile an den Nutzer.
+2. Pflicht-Handoff: State/Assignments sichern → `phase: awaiting_continuation` →
+   `bash scripts/emit-continuation-prompt.sh --state runtime/state/<id>.json` →
+   ausgegebenen Block **vollständig** zum Copy-Paste liefern → **keine** weitere Facharbeit.
+3. Neuer Agent: Kern frisch lesen, State laden, Lineage eintragen (`modules/ops.md#resume`).
+   Vorlage: `prompts/continuation-prompt.md`.
+
+### Sub-Agent
+
+1. Dieselben Schwellen/Proxies.
+2. Pflicht-Handoff: `handover_type: context_rotation` oder `return` mit
+   `context_exhausted`, **dieselbe `task_id`**, Kurzstand — kein stilles Weitermachen.
+3. Orchestrator: Nachfolger derselben Rolle (Rotation) oder neu planen.
+
+Rotation zählt nicht gegen `tree.total_spawned`. Limit: `budgets.max_rotations_per_task`.
