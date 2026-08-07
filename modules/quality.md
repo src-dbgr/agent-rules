@@ -27,6 +27,14 @@ Vor und während `N3c`/`N4` gilt:
 6. **Charakterisierung vor Blind-Rewrite** — bei Legacy: Verhalten zuerst mit
    wenigen gezielten Tests einfrieren, dann ändern (Fowler).
 
+**SOLID-Kern (ohne Katechismus):** Separation of Concerns und SRP über klare
+Modul-/Rollengrenzen; ISP und stabile Verträge über schmale Schnittstellen;
+DIP / Dependency Rule über Abhängigkeiten nach innen. **Zirkuläre Abhängigkeiten
+sind verboten** (Architect-DoD + Konformitäts-Gate `N5a`). OCP/LSP folgen aus
+versionierten Verträgen und verhaltenstreuen Untertypen — kein eigenes Ritual.
+Optionale Cycle-Checks im Zielprojekt (z. B. madge, dependency-cruiser), wenn der
+Stack das hergibt; kein Pflicht-Scanner im Vendor-Gesetzbuch.
+
 Architektur- und Code-Reviews prüfen **diese** Eigenschaften vor „Style“.
 
 ## 2. Was getestet werden muss {#must-test}
