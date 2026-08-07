@@ -1026,6 +1026,22 @@
       "tokens_est_max": 130,
       "required": true,
       "owner_wp": "WP-6"
+    },
+    {
+      "path": "modules/clarification.md",
+      "kind": "module",
+      "purpose": "Rueckfragen-Gate und Anti-Pseudo-Fragen",
+      "line_cap": 120,
+      "required": true,
+      "when": "on_demand"
+    },
+    {
+      "path": "config/model-policy.json",
+      "kind": "config",
+      "purpose": "LLM-Nutzungsleiter und Never-Liste",
+      "line_cap": 200,
+      "required": true,
+      "when": "on_demand"
     }
   ],
   "manifest_scope": {
@@ -1548,11 +1564,20 @@
       "id": "LAW-DELIVERY",
       "rule": "Auslieferung ist Rollenpflicht am Auslieferungsknoten, nie Sache des Orchestrators; ein Plattform-Mandat ist ein dokumentierter Ausnahmefall.",
       "normative_in": "modules/vcs.md#auslieferung"
+    },
+    {
+      "id": "LAW-CLARIFY",
+      "module": "modules/clarification.md"
+    },
+    {
+      "id": "LAW-MODELS",
+      "module": "config/model-policy.json"
     }
   ],
   "phases": [
     "bootstrapping",
     "triage",
+    "awaiting_user",
     "executing",
     "aggregating",
     "done",

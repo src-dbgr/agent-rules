@@ -165,13 +165,14 @@
       "enum": [
         "bootstrapping",
         "triage",
+        "awaiting_user",
         "executing",
         "aggregating",
         "done",
         "blocked",
         "abort"
       ],
-      "description": "Phasenraum, deckungsgleich mit manifest.json#/phases und den Terminalzustaenden t_done/t_blocked/t_abort (AK-102)"
+      "description": "awaiting_user = Pause wegen LAW-CLARIFY (echte Rückfrage). Terminal: done/blocked/abort."
     },
     "cfg": {
       "type": "object",
@@ -1165,6 +1166,61 @@
         },
         "completed_at": {
           "$ref": "#/$defs/timestamp"
+        }
+      }
+    },
+    "model_usage": {
+      "type": "array",
+      "description": "Protokoll der Modellwahl laut config/model-policy.json (LAW-MODELS)",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "model_id",
+          "rank",
+          "reason"
+        ],
+        "properties": {
+          "model_id": {
+            "type": "string"
+          },
+          "rank": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "reason": {
+            "type": "string"
+          },
+          "agent_role": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "description": "Nicht-blockierende dokumentierte Annahmen (LAW-CLARIFY)",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "statement"
+        ],
+        "properties": {
+          "statement": {
+            "type": "string"
+          },
+          "refutable_if": {
+            "type": "string"
+          },
+          "blocking": {
+            "type": "boolean",
+            "default": false
+          }
         }
       }
     }

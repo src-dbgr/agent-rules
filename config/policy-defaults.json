@@ -439,6 +439,15 @@
     "/enforcement/tla_jar_url": {
       "herkunft": "belegt",
       "quelle": "bereits in scripts/verify-proofs.sh vorhanden (tlaplus v1.8.0 Release). Keine URL erfunden; Pruefsumme fehlt heute und ist nachzutragen (Risiko R8)"
+    },
+    "/clarification/max_questions_per_pause": {
+      "herkunft": "setzung",
+      "quelle": "Auftraggeber: knappe Rueckfragen, keine Batterie"
     }
+  },
+  "clarification": {
+    "max_questions_per_pause": 5,
+    "pseudo_questions_forbidden": true,
+    "blocking_requires_awaiting_user": true
   }
 }

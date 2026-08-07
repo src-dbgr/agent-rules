@@ -25,19 +25,19 @@ eingehängt, damit bestehende Zitate nicht brechen.
 
 | ID | Rang | Name | Rolle | Art | Eintritt |
 |----|------|------|-------|-----|----------|
-| `N0` | 0 | INPUT | — | Pflicht | Nutzer-Prompt liegt vor |
-| `N1` | 1 | BOOTSTRAP | orchestrator | Pflicht | immer |
-| `N2` | 2 | TRIAGE | orchestrator | Pflicht | immer |
-| `N3a` | 3 | RESEARCH | researcher | Gate | Wissenslücke, externe Quelle nötig |
-| `N3b` | 4 | REQUIREMENTS | business_analyst | Gate | Gate-Set der Klasse |
-| `N3c` | 5 | ARCHITECTURE | architect | Gate | Flag `arch`/`conc` oder Eskalation aus `N5a` |
-| `N4` | 6 | IMPLEMENTATION | developer | Gate | Änderung am Repository verlangt |
-| `N5a` | 7 | TEST_REVIEW | tester_reviewer | Gate | Gate-Set der Klasse |
-| `N5b` | 7 | UX_UI | ux_ui_expert | Gate | Flag `ui` |
-| `N5c` | 7 | DOCUMENTATION | documentation_specialist | Gate | Flag `api` |
-| `N6a` | 8 | SECURITY | security_auditor | Gate | Flag `sec`, `data` oder `legal` |
-| `N6b` | 8 | DELIVERY | developer / devops_sre | Gate | Ergebnis soll ausgeliefert werden |
-| `N7` | 9 | AGGREGATION | orchestrator | Pflicht | immer (letzter Knoten vor Terminal) |
+| `N0` | 0 | INPUT / Eingang | — | Pflicht | Nutzer-Prompt liegt vor |
+| `N1` | 1 | BOOTSTRAP / Start | orchestrator | Pflicht | immer |
+| `N2` | 2 | TRIAGE / Einordnung + Klärungsprüfung | orchestrator | Pflicht | immer; bei blockierender Unsicherheit → `awaiting_user` (`modules/clarification.md`) |
+| `N3a` | 3 | RESEARCH / Recherche | researcher | Gate | Wissenslücke, externe Quelle nötig |
+| `N3b` | 4 | REQUIREMENTS / Anforderungen | business_analyst | Gate | Gate-Set der Klasse |
+| `N3c` | 5 | ARCHITECTURE / Architektur | architect | Gate | Flag `arch`/`conc` oder Eskalation aus `N5a` |
+| `N4` | 6 | IMPLEMENTATION / Bau | developer | Gate | Änderung am Repository verlangt |
+| `N5a` | 7 | TEST_REVIEW / Test & Review | tester_reviewer | Gate | Gate-Set der Klasse |
+| `N5b` | 7 | UX_UI / Oberfläche | ux_ui_expert | Gate | Flag `ui` |
+| `N5c` | 7 | DOCUMENTATION / Doku | documentation_specialist | Gate | Flag `api` |
+| `N6a` | 8 | SECURITY / Sicherheit | security_auditor | Gate | Flag `sec`, `data` oder `legal` |
+| `N6b` | 8 | DELIVERY / Lieferung | developer / devops_sre | Gate | Ergebnis soll ausgeliefert werden |
+| `N7` | 9 | AGGREGATION / Abschluss | orchestrator | Pflicht | immer (letzter Knoten vor Terminal) |
 
 ## 3. DoD je Knoten
 

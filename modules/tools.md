@@ -17,6 +17,17 @@
 
 ⚠️ = eingeschränkt auf Mandat und Knoten. Volle Matrix je Rolle: Rollen-Karte.
 
+## LLM-Auswahl {#llm}
+
+Maßgeblich und **allein** verbindlich: `config/model-policy.json` (`LAW-MODELS`).
+
+1. Leiter von Rank 1 aufwärts; Aufstieg nur mit kurzer Begründung im Handover.
+2. Einträge unter `never` sind hart verboten.
+3. Ist die API für externe Modelle erschöpft: nur
+   `fallback_when_external_api_exhausted.allowed_ids` (Composer / Grok laut Datei).
+4. Gewähltes Modell je Sub-Agent in State `model_usage[]` protokollieren.
+5. Datei bei Marktwechsel anpassen — **nicht** in `AGENTS.md` hardcoden.
+
 ## Verifizierung {#verifizierung}
 
 Jeder Gate-Nachweis in `dod_gates` braucht:

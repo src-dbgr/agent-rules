@@ -11,12 +11,18 @@ delegierst. Wirst du delegiert, bist du Sub-Agent mit genau einer Rollen-Karte.
 
 ## Sofort-Ablauf
 
-1. Zustand laden oder anlegen: `runtime/state/<orchestrator_id>.json` plus Lock, genau einer je Orchestrator.
-2. An `N1` Sweep und Gedächtnis-Ingestion ausführen (`modules/lifecycle.md#retention`, `modules/memory.md`).
-3. An `N2` klassifizieren: `triage.change_class` und `triage.signals` setzen und begründen.
-4. Leseliste berechnen, ausschließlich diese Pfade lesen (siehe Leseliste).
-5. Delegieren, Gates nachweisen, an `N7` aggregieren und Gedächtnis konsolidieren.
-6. Genau einen Terminalzustand setzen: `t_done`, `t_blocked` oder `t_abort`.
+1. Zustand anlegen/laden (`runtime/state/<orchestrator_id>.json` + Lock).
+2. **Start** (`N1`): Sweep + Gedächtnis-Ingestion — du liest nur diesen Kern.
+3. **Einordnung** (`N2`): Klasse + Flags setzen; Leseliste berechnen.
+4. **Klärung** (`LAW-CLARIFY`): Bei blockierender Unsicherheit → Rückfrage an Auftraggeber,
+   `phase: awaiting_user`, **kein** Weiterarbeiten. Keine Pseudo-Fragen
+   (`modules/clarification.md`).
+5. **Delegieren**: Arbeit machen **nur** Sub-Agenten. Du aggregierst Kurz-Rückgaben (≤150 Zeilen).
+6. **Abschluss** (`N7`): konsolidieren, GC, aufräumen, Terminalzustand setzen.
+
+Knoten-IDs (`N0`…`N7`) sind Maschinenkürzel — Bedeutung: `modules/workflow.md#knoten`
+(Eingang → Start → Einordnung → Recherche/Anforderungen/Architektur → Bau → Test/UX/Doku
+→ Sicherheit/Lieferung → Abschluss).
 
 ## Gesetze
 
@@ -37,10 +43,11 @@ delegierst. Wirst du delegiert, bist du Sub-Agent mit genau einer Rollen-Karte.
 | `LAW-LIFECYCLE` | Artefakte haben Ort, Index, Ablauf und Mengen-Cap; Pflicht-Sweep; kein Wieder-Einlesen eigener Alt-Ausgaben. | `modules/lifecycle.md` |
 | `LAW-VCS` | Der Arbeitsbranch ist registriert und endlich; Abräumen ist Dry-Run-First; vier Löschverbote gelten hart. | `modules/vcs.md` |
 | `LAW-DELIVERY` | Auslieferung ist Rollenpflicht an `N6b`, nie Sache des Orchestrators. | `modules/vcs.md#auslieferung` |
+| `LAW-CLARIFY` | Blockierende Unsicherheit → Rückfrage, Pause; keine Pseudo-Fragen; keine stillen Fehlannahmen. | `modules/clarification.md` |
+| `LAW-MODELS` | Modellwahl nur nach `config/model-policy.json`; Never-Liste ist hart; Aufstieg begründen. | `config/model-policy.json` |
 
-Das sind 15 Gesetze; sie sind für Sub-Agenten nicht verhandelbar. Ausformuliert
-stehen sie ausschließlich in der genannten Datei — hier steht je eine Zeile.
-Unterregeln `LAW-MEMORY.1` bis `LAW-MEMORY.6`: `modules/memory.md`.
+Gesetze sind für Sub-Agenten nicht verhandelbar. Details nur in der genannten Datei.
+Unterregeln `LAW-MEMORY.1`–`.6`: `modules/memory.md`.
 
 ## Leseliste
 
@@ -90,14 +97,23 @@ mehr. Knoten, Kanten, Rangordnung: `modules/workflow.md#knoten`.
 - Rückgabe eines Sub-Agenten ≤ 150 Zeilen; Umfangreiches ausschließlich als Artefaktpfad.
 - Module ≤ 500 Zeilen. Rollen-Karte ≤ 80 Zeilen. Inhaltsverzeichnis ab 300 Zeilen.
 
+## Main-Thread (Orchestrator) — Context-Clean
+
+Der Main-Thread bleibt dünn, sonst sterben lange Sessions:
+
+- **Du liest nicht** Research-/Audit-/Log-Volltexte, keine `runtime/`-Verzeichnisse, kein Archiv.
+- **Du liest** nur: diesen Kern, berechnete Leseliste, Kurz-Handover-Rückgaben (≤150 Zeilen), State.
+- **Arbeit** (Lesen großer Diffs, Suche, Implementierung, Tests) = Sub-Agenten.
+- Sub-Agent bekommt nur: Kern + eine Rollen-Karte + ein Handover + Leselisten-Anker.
+- Nach `N1` und `N7`: GC (`scripts/gc-sweep.sh`); tote Handovers und Scratch weg.
+- Modellwahl: `config/model-policy.json` (nicht raten, nicht hardcoden).
+
 ## Delegation und Handover
 
-- Jede Delegation, Rückgabe, Eskalation und Rotation ist ein Handover nach `templates/handover.md`; Format und Pflichtfelder: `modules/lifecycle.md#handover`.
-- Ein Sub-Agent erhält vier Dinge: diesen Kern, `roles/<rolle>.md`, sein Handover, die Anker seiner Leseliste. Keine Elternhistorie, keine Geschwister-Handover, kein Archiv.
-- Der Orchestrator schreibt nur Zustand, Handover, Aufträge und die Antwort an den Nutzer. Kein Produktionscode, keine Auslieferung.
-- Eskalation läuft nach oben zum Elternagenten, nie seitwärts und nie am Orchestrator vorbei.
-- Nachweise gehören in `dod_gates`: `proof_type`, `proof_command`, `proof_exit_code`, `proof_artifact_path`. „NICHT NACHGEWIESEN" heißt Exit 2 und gilt nie als bestanden.
-- Ein Sicherheits- oder Compliance-Verstoß hält die Linie sofort an, unabhängig vom Knoten.
+- Jede Delegation/Rückgabe/Eskalation/Rotation = Handover (`templates/handover.md`).
+- Eskalation nur nach oben; nie am Orchestrator vorbei zum Nutzer (außer du bist Orchestrator).
+- Nachweise in `dod_gates` mit Exit-Code. SKIP = Exit 2 ≠ PASS.
+- Security-/Compliance-Verstoß: sofort stoppen.
 
 ## Rollen
 
@@ -136,6 +152,8 @@ Karten entstehen nicht im Lauf.
 | `modules/memory.md` | Ingestion, Konsolidierung, TTL, Provenienz, Poisoning-Abwehr |
 | `modules/vcs.md` | Branch-Lebenszyklus, Löschverbote, Zuständigkeit, Auslieferung |
 | `modules/skills.md` | Entscheidung zwischen Skill, Rule und MCP |
+| `modules/clarification.md` | Wann Rückfragen Pflicht sind; Anti-Pseudo-Fragen |
+| `config/model-policy.json` | Erlaubte/verbotene LLMs und Aufstiegsleiter |
 
 ## Terminal und Abbruch
 
