@@ -62,7 +62,7 @@ das ist Orchestrator-Arbeit. Rollenwechsel in derselben Instanz ist verboten (`L
 | `LAW-MODELS` | Modellwahl nur nach `config/model-policy.json` (Entry Points + Leiter + Never); Aufstieg begründen. | `config/model-policy.json` |
 | `LAW-QUALITY` | Regression by Design; Tests nur mit Risiko-Mehrwert; keine Suite-Aufblähung. | `modules/quality.md` |
 | `LAW-ASSIGN` | Jede Delegation hat `task_id` (UUID) im Assignment-Ledger; Rückgaben ohne ID abweisen. | `modules/ops.md#ledger` |
-| `LAW-OPS` | Resume, `irrev`-Approval, Kosten-/Zeitbudget, Audit-Log. | `modules/ops.md` |
+| `LAW-OPS` | Resume, Stall-Watchdog, `irrev`-Approval, Kosten-/Zeitbudget, Audit-Log. | `modules/ops.md` |
 
 Gesetze sind für Sub-Agenten nicht verhandelbar. Details nur in der genannten Datei.
 Unterregeln `LAW-MEMORY.1`–`.6`: `modules/memory.md`.
@@ -125,6 +125,7 @@ Der Main-Thread bleibt dünn, sonst sterben lange Sessions:
 - Sub-Agent bekommt nur: Kern + eine Rollen-Karte + ein Handover + Leselisten-Anker.
 - Nach `N1` und `N7`: GC (`scripts/gc-sweep.sh`); tote Handovers und Scratch weg.
 - Modellwahl: `config/model-policy.json` (Main-Thread = `entry_points`; Sub-Agenten = Leiter).
+- Offene `running`-Assignments: Stall-Regeln prüfen (`modules/ops.md#stall`) — nicht endlos warten.
 - Kontext ~60 %: **Warnung an Nutzer**. ~70 % oder Proxy-Cap: Fortsetzungs-Prompt ausgeben
   (`scripts/emit-continuation-prompt.sh`) und STOPPEN — neuer Agent mit frischem Kontext
   (`prompts/continuation-prompt.md`, `modules/context.md#rotation`).

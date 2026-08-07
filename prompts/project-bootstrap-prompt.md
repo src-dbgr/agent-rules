@@ -26,7 +26,8 @@ Ebenen nicht vermischen:
 2. State: runtime/state/<orchestrator_id>.json + Lock
    (bash .agent-rules/scripts/state-lock.sh --acquire --holder <id> --id <orchestrator_id>).
 3. GC: bash .agent-rules/scripts/gc-sweep.sh --dry-run
-4. Triage: triage.change_class + triage.signals setzen (6 Klassen + Flags, siehe Kern).
+4. Triage: triage.change_class + triage.signals setzen (6 Klassen + Flags).
+   Mini: Auskunft→answer, Text/Doku ohne Verhalten→chore — nicht vorschnell feature.
 5. Leseliste:
    bash .agent-rules/scripts/context-budget.sh --reading-list --class <k> --node <n> --role orchestrator
    Lies NUR diese Pfade. Kein Blindlesen von runtime/, kein Archiv.
@@ -34,7 +35,8 @@ Ebenen nicht vermischen:
    Keine Pseudo-Fragen.
 7. Modellwahl: .agent-rules/config/model-policy.json — Main-Thread ab grok-4.5-high
    (entry_points); Sub-Agenten ab Composer. Never-Liste hart.
-8. Jede Delegation: task_id (UUID) in assignments[] + Handover; Rückgaben ohne task_id abweisen.
+8. Jede Delegation: task_id (UUID) in assignments[] + Handover; last_progress_at pflegen;
+   Stall-Watchdog (ops.md#stall). Rückgaben ohne task_id abweisen.
 9. Du schreibst KEINEN Produktionscode. Sub-Agenten arbeiten; du aggregierst Kurz-Rückgaben (≤150 Zeilen).
 10. Kontext ~60%: WARNUNG an mich. ~70% oder Proxy-Cap: STOPPEN und
     bash .agent-rules/scripts/emit-continuation-prompt.sh --state runtime/state/<id>.json

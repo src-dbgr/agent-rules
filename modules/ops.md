@@ -21,6 +21,9 @@ Der Orchestrator führt im State `assignments[]`. Jede Delegation hat:
 | `write_paths` | erlaubte Schreibpfade (disjunkt bei Parallelität) |
 | `status` | `open` \| `running` \| `returned` \| `failed` \| `cancelled` |
 | `model_id` | gewähltes Modell (`LAW-MODELS`) |
+| `created_at` | Start der Delegation |
+| `last_progress_at` | letzter Fortschrittsimpuls (Pflicht solange `running`) |
+| `progress_note` | optional, ≤120 Zeichen (was zuletzt vorankam) |
 
 **UUID-Sinn:** Ja — `task_id` verknüpft Auftrag, Agent, Handover-Hin und -Rück,
 ohne den Main-Thread die Volltexte lesen zu müssen. Kurz-IDs für Agenten bleiben
@@ -28,6 +31,29 @@ erlaubt; **Aufgaben** sind UUIDs (Kollisionsfreiheit über Sessions).
 
 Regel: Eine Rückgabe ohne passende `task_id` / `handover_out_id` wird **abgewiesen**
 (nicht still aggregiert). Parallelität nur bei disjunkten `write_paths`.
+
+Sub-Agenten **müssen** bei sinnvoller Teilarbeit `last_progress_at` aktualisieren
+(Kurz-Handover, Audit-Ereignis `progress`, oder Ledger-Patch durch Orchestrator nach
+Statusmeldung). Schweigen ≠ Fortschritt.
+
+## 1a. Stall-Watchdog (hängende Sub-Agenten) {#stall}
+
+Der Main-Thread wartet nicht blind. Für jedes `assignments[]`-Item mit
+`status=running`:
+
+1. **Stall:** `now - last_progress_at` (sonst `created_at`) ≥
+   `ops.assignment_stall_minutes` (Default siehe config) → Assignment `failed`,
+   Audit-Ereignis `stall`, Begründung „kein Fortschritt“.
+2. **Hard-Timeout:** `now - created_at` ≥ `ops.assignment_running_timeout_minutes`
+   → ebenfalls `failed` (auch mit sporadischem Progress, wenn die Gesamtdauer reißt).
+3. **Reaktion:** höchstens `ops.max_stall_retries` Neu-Delegation derselben
+   `task_id`-Linie (neues Assignment, `parent_task_id` gesetzt) **oder** Eskalation
+   an den Nutzer / `t_blocked`. Kein stilles Endloswarten.
+4. **Wann prüfen:** vor jeder Aggregation, vor Spawn weiterer Geschwister auf derselben
+   Ressource, bei Resume (`§2`), und sobald der Orchestrator wieder am Zug ist
+   (keine Hintergrund-Daemon-Pflicht im Chat — aber **kein** „ich ignoriere running“).
+
+Stall ist kein Beweis für Modellschwäche allein; erst Retry/Eskalation mit kurzem Vermerk.
 
 ## 2. Resume nach Pause/Crash {#resume}
 
@@ -37,8 +63,8 @@ Wiederaufnahme:
 2. State laden; `phase` und `cfg.active_node` sind maßgeblich.
 3. **GC:** `scripts/gc-sweep.sh --apply` — Scratch und abgelaufene Artefakte weg
    (kein Kontext-Müll aus der Vorgänger-Instanz).
-4. Offene `assignments` mit `status=running` und fehlendem Return: entweder
-   Timeout laut config → `failed` + Neu-Delegation, oder auf Return warten.
+4. Offene `assignments` mit `status=running`: Stall-/Timeout-Regeln aus `§1a` anwenden
+   (`failed` + Retry/Eskalation); nicht unbegrenzt auf Return warten.
 5. `awaiting_user` / `awaiting_continuation`: **keine** Implementation bis Antwort
    bzw. bis der neue Agent den Prompt übernommen hat.
 6. Nie Archiv-Handovers als Wahrheit — nur State + Index + aktive Assignments.
@@ -66,7 +92,7 @@ kein stilles Weiterlaufen in Rank 5.
 
 Append-only `runtime/audit.jsonl`, eine Zeile je Ereignis (kein Kontext-Bloat):
 
-`ts`, `task_id`, `agent_id`, `event` (`spawn`|`return`|`escalate`|`gate_pass`|`gate_fail`|`clarify`|`approve`|`gc`), `node`, `bytes_ref`
+`ts`, `task_id`, `agent_id`, `event` (`spawn`|`return`|`escalate`|`gate_pass`|`gate_fail`|`clarify`|`approve`|`gc`|`progress`|`stall`), `node`, `bytes_ref`
 
 Main-Thread liest **nicht** das ganze Log — nur bei Eskalation gezielt die letzte
 relevante `task_id`.

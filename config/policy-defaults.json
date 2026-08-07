@@ -457,6 +457,18 @@
     "/budgets/rotation/percent_handoff": {
       "herkunft": "setzung",
       "quelle": "Auftraggeber: ab ~70% Pflicht-Handoff mit Copy-Paste-Prompt"
+    },
+    "/ops/assignment_stall_minutes": {
+      "herkunft": "setzung",
+      "quelle": "Auftraggeber-Kritik: Sub-Agenten-Haenger; Stall vor Hard-Timeout (15 min ohne Progress)"
+    },
+    "/ops/max_stall_retries": {
+      "herkunft": "setzung",
+      "quelle": "ein Retry nach Stall, dann Eskalation — kein Endlosloop"
+    },
+    "/ops/assignment_running_timeout_minutes": {
+      "herkunft": "setzung",
+      "quelle": "Hard-Timeout je Assignment (90 min), unabhaengig von sporadischem Progress"
     }
   },
   "clarification": {
@@ -466,7 +478,9 @@
   },
   "ops": {
     "max_wall_clock_minutes": 240,
+    "assignment_stall_minutes": 15,
     "assignment_running_timeout_minutes": 90,
+    "max_stall_retries": 1,
     "require_approval_for_irrev": true,
     "audit_log_path": "runtime/audit.jsonl",
     "max_model_rank_default": 3
