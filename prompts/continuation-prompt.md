@@ -18,7 +18,8 @@ Du setzt einen laufenden Agent-Auftrag mit FRISCHEM Kontext fort (Kontext-Handof
 4. Trage dich in orchestrator_lineage[] ein (von {{previous_orchestrator_id}} → du).
 5. Leseliste nur über:
    bash .agent-rules/scripts/context-budget.sh --reading-list --class {{change_class}} --node {{active_node}} --role orchestrator
-6. GC: bash .agent-rules/scripts/gc-sweep.sh --dry-run
+6. GC: bash .agent-rules/scripts/gc-sweep.sh --apply
+   (Scratch/Abgelaufenes weg; Index prüfen. Danach weiter am State.)
 7. Modellwahl: .agent-rules/config/model-policy.json
 8. Assignment-Ledger (assignments[]) und offene task_ids sind maßgeblich — keine Archiv-Handovers lesen.
 

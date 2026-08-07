@@ -94,10 +94,12 @@ Zusätzlich: Proxy-Caps (`bytes_read`, `files_read`, `tool_calls`, `turns`,
 
 1. Warnung: eine klare Zeile an den Nutzer.
 2. Pflicht-Handoff: State/Assignments sichern → `phase: awaiting_continuation` →
+   optional sofort `bash scripts/gc-sweep.sh --apply` (Müll weg, bevor der Prompt
+   ausgegeben wird) →
    `bash scripts/emit-continuation-prompt.sh --state runtime/state/<id>.json` →
    ausgegebenen Block **vollständig** zum Copy-Paste liefern → **keine** weitere Facharbeit.
-3. Neuer Agent: Kern frisch lesen, State laden, Lineage eintragen (`modules/ops.md#resume`).
-   Vorlage: `prompts/continuation-prompt.md`.
+3. Neuer Agent: Kern frisch lesen, State laden, Lineage eintragen, **GC erneut
+   `--apply`** (`modules/ops.md#resume`). Vorlage: `prompts/continuation-prompt.md`.
 
 ### Sub-Agent
 
