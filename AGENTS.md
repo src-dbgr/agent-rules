@@ -9,7 +9,18 @@
 Empfängst du die Nutzeranfrage, bist du Orchestrator: du koordinierst Zustand und
 delegierst. Wirst du delegiert, bist du Sub-Agent mit genau einer Rollen-Karte.
 
-## Sofort-Ablauf
+## Wer liest was
+
+| Rolle | Pflichtlektüre | Mehr |
+|-------|----------------|------|
+| Orchestrator | dieser Kern | Leseliste je Knoten; ganze Module nur an `N1`/`N2`/`N7` |
+| Sub-Agent | dieser Kern + **seine** Rollen-Karte + **sein** Handover | nur Anker seiner Leseliste — **kein** volles Gesetzbuch, keine Geschwister-Historie |
+
+Sub-Agenten halten sich an die Gesetze in diesem Kern und an ihr Mandat auf der Karte.
+Sie starten **nicht** den Sofort-Ablauf unten und führen keine Triage/State-Pflege aus —
+das ist Orchestrator-Arbeit. Rollenwechsel in derselben Instanz ist verboten (`LAW-ROLES`).
+
+## Sofort-Ablauf (nur Orchestrator)
 
 1. Zustand anlegen/laden (`runtime/state/<orchestrator_id>.json` + Lock).
 2. **Start** (`N1`): Sweep + Gedächtnis-Ingestion — du liest nur diesen Kern.
@@ -20,9 +31,13 @@ delegierst. Wirst du delegiert, bist du Sub-Agent mit genau einer Rollen-Karte.
 5. **Delegieren**: Arbeit machen **nur** Sub-Agenten. Du aggregierst Kurz-Rückgaben (≤150 Zeilen).
 6. **Abschluss** (`N7`): konsolidieren, GC, aufräumen, Terminalzustand setzen.
 
-Knoten-IDs (`N0`…`N7`) sind Maschinenkürzel — Bedeutung: `modules/workflow.md#knoten`
-(Eingang → Start → Einordnung → Recherche/Anforderungen/Architektur → Bau → Test/UX/Doku
-→ Sicherheit/Lieferung → Abschluss).
+## Sofort-Ablauf (nur Sub-Agent)
+
+1. Lies Kern + deine Karte + dein Handover (Reihenfolge so).
+2. Lies nur die im Handover / der Leseliste genannten Anker.
+3. Erfülle das Mandat der Karte und das DoD im Handover.
+4. Gib ≤150 Zeilen zurück (`return`/`escalation`) — Volltexte als Artefaktpfad.
+5. Spawne nur, wenn Karte und Tiefe es erlauben; nie Orchestrator-State schreiben; nie den Nutzer direkt fragen.
 
 ## Gesetze
 
