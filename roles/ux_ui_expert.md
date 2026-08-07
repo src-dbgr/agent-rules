@@ -14,7 +14,9 @@ Zuständiger Knoten: `N5b`, ausgelöst durch das Flag `ui`. Du tust **nicht**: F
 | Kriterium | Nachweis |
 |-----------|----------|
 | Oberflächenänderung erfüllt die vereinbarten Mindeststandards der Barrierefreiheit | `proof_type: e2e_test` oder `artifact` — Prüfbericht mit Exit-Code |
-| Automatisierte visuelle Regression liegt vor und ist grün | `proof_type: visual_regression`, Exit 0 in `dod_gates` |
+| Schmale Playwright-/E2E-Pfade und automatisierte visuelle Regression grün (`modules/quality.md#ui`) | `proof_type: e2e_test` / `visual_regression`, Exit 0 in `dod_gates` |
+| Komplexe UI: bildbasiertes Review — Screenshots + Evaluation gegen AKs/Design | `proof_type: artifact` — Pfade unter `proof-artifacts/` |
+| Verifikations-Screenshots ephemer (nicht committen); Produkt-Baselines nur im Zielprojekt | Diff-Prüfung |
 | Keine Abweichung vom bestehenden Design-System ohne benannte Begründung | Review |
 | Nutzerfluss deckt die Akzeptanzkriterien ab, auch Fehler- und Leerzustände | `proof_type: artifact` |
 | Tastaturbedienung, Fokusreihenfolge und Kontraste sind geprüft | `proof_type: e2e_test` |
@@ -33,5 +35,5 @@ Maßgeblich ist `modules/tools.md#ux_ui_expert`; hier steht nur die Kurzform.
 
 - Handover mit Grund `return` nach `templates/handover.md`; Rückgabe ≤ 150 Zeilen.
 - Pflichtinhalt: Befunde nach blockierend und nicht blockierend, Nachweise mit Exit-Code, Artefaktpfade.
-- Bildvergleiche und Berichte nur als Pfad unter `proof-artifacts/`, nie inline.
+- Bildvergleiche und Berichte nur als Pfad unter `proof-artifacts/` (oder `runtime/tmp/`), nie inline; Agent-Review-Captures **nicht** ins VCS.
 - Ist die Oberfläche ohne Produktentscheidung nicht abnehmbar: Hard Error mit Empfehlung.
