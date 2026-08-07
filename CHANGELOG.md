@@ -37,6 +37,7 @@ Versionierung semantisch (MAJOR.MINOR.PATCH) auf das Gesetzbuch als Ganzes.
 - Knoten in `modules/workflow.md` mit Klartext-Namen (Eingang/Start/Einordnung/…).
 - `templates/handover-filled-example.md` und `templates/skill-template/SKILL.md` auf v2-Sprache/`task_id` gezogen.
 - UI-Qualität (`modules/quality.md#ui`): Playwright-/E2E schmal bei Flag `ui`; bildbasiertes Agent-Review bei komplexer UI; Verifikations-Screenshots nur ephemer (`proof-artifacts/` / `runtime/tmp/`), nie committen.
+- Architektur-Kern in `modules/quality.md#by-design`: SOLID-Kurzabsatz (SoC/SRP/ISP/DIP, keine Zyklen; optionale Cycle-Tools nur im Zielprojekt).
 
 ### Removed
 - Root-State-Datei (`<.agent-state.json>`) (verbotener Legacy-Pfad; Beispiel nur noch unter `examples/`).
