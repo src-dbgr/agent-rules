@@ -10,6 +10,6 @@ while IFS= read -r s; do
     echo "FAIL missing script ref: $s"
     bad=1
   fi
-done < <(rg -oN 'scripts/[a-z0-9_-]+\.sh' "$ROOT" --glob '!runtime/**' --glob '!.git/**' | sed 's/.*://;s/^\s*//' | sort -u)
+done < <(rg -o --no-filename 'scripts/[a-z0-9_-]+\.sh' "$ROOT" --glob '!runtime/**' --glob '!.git/**' | sort -u)
 (( bad == 0 )) && echo "PASS check-doc-commands"
 exit "$bad"

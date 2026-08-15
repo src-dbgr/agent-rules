@@ -187,7 +187,7 @@ unter `specs/workflow.tla` mit `specs/workflow.cfg` ist eine **beschränkte Sond
 Rückkanäle, Terminalzustände, Verklemmungsprüfung), `specs/mutation.cfg` muss scheitern, und
 `specs/coverage.md` weist je Knoten und je Kante aus, ob die Sonde ihn abdeckt.
 
-## 7. Terminalzustände {#terminals}
+## 7. Terminalzustände {#terminalzustaende}
 
 | ID | `phase` | Definition | Umkehrbar |
 |----|---------|------------|-----------|
@@ -197,7 +197,8 @@ Rückkanäle, Terminalzustände, Verklemmungsprüfung), `specs/mutation.cfg` mus
 
 Regeln: Ein Lauf endet in **genau einem** Terminalzustand. Jeder Terminalzustand verlangt einen
 Eintrag — `t_blocked` und `t_abort` zusätzlich einen Grund in `blockers`. Ein Ende ohne Eintrag ist
-ungültig. Die Phasen `bootstrapping` (N1), `triage` (N2), `executing` (Gates) und `aggregating` (N7)
+ungültig. Die Phasen `bootstrapping` (N1), `triage` (N2), `awaiting_user`,
+`awaiting_continuation`, `executing` (Gates) und `aggregating` (N7)
 beschreiben den Weg dorthin; `phase` und `cfg.active_node` werden gemeinsam fortgeschrieben.
 
 ## 8. Rollback und Abbruch

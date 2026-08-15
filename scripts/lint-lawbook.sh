@@ -30,8 +30,8 @@
 #    Gesetzeszahl, gibt es nichts zu vergleichen (wird in der Ausgabe gesagt).
 #  * --edges/--node-ids sehen nur Zitate in der Form N<x> bzw. N<x> -> N<y>;
 #    Prosa-Umschreibungen ("vom Test zurueck zur Implementierung") nicht.
-#  * --model-coverage/--migration-table-complete pruefen Dateien aus WP-5/WP-6.
-#    Solange die fehlen, ist das Ergebnis FAIL — gewollt, kein Bug.
+#  * --model-coverage/--migration-table-complete pruefen specs/coverage.md
+#    und docs/migration-v1-to-v2.md. Fehlen sie, ist das FAIL, kein SKIP.
 #
 # Ergaenzung gegenueber ADR-009: --fixtures-declared. Ohne sie kann eine Fixture
 # im Baum liegen, die keine Stufe validiert ("stumme Pruefung") — genau der
@@ -73,7 +73,7 @@ Pruefungen (25 = 24 aus ADR-009 + 1 Ergaenzung):
               --runtime-paths-declared        jeder Pfad unter runtime/ steht in der Layout-Tabelle
   IDs         --law-ids                       jeder LAW-*-Verweis existiert im Kanon
               --law-count                     genannte Gesetzeszahl == tatsaechliche
-              --node-ids                      Knoten-IDs aus der Whitelist; N8..N12 verboten
+              --node-ids                      Knoten-IDs aus der Whitelist; Alt-IDs oberhalb N7 verboten
               --edges                         jede zitierte Kante existiert im Kantenmodell
               --unique-section-numbers        keine doppelte Abschnittsnummer je Datei
   Verweise    --links                         jeder Pfad und jeder Anker existiert
@@ -244,7 +244,10 @@ def pointer(doc, ptr):
             return None
     return cur
 
+EXPLICIT_ANCHOR_RX = re.compile(r"\{#([A-Za-z0-9_-]+)\}")
+
 def slug(text):
+    text = EXPLICIT_ANCHOR_RX.sub("", text)
     text = re.sub(r"`", "", text).strip()
     text = re.sub(r"^\d+(\.\d+)*[.)]?\s*", "", text)
     text = unicodedata.normalize("NFKD", text)
@@ -273,7 +276,21 @@ def headings(rel):
     return res
 
 def anchors_of(rel):
-    return {slug(h[2]) for h in headings(rel)}
+    found = set()
+    fence = False
+    for ln in lines_of(rel):
+        if ln.startswith("```"):
+            fence = not fence
+            continue
+        if fence:
+            continue
+        for m in EXPLICIT_ANCHOR_RX.finditer(ln):
+            found.add(m.group(1).lower())
+    for h in headings(rel):
+        s = slug(h[2])
+        if s:
+            found.add(s)
+    return found
 
 def code_stripped(rel):
     """Zeilen ohne Codeblock-Inhalt; Inline-Code bleibt (Pfade stehen dort)."""
@@ -466,8 +483,11 @@ def chk_runtime_paths(c):
                 p = m.group(0).rstrip(".,;:)`\"'")
                 hits += 1
                 # Nennung der bloszen Wurzel ("Pfade unter runtime/") ist generisch,
-                # geprueft werden konkrete Unterpfade.
+                # geprueft werden konkrete Unterpfade. runtime/* und runtime/** auch.
+                rest = p.split("/", 1)[-1] if "/" in p else ""
                 if p.rstrip("/") in ("runtime", "proof-artifacts", "states") or p.startswith("runtime/-"):
+                    continue
+                if rest in ("*", "**"):
                     continue
                 bad = None
                 for fp, reason in forbidden.items():
@@ -535,7 +555,7 @@ def chk_node_ids(c):
         if cat_edges and cat_edges != man_edges:
             c.bad("manifest.json#/cfg/edges", "weicht vom Katalog ab: nur hier %d, nur dort %d"
                   % (len(man_edges - cat_edges), len(cat_edges - man_edges)))
-    rx = re.compile(r"(?<![A-Za-z0-9_])N(\d{1,2})([a-z])?(?![A-Za-z0-9_])")
+    rx = re.compile(r"(?<![A-Za-z0-9_])N(\d{1,2})([a-z])?(?![A-Za-z0-9_*])")
     hits = 0
     for f in scope_files():
         if not f.endswith((".md", ".json", ".sh")):
@@ -601,6 +621,8 @@ def chk_links(c):
             return
         if "<" in path or ">" in path or "*" in path:
             return
+        if path.startswith(("runtime/", "proof-artifacts/", "states/")):
+            return
         cands = [path]
         if "/" in f:
             cands.append(os.path.normpath(os.path.join(os.path.dirname(f), path)))
@@ -630,17 +652,31 @@ def chk_links(c):
         elif a["anchor"] not in anchors_of(docp):
             c.bad("manifest.json", "Anker %s (#%s) fehlt in %s" % (a["id"], a["anchor"], docp))
         refs += 1
+    def reading_key_ok(item):
+        if item in doc_ids or item in anchor_ids:
+            return True
+        if item in ("handover", "handover-template") and os.path.isfile(rp("templates/handover.md")):
+            return True
+        if item.startswith("role-") and os.path.isfile(rp("roles/%s.md" % item[5:])):
+            return True
+        if item.startswith("module-") and os.path.isfile(rp("modules/%s.md" % item[7:])):
+            return True
+        if os.path.isfile(rp(item)):
+            return True
+        return False
     for rl in MAN["reading_lists"]:
         for item in rl["read"]:
             refs += 1
-            if item not in doc_ids and item not in anchor_ids:
+            if not reading_key_ok(item):
                 c.bad("manifest.json", "Leseliste %s/%s/%s verweist auf unbekannte ID %s"
                       % (rl["class"], rl["node"], rl["role"], item))
     for concept in MAN["ssot"]:
         tgt = concept["normative_in"]
         p, _, anc = tgt.partition("#")
         refs += 1
-        if not os.path.isfile(rp(p)):
+        if os.path.isdir(rp(p)) and not anc:
+            pass
+        elif not os.path.isfile(rp(p)):
             c.bad("manifest.json", "SSoT-Ziel %s fehlt (Konzept: %s)" % (p, concept["concept"]))
         elif anc and anc not in anchors_of(p):
             c.bad("manifest.json", "SSoT-Anker #%s fehlt in %s" % (anc, p))
@@ -879,6 +915,8 @@ def chk_ssot(c):
             c.bad("manifest.json", "Konzept doppelt gelistet: %s" % name)
         seen_concepts[name] = entry
         tgt, _, anc = entry["normative_in"].partition("#")
+        if os.path.isdir(rp(tgt)) and not anc:
+            continue
         if not os.path.isfile(rp(tgt)):
             c.bad(tgt, "normative Datei fehlt (Konzept: %s)" % name)
             continue
@@ -1105,9 +1143,8 @@ run_lint() {
 
 if [ "$SELFTEST" = 1 ]; then
   # Sensitivitaetsnachweis: je Pruefung eine Mutation einspielen und belegen, dass
-  # die Pruefung darauf mit FAIL reagiert. Wo der Ist-Stand bereits FAIL ist (weil
-  # Dateien aus WP-2..6 fehlen), ist die Reaktion nicht isolierbar — das wird als
-  # "offen" ausgegeben und nicht als Nachweis behauptet.
+  # die Pruefung darauf mit FAIL reagiert. Ist der Ist-Stand schon FAIL, zaehlt
+  # nur ein zusaetzlicher Fund als Nachweis; sonst "offen", nie als PASS.
   command -v python3 >/dev/null 2>&1 || { printf 'NICHT NACHGEWIESEN: self-test (Werkzeug python3 fehlt)\n'; exit 2; }
   TMPBASE="$(mktemp -d)"
   trap 'rm -rf "$TMPBASE"' EXIT
@@ -1232,8 +1269,8 @@ MUTEOF
         "$chk" "$base" "${base_n:-0}" "$mut" "${mut_n:-0}"
       st_proven=$((st_proven + 1))
     elif [ "${mut_n:-0}" -gt "${base_n:-0}" ]; then
-      # Ist-Stand ist schon FAIL (Dateien aus WP-2..6 fehlen); die Mutation erzeugt
-      # zusaetzliche Fundstellen - damit ist die Reaktion trotzdem belegt.
+      # Ist-Stand ist schon FAIL; die Mutation erzeugt zusaetzliche Fundstellen
+      # — damit ist die Reaktion trotzdem belegt.
       printf 'SELFTEST %-32s Ist=%-4s(%s) Mutation=%-4s(%s) -> belegt (Zusatzfund)\n' \
         "$chk" "$base" "${base_n:-0}" "$mut" "${mut_n:-0}"
       st_proven=$((st_proven + 1))

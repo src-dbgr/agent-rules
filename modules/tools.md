@@ -94,3 +94,13 @@ Rechte und Verbote für `documentation_specialist`: siehe Matrix oben und `roles
 
 Rechte und Verbote für `devops_sre`: siehe Matrix oben und `roles/devops_sre.md`. {#devops_sre}
 
+Rechte und Verbote für `data_engineer`: siehe Matrix oben und `roles/data_engineer.md`. {#data_engineer}
+
+Rechte und Verbote für `performance_engineer`: siehe Matrix oben und `roles/performance_engineer.md`. {#performance_engineer}
+
+Rechte und Verbote für `compliance_governance`: siehe Matrix oben und `roles/compliance_governance.md`. {#compliance_governance}
+
+Rechte und Verbote für `memory_curator`: siehe Matrix oben und `roles/memory_curator.md`. {#memory_curator}
+
+Rechte und Verbote für `sub_orchestrator`: siehe Matrix oben und `roles/sub_orchestrator.md`. {#sub_orchestrator}
+

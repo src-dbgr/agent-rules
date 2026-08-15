@@ -26,7 +26,7 @@ oder **blockierender** Unsicherheit: nicht raten — an Orchestrator melden
 - Erlaubt: Lesen, Reports unter `runtime/reports/`.
 - Verboten: Produktionscode, Tests, Commit/Push, State des Orchestrators.
 
-## Rückgabe
+## Rückgabeformat
 
 Handover `return`, ≤150 Zeilen: Kriterien, Annahmen, offene **blockierende** Fragen
 (oder „keine“), Artefaktpfade.

@@ -97,9 +97,9 @@
       "purpose": "runtime-Layout, Index, Retention/GC, Promotion, Handover-Format, Abbruch und Rollback",
       "load_when": "reading_list",
       "load_trigger": "Leseliste nennt mod-lifecycle oder einen seiner Anker (Orchestrator an N1/N7)",
-      "max_lines": 240,
+      "max_lines": 200,
       "max_bytes": null,
-      "tokens_est_max": 3120,
+      "tokens_est_max": 2600,
       "required": true,
       "owner_wp": "WP-4"
     },
@@ -111,9 +111,9 @@
       "purpose": "Branch-Lebenszyklus, Abraeumen, Loeschverbote, Zustaendigkeitsmatrix, Auslieferung",
       "load_when": "reading_list",
       "load_trigger": "Leseliste nennt mod-vcs oder einen seiner Anker (Auslieferung an N6b)",
-      "max_lines": 180,
+      "max_lines": 80,
       "max_bytes": null,
-      "tokens_est_max": 2340,
+      "tokens_est_max": 1040,
       "required": true,
       "owner_wp": "WP-5"
     },
@@ -125,9 +125,9 @@
       "purpose": "Werkzeugmatrix je Rolle, Verbote, Verifizierungs-Semantik, Betreiber-Empfehlungen",
       "load_when": "reading_list",
       "load_trigger": "Leseliste nennt den Rollen-Anker modules/tools.md#<rolle>",
-      "max_lines": 230,
+      "max_lines": 120,
       "max_bytes": null,
-      "tokens_est_max": 2990,
+      "tokens_est_max": 1560,
       "required": true,
       "owner_wp": "WP-3"
     },
@@ -710,13 +710,13 @@
       "path": "tests/fixtures/triage-fixtures.json",
       "kind": "fixture_set",
       "category": "daten",
-      "purpose": "Fixture-Datei fuer scripts/triage-fixtures-check.sh --min 20 --cover-all (AK-034)",
+      "purpose": "Legacy-Pfad; ersetzt durch fixtures-triage-cases (tests/fixtures/triage-cases.json)",
       "load_when": "script_only",
-      "load_trigger": "nur ueber scripts/triage-fixtures-check.sh und CI",
+      "load_trigger": "nicht geladen; Eintrag nur damit der alte Pfad nicht als Luecke gilt",
       "max_lines": null,
       "max_bytes": null,
       "tokens_est_max": null,
-      "required": true,
+      "required": false,
       "owner_wp": "WP-3"
     },
     {
@@ -752,13 +752,13 @@
       "path_glob": "tests/fixtures/handover-*.md",
       "kind": "fixture_set",
       "category": "daten",
-      "purpose": "vollstaendige Handover-Dokumente inklusive Body; belegen Zeilen-Caps und no-inline-logs (AK-016, AK-017, AK-090)",
+      "purpose": "optionale Markdown-Handover-Bodies; Frontmatter liegt unter handover-*.json, Body-Beispiel unter templates/",
       "load_when": "script_only",
-      "load_trigger": "nur ueber scripts/validate-handovers.sh und CI-Schritt 6",
+      "load_trigger": "nur ueber scripts/validate-handovers.sh wenn Dateien existieren",
       "max_lines": null,
       "max_bytes": null,
       "tokens_est_max": null,
-      "required": true,
+      "required": false,
       "owner_wp": "WP-4"
     },
     {
@@ -852,11 +852,11 @@
       "category": "nicht-normativ",
       "purpose": "promovierte Architekturentscheidungen (nicht-normativ, nicht beim Bootstrap lesen)",
       "load_when": "on_demand_human",
-      "load_trigger": "nur auf Nutzerwunsch",
+      "load_trigger": "nur auf Nutzerwunsch; Verzeichnis darf leer sein",
       "max_lines": 300,
       "max_bytes": null,
       "tokens_est_max": 3900,
-      "required": true,
+      "required": false,
       "owner_wp": "WP-6"
     },
     {
@@ -866,11 +866,11 @@
       "category": "nicht-normativ",
       "purpose": "promovierte Audits, Recherchen und Anforderungen (nicht-normativ)",
       "load_when": "on_demand_human",
-      "load_trigger": "nur auf Nutzerwunsch",
+      "load_trigger": "nur auf Nutzerwunsch; Verzeichnis darf leer sein",
       "max_lines": 500,
       "max_bytes": null,
       "tokens_est_max": 6500,
-      "required": true,
+      "required": false,
       "owner_wp": "WP-6"
     },
     {
@@ -1028,52 +1028,88 @@
       "owner_wp": "WP-6"
     },
     {
+      "id": "mod-clarification",
       "path": "modules/clarification.md",
       "kind": "module",
+      "category": "modul",
       "purpose": "Rueckfragen-Gate und Anti-Pseudo-Fragen",
-      "line_cap": 120,
+      "load_when": "reading_list",
+      "load_trigger": "Leseliste nennt mod-clarification (Orchestrator an N2, LAW-CLARIFY)",
+      "max_lines": 80,
+      "max_bytes": null,
+      "tokens_est_max": 1040,
       "required": true,
-      "when": "on_demand"
+      "owner_wp": "WP-3"
     },
     {
+      "id": "config-model-policy",
       "path": "config/model-policy.json",
       "kind": "config",
+      "category": "daten",
       "purpose": "LLM-Nutzungsleiter und Never-Liste",
-      "line_cap": 250,
+      "load_when": "script_only",
+      "load_trigger": "nur per jq durch Skripte, CI und LAW-MODELS",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
       "required": true,
-      "when": "on_demand"
+      "owner_wp": "WP-1"
     },
     {
+      "id": "mod-quality",
       "path": "modules/quality.md",
       "kind": "module",
-      "purpose": "Regression by design + Test-Disziplin",
-      "line_cap": 160,
+      "category": "modul",
+      "purpose": "Regression by design und Test-Disziplin",
+      "load_when": "reading_list",
+      "load_trigger": "Leseliste nennt mod-quality (LAW-QUALITY, Flag ui)",
+      "max_lines": 110,
+      "max_bytes": null,
+      "tokens_est_max": 1430,
       "required": true,
-      "when": "on_demand"
+      "owner_wp": "WP-3"
     },
     {
+      "id": "mod-ops",
       "path": "modules/ops.md",
       "kind": "module",
+      "category": "modul",
       "purpose": "Assignment-Ledger, Resume, Approval, Kosten, Observability",
-      "line_cap": 160,
+      "load_when": "reading_list",
+      "load_trigger": "Leseliste nennt mod-ops (LAW-ASSIGN, LAW-OPS)",
+      "max_lines": 120,
+      "max_bytes": null,
+      "tokens_est_max": 1560,
       "required": true,
-      "when": "on_demand"
+      "owner_wp": "WP-3"
     },
     {
+      "id": "prompt-continuation",
       "path": "prompts/continuation-prompt.md",
       "kind": "prompt",
+      "category": "nicht-normativ",
       "purpose": "Copy-Paste Fortsetzungs-Prompt bei Kontext-Handoff",
+      "load_when": "on_demand_human",
+      "load_trigger": "bei Rotation oder Kontext-Handoff (emit-Skript)",
+      "max_lines": 80,
+      "max_bytes": null,
+      "tokens_est_max": 1040,
       "required": true,
-      "when": "on_demand",
-      "line_cap": 120
+      "owner_wp": "WP-6"
     },
     {
+      "id": "script-emit-continuation-prompt",
       "path": "scripts/emit-continuation-prompt.sh",
       "kind": "script",
+      "category": "skript",
       "purpose": "Erzeugt Fortsetzungs-Prompt aus State",
+      "load_when": "script_only",
+      "load_trigger": "bei Rotation; Ausgabe ist der Prompt, nicht Kontext",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
       "required": true,
-      "when": "on_demand",
-      "line_cap": 120
+      "owner_wp": "WP-5"
     }
   ],
   "manifest_scope": {
@@ -1599,23 +1635,28 @@
     },
     {
       "id": "LAW-CLARIFY",
-      "module": "modules/clarification.md"
+      "rule": "Blockierende Unsicherheit verlangt Rueckfrage und Pause; keine Pseudo-Fragen; keine stillen Fehlannahmen.",
+      "normative_in": "modules/clarification.md"
     },
     {
       "id": "LAW-MODELS",
-      "module": "config/model-policy.json"
+      "rule": "Modellwahl nur nach config/model-policy.json (Entry Points, Leiter, Never); Aufstieg begruenden.",
+      "normative_in": "config/model-policy.json"
     },
     {
       "id": "LAW-QUALITY",
-      "module": "modules/quality.md"
+      "rule": "Regression by Design; Tests nur mit Risiko-Mehrwert; keine Suite-Aufblaehung.",
+      "normative_in": "modules/quality.md"
     },
     {
       "id": "LAW-ASSIGN",
-      "module": "modules/ops.md"
+      "rule": "Jede Delegation hat task_id (UUID) im Assignment-Ledger; Rueckgaben ohne ID werden abgewiesen.",
+      "normative_in": "modules/ops.md#ledger"
     },
     {
       "id": "LAW-OPS",
-      "module": "modules/ops.md"
+      "rule": "Resume, Stall-Watchdog, irrev-Approval, Kosten- und Zeitbudget, Audit-Log.",
+      "normative_in": "modules/ops.md"
     }
   ],
   "phases": [

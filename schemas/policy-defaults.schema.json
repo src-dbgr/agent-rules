@@ -51,7 +51,9 @@
             "tool_calls_max": { "type": "integer", "minimum": 1 },
             "turns_max": { "type": "integer", "minimum": 1 },
             "artifact_bytes_max": { "type": "integer", "minimum": 1 },
-            "percent_backstop": { "type": "integer", "minimum": 1, "maximum": 100 }
+            "percent_backstop": { "type": "integer", "minimum": 1, "maximum": 100 },
+            "percent_warn": { "type": "integer", "minimum": 1, "maximum": 100 },
+            "percent_handoff": { "type": "integer", "minimum": 1, "maximum": 100 }
           }
         },
         "max_rotations_per_task": { "type": "integer", "minimum": 1 },
@@ -193,6 +195,38 @@
         "tla_jar_path": { "type": "string", "minLength": 1 },
         "tla_jar_url": { "type": "string", "format": "uri" },
         "tla_jar_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "Optional bis Risiko R8 geschlossen ist: Pruefsumme des TLA+-Werkzeugs" }
+      }
+    },
+    "clarification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_questions_per_pause", "pseudo_questions_forbidden", "blocking_requires_awaiting_user"],
+      "properties": {
+        "max_questions_per_pause": { "type": "integer", "minimum": 1 },
+        "pseudo_questions_forbidden": { "type": "boolean" },
+        "blocking_requires_awaiting_user": { "type": "boolean" }
+      }
+    },
+    "ops": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_wall_clock_minutes",
+        "assignment_stall_minutes",
+        "assignment_running_timeout_minutes",
+        "max_stall_retries",
+        "require_approval_for_irrev",
+        "audit_log_path",
+        "max_model_rank_default"
+      ],
+      "properties": {
+        "max_wall_clock_minutes": { "type": "integer", "minimum": 1 },
+        "assignment_stall_minutes": { "type": "integer", "minimum": 1 },
+        "assignment_running_timeout_minutes": { "type": "integer", "minimum": 1 },
+        "max_stall_retries": { "type": "integer", "minimum": 0 },
+        "require_approval_for_irrev": { "type": "boolean" },
+        "audit_log_path": { "type": "string", "minLength": 1 },
+        "max_model_rank_default": { "type": "integer", "minimum": 1 }
       }
     },
     "_provenance": {

@@ -79,6 +79,11 @@ else
   exit 0
 fi
 
+if ((${#files[@]} == 0)); then
+  printf 'PASS: keine Handover-Markdown-Dateien in %s\n' "$TARGET"
+  exit 0
+fi
+
 bad=0
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT

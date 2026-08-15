@@ -469,6 +469,10 @@
     "/ops/assignment_running_timeout_minutes": {
       "herkunft": "setzung",
       "quelle": "Hard-Timeout je Assignment (90 min), unabhaengig von sporadischem Progress"
+    },
+    "/ops/max_model_rank_default": {
+      "herkunft": "setzung",
+      "quelle": "LAW-MODELS: Default-Rang 3; Aufstieg nur mit Begruendung in config/model-policy.json"
     }
   },
   "clarification": {

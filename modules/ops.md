@@ -59,7 +59,7 @@ Stall ist kein Beweis für Modellschwäche allein; erst Retry/Eskalation mit kur
 
 Wiederaufnahme:
 
-1. Lock prüfen (`state-lock.sh`); fremder Lock → `t_blocked`.
+1. Lock prüfen (`scripts/state-lock.sh`); fremder Lock → `t_blocked`.
 2. State laden; `phase` und `cfg.active_node` sind maßgeblich.
 3. **GC:** `scripts/gc-sweep.sh --apply` — Scratch und abgelaufene Artefakte weg
    (kein Kontext-Müll aus der Vorgänger-Instanz).
