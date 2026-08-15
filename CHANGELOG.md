@@ -8,6 +8,16 @@ Das Regelwerk verlangt für jede Änderung eine **bewusste Versionserhöhung**
 Format angelehnt an [Keep a Changelog](https://keepachangelog.com/);
 Versionierung semantisch (MAJOR.MINOR.PATCH) auf das Gesetzbuch als Ganzes.
 
+## [2.0.1] — 2026-08-15
+
+### Changed
+- README opens with an English lead (what / why / five commands / `AGENTS.md`). German text stays below.
+- `lawbook-ci` must be green: no “intentionally red / WP-2..WP-6 open” framing; no `continue-on-error` on proof steps. SKIP / exit 2 still fails the job. `--allow-skip` remains forbidden in CI.
+- Linter recognizes explicit `{#anchor}` IDs; manifest entries for v2 modules/config/prompts are schema-complete; `LAW-CLARIFY`…`LAW-OPS` have `rule` + `normative_in`; policy schema covers `clarification`/`ops`. Empty ADR/review globs and the superseded triage-fixtures path are optional.
+
+### Unchanged (bewusst)
+- `LAW-*` texts, modules (except missing anchors / one phase name / one script path), role cards (except `business_analyst` heading `Rückgabeformat`), triage algebra, state schema `2.0.0`, TLA+ model.
+
 ## [2.0.0] — 2026-08-06
 
 ### Breaking
@@ -22,8 +32,8 @@ Versionierung semantisch (MAJOR.MINOR.PATCH) auf das Gesetzbuch als Ganzes.
 
 ### Added
 - `modules/*` (on-demand), `roles/*` (Karten), `manifest.json`, `config/policy-defaults.json`.
-- Skripte: `lint-lawbook.sh`, `context-budget.sh`, `gc-sweep.sh`, `branch-hygiene.sh`,
-  `check-triage.sh`, `validate-handovers.sh`, `state-lock.sh`, `snapshot.sh`, CI-Workflow.
+- Skripte: `scripts/lint-lawbook.sh`, `scripts/context-budget.sh`, `scripts/gc-sweep.sh`, `scripts/branch-hygiene.sh`,
+  `scripts/check-triage.sh`, `scripts/validate-handovers.sh`, `scripts/state-lock.sh`, `scripts/snapshot.sh`, CI-Workflow.
 - `docs/migration-v1-to-v2.md`, MIT `LICENSE`.
 - **`LAW-CLARIFY`** + `modules/clarification.md`: Pflicht-Rückfragen bei blockierender Unsicherheit; Anti-Pseudo-Fragen; Phase `awaiting_user`.
 - **`LAW-MODELS`** + `config/model-policy.json`
@@ -35,7 +45,7 @@ Versionierung semantisch (MAJOR.MINOR.PATCH) auf das Gesetzbuch als Ganzes.
 - Alte Top-Level-Normdateien sind Kompatibilitäts-Stubs (≤10 Zeilen) mit Verweis.
 - Bootstrap-Prompt und README auf v2 umgestellt.
 - Knoten in `modules/workflow.md` mit Klartext-Namen (Eingang/Start/Einordnung/…).
-- `templates/handover-filled-example.md` und `templates/skill-template/SKILL.md` auf v2-Sprache/`task_id` gezogen.
+- `templates/handover-filled-example.md` und [`templates/skill-template/SKILL.md`](templates/skill-template/SKILL.md) auf v2-Sprache/`task_id` gezogen.
 - UI-Qualität (`modules/quality.md#ui`): Playwright-/E2E schmal bei Flag `ui`; bildbasiertes Agent-Review bei komplexer UI; Verifikations-Screenshots nur ephemer (`proof-artifacts/` / `runtime/tmp/`), nie committen.
 - Architektur-Kern in `modules/quality.md#by-design`: SOLID-Kurzabsatz (SoC/SRP/ISP/DIP, keine Zyklen; optionale Cycle-Tools nur im Zielprojekt).
 - **Model-Policy v1.1:** Main-Thread/Orchestrator (`N0`–`N2`, `N7`) startet verpflichtend mit `grok-4.5-high` (`entry_points.orchestrator_main_thread`); Composer bleibt Standard für Coding-Sub-Agenten. Begründung: Triage-Algebra ist deterministisch, Erst-Klassifikation nicht (A-12).
@@ -119,7 +129,7 @@ Versionierung semantisch (MAJOR.MINOR.PATCH) auf das Gesetzbuch als Ganzes.
 ## [1.2.0] — 2026-07-06
 
 ### Added
-- **`skills-policy.md`** — verbindliche Governance für **Agent Skills** (`SKILL.md`):
+- **`skills-policy.md`** — verbindliche Governance für **Agent Skills** (SKILL.md-Datei):
   schließt die Lücke, dass „Skills" als prozedurales Gedächtnis bisher referenziert,
   aber nicht definiert war. Enthält SOTA-Grounding (offener Agent-Skills-Standard,
   Progressive Disclosure), CoALA-Einordnung (Gesetz 9), Entscheidungsmatrix

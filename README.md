@@ -1,6 +1,22 @@
-# agent-rules — Gesetzbuch für Agenten-gesteuerte Software-Projekte
+# agent-rules
 
-> **Version:** 2.0.0  
+Executable ruleset for multi-agent software work. One core file (`AGENTS.md`)
+is mandatory; modules and role cards load on demand under a counted context
+budget. A gate passes only with an executed proof. SKIP (exit 2) is never PASS.
+
+The normative German text below is unchanged. Read `AGENTS.md` next.
+
+```bash
+git clone https://github.com/src-dbgr/agent-rules.git
+bash scripts/lint-lawbook.sh --all --strict
+bash scripts/context-budget.sh --reading-list --class chore --node N2 --role developer
+bash scripts/check-triage.sh
+bash scripts/verify-proofs.sh
+```
+
+## Deutsch — Gesetzbuch
+
+> **Version:** 2.0.1  
 > **Status:** Verbindlich (normativ)
 
 Verfassung für Multi-Agenten-Arbeit: Hierarchie, Triage, Delegation, DoD mit

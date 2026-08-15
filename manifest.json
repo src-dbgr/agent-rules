@@ -1,7 +1,7 @@
 {
   "$comment": "Struktur-SSoT des Gesetzbuchs v2.0 (ADR-001). Diese Datei wird von Agenten NICHT gelesen, sondern per Skript abgefragt (load_when=script_only). Alle einstellbaren ZAHLEN stehen dagegen in config/policy-defaults.json; hier stehen nur Dokument-Obergrenzen (max_lines/max_bytes), die der Linter gegen die Klassen-Caps der Konfiguration prueft. max_lines/max_bytes sind Obergrenzen, keine Messwerte (ADR-001 §4): gemessen wird mit wc, ein deklarierter Ist-Wert wuerde veralten. tokens_est_max ist abgeleitet: ceil((max_bytes oder max_lines*caps.bytes_per_line_proxy) / caps.bytes_per_token_proxy) - scripts/lint-lawbook.sh --budget rechnet das nach.",
   "$schema_ref": "schemas/manifest.schema.json",
-  "lawbook_version": "2.0.0",
+  "lawbook_version": "2.0.1",
   "state_schema_version": "2.0.0",
   "category_of_kind": {
     "core": "kern",
