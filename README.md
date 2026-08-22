@@ -4,6 +4,10 @@ Executable ruleset for multi-agent software work. One core file (`AGENTS.md`)
 is mandatory; modules and role cards load on demand under a counted context
 budget. A gate passes only with an executed proof. SKIP (exit 2) is never PASS.
 
+**2.1.0** adds a one-page program design before production code, vertical
+slices with a check command each, and human plan review only on elevated
+feature work. State schema stays `2.0.0`.
+
 The normative German text below is unchanged. Read `AGENTS.md` next.
 
 ```bash
@@ -31,6 +35,15 @@ ausführbaren Nachweisen. **v2** ist eine Kontext-Diät gegenüber v1.3.x.
 | Handover-/Runtime-Müll | Retention + GC (`scripts/gc-sweep.sh`) |
 | Branches bleiben liegen | Report + Dry-Run (`scripts/branch-hygiene.sh`) |
 | SKIP zählte als PASS | Exit 2 = nicht nachgewiesen |
+
+## Was 2.1.0 ergänzt
+
+| 2.0.1 | 2.1.0 |
+|-------|-------|
+| Produktionscode kann sofort starten | Ein-Seiten-Plan zuerst; ohne bestandenen Plan kein Produktionscode |
+| Kein Halt am Plan | Halt nur bei Feature plus Sicherheit, Architektur, Nebenläufigkeit, Daten oder Unumkehrbarkeit |
+| Umsetzung als ein Block | Vertikale Scheiben; je Scheibe ein ausgeführtes Prüfkommando |
+| 10 Tool-Calls, 120 000 Bytes Lesen | 20 Calls je Agent, 250 000 Bytes, eigener Recherche-Zuschlag |
 
 ## Schnellstart
 
@@ -69,7 +82,7 @@ git clone https://github.com/src-dbgr/agent-rules.git .agent-rules
 
 ## Gesetze (Kurz)
 
-15 benannte IDs (`LAW-HIERARCHY` … `LAW-DELIVERY`) — Tabelle in `AGENTS.md`.
+20 benannte IDs (`LAW-HIERARCHY` … `LAW-OPS`) — Tabelle in `AGENTS.md`.
 Details nur in den genannten Modulen (Single Source of Truth).
 
 ## Lizenz

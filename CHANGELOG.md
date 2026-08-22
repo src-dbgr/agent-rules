@@ -25,6 +25,7 @@ Versionierung semantisch (MAJOR.MINOR.PATCH) auf das Gesetzbuch als Ganzes.
 - Gate formula includes Extra-Regeln (`manifest.json#/triage/gate_matrix/extra_rules`).
 - Handover schema accepts optional `write_paths`.
 - `dod:program_design` is the first act at `N4`, `passed` before production code (not a pre-N4 node).
+- README names the 2.1.0 plan/slices/caps (human entry, not only the version stamp).
 
 ### Unchanged (bewusst)
 - Flag algebra still one Zusatz-Gate per flag (High-Water-Mark). SKIP ≠ PASS. Isolation, VCS bans, Quality anti-bloat.
