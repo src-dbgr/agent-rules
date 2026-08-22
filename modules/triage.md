@@ -12,7 +12,7 @@
    genau ein Wert.
 2. **Flags setzen** — die Tabelle in §3 vollständig durchgehen; jedes Flag ist eine eigene Frage
    über die **Änderung**, nicht über das Thema. Ergebnis: `triage.signals`, keines bis alle neun.
-3. **Gates ableiten** — `Gates(Anfrage) = Gates(Klasse) ∪ Gates(Flags)`, siehe §4.
+3. **Gates ableiten** — `Gates(Anfrage) = Gates(Klasse) ∪ Gates(Flags) ∪ Extra-Regeln`, siehe §4.
 4. **Festschreiben** — `triage.rationale` nennt die Nummer der getroffenen Regelzeile und je Flag
    den beobachteten Anlass; `Gates(Anfrage)` wird als Schlüsselmenge in `dod_gates` angelegt. Erst
    danach darf `N2` verlassen werden.
@@ -66,9 +66,10 @@ aber kein zweites Gate.
 
 ## 4. Gate-Matrix {#gate-matrix}
 
-`Gates(Anfrage) = Gates(Klasse) ∪ Gates(Flags)` — **Vereinigung** (High-Water-Mark), keine Summe
-und kein Mittelwert. Ein Gate ist entweder ein Knoten aus `modules/workflow.md#knoten` oder ein
-DoD-Schlüssel der Form `dod:<name>`.
+`Gates(Anfrage) = Gates(Klasse) ∪ Gates(Flags) ∪ Extra-Regeln` — **Vereinigung** (High-Water-Mark),
+keine Summe und kein Mittelwert. Extra-Regeln stehen in `manifest.json#/triage/gate_matrix/extra_rules`
+(`N3a` bei externer Quelle; `dod:program_design`; `dod:human_plan_review`). Ein Gate ist ein Knoten
+aus `modules/workflow.md#knoten` oder ein DoD-Schlüssel `dod:<name>`.
 
 | Klasse | Gate-Set | Besonderheit |
 |--------|----------|--------------|
@@ -128,8 +129,9 @@ bestimmen.
 
 #### DoD `feature`
 Jedes Akzeptanzkriterium aus `N3b` hat mindestens einen Test, und die Konformitätsprüfung gegen die
-bestehende Architektur an `N5a` ist bestanden. `dod:program_design` ist `passed` **bevor**
-`N4` beginnt; bei erhöhtem Flag-Niveau zusätzlich `dod:human_plan_review`.
+bestehende Architektur an `N5a` ist bestanden. `dod:program_design` wird vom Developer als
+erster Akt an `N4` erzeugt und ist `passed` **bevor Produktionscode** entsteht; bei erhöhtem
+Flag-Niveau zusätzlich `dod:human_plan_review` (warten, kein Code).
 
 ## 6. Aufwandsbudget
 

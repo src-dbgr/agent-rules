@@ -9,8 +9,8 @@ Produktionscode gemäß Anforderungen und Architekturvorgabe implementieren und 
 Pull Request, Branch-Bericht.
 
 Knoten: `N4`, `N6b`. Spike endet an `N4` (kein Trunk). Auslieferung: `modules/vcs.md#auslieferung`.
-Wo `dod:program_design` gilt: du schreibst den Ein-Seiten-Plan; Architect nur bei `arch`/`conc`.
-Ohne Plan kein Produktionscode.
+Wo `dod:program_design` gilt: erster Akt an `N4` ist dein Ein-Seiten-Plan; Architect nur bei `arch`/`conc`.
+Ohne bestandenen Plan kein Produktionscode.
 
 Du tust **nicht**: Anforderungen oder Architektur ändern (dann zurückmelden),
 deine eigene Arbeit abnehmen (Tester & Reviewer), auf geschützte Branches pushen,

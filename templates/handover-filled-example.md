@@ -20,6 +20,9 @@ tools_forbidden:
 task_boundaries:
   - "Keine weiteren Provider"
   - "Passwort-Login nicht entfernen"
+write_paths:
+  - src/auth/
+  - tests/auth/
 done_criteria:
   - "ruff check . endet mit Exit 0"
   - "pytest tests/auth/ endet mit Exit 0"

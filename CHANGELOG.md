@@ -21,7 +21,10 @@ Versionierung semantisch (MAJOR.MINOR.PATCH) auf das Gesetzbuch als Ganzes.
 - Effort is per agent; `effort.answer.max_tool_calls` 10 → 20.
 - `caps.read_bytes_per_run_max` 120000 → 250000 (a single real research source already exceeded the old cap).
 - Approval (`modules/ops.md#approval`) covers plan review as well as `irrev`.
-- Handover templates match `schemas/handover.schema.json`; `validate-handovers.sh` parses nested YAML.
+- Handover templates match `schemas/handover.schema.json`; `scripts/validate-handovers.sh` parses nested YAML (PyYAML required; no silent fallback).
+- Gate formula includes Extra-Regeln (`manifest.json#/triage/gate_matrix/extra_rules`).
+- Handover schema accepts optional `write_paths`.
+- `dod:program_design` is the first act at `N4`, `passed` before production code (not a pre-N4 node).
 
 ### Unchanged (bewusst)
 - Flag algebra still one Zusatz-Gate per flag (High-Water-Mark). SKIP ≠ PASS. Isolation, VCS bans, Quality anti-bloat.

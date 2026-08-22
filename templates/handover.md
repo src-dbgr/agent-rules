@@ -17,6 +17,8 @@ tools_forbidden:
   - "git push --force"
 task_boundaries:
   - "Keine Schreibrechte ausser write_paths"
+write_paths:
+  - runtime/reports/
 done_criteria:
   - "DoD des Knotens mit Exit 0 nachgewiesen"
 start_point: "1. Leseliste 2. Befehl 3. erwartetes Ergebnis"

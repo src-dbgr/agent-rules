@@ -84,7 +84,7 @@ nicht als Kontext und du erfindest keine Pfade.
 Erste Treffer-Regel über sechs geordnete Klassen: `incident`, `revert`, `answer`,
 `spike`, `chore`, `feature` (Catch-all). Dazu neun orthogonale Flags: `sec`, `data`,
 `legal`, `ui`, `api`, `conc`, `arch`, `perf`, `irrev`.
-Gates sind die **Vereinigung** von Klassen-Gates und Flag-Gates (High-Water-Mark) —
+Gates sind die **Vereinigung** von Klassen-Gates, Flag-Gates und Extra-Regeln —
 keine Summe, kein Score. Auslöser, Gate-Matrix, DoD je Klasse und Effort-Budget:
 `modules/triage.md#gate-matrix`. Ohne gesetzte Klasse verlässt du `N2` nicht.
 

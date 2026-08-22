@@ -1,8 +1,8 @@
 {
   "$comment": "LLM-Nutzungsregeln — EINZIGE Quelle für Modellwahl. Normtexte verweisen nur hierher. Bei Marktwechsel diese Datei anpassen, nicht AGENTS.md.",
   "version": "1.3.0",
-  "updated_at": "2026-08-15",
-  "policy_id": "model-policy-v1.2",
+  "updated_at": "2026-08-22",
+  "policy_id": "model-policy-v1.3",
 
   "entry_points": {
     "$comment": "Die Triage-Algebra (Klasse→Gates) ist deterministisch; die Erst-Klassifikation der Nutzeranfrage an N2 ist es nicht. Fixtures prüfen Ableitung, nicht LLM-Klassifikation (Annahme A-12). Deshalb darf der Main-Thread/Orchestrator nicht auf Composer starten.",

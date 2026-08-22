@@ -36,90 +36,18 @@ extract_frontmatter() {
   ' "$f" >"$out"
 }
 
-# Nested YAML→JSON (scalars, lists, maps). Prefer PyYAML; else a small subset parser.
+# Nested YAML→JSON. PyYAML ist Pflicht; ohne Parser kein PASS (LAW-DOD).
 yaml_to_json() {
   python3 - "$1" <<'PY'
-import json, sys, re
+import json, sys
 path = sys.argv[1]
 text = open(path, encoding="utf-8").read()
 try:
     import yaml
-    data = yaml.safe_load(text) or {}
-    print(json.dumps(data))
-    raise SystemExit(0)
 except ImportError:
-    pass
-
-def coerce(v):
-    v = v.strip().strip('"').strip("'")
-    if v.lower() in ("true", "false"):
-        return v.lower() == "true"
-    if v.lower() in ("null", "~", ""):
-        return None
-    if re.fullmatch(r"-?\d+", v):
-        return int(v)
-    if re.fullmatch(r"-?\d+\.\d+", v):
-        return float(v)
-    return v
-
-def parse(lines):
-    root = {}
-    stack = [(0, root, None)]  # indent, container, last_key_in_map
-
-    def container():
-        return stack[-1][1]
-
-    i = 0
-    while i < len(lines):
-        raw = lines[i].rstrip("\n")
-        if not raw.strip() or raw.lstrip().startswith("#"):
-            i += 1
-            continue
-        indent = len(raw) - len(raw.lstrip(" "))
-        while len(stack) > 1 and indent < stack[-1][0]:
-            stack.pop()
-        cur = container()
-        s = raw.strip()
-        if s.startswith("- "):
-            rest = s[2:]
-            if isinstance(cur, list):
-                if ":" in rest and not rest.startswith("{"):
-                    k, v = rest.split(":", 1)
-                    item = {k.strip(): coerce(v)} if v.strip() else {k.strip(): {}}
-                    if not v.strip():
-                        stack.append((indent + 2, item[k.strip()] if False else item, k.strip()))
-                    cur.append(item)
-                else:
-                    cur.append(coerce(rest))
-            i += 1
-            continue
-        if ":" in s:
-            k, v = s.split(":", 1)
-            k = k.strip()
-            v = v.strip()
-            if not isinstance(cur, dict):
-                i += 1
-                continue
-            if v == "":
-                # peek next indent to decide list vs map
-                nxt = None
-                for j in range(i + 1, len(lines)):
-                    peek = lines[j]
-                    if peek.strip() and not peek.lstrip().startswith("#"):
-                        nxt = peek
-                        break
-                if nxt and nxt.lstrip().startswith("- "):
-                    cur[k] = []
-                    stack.append((indent + 2, cur[k], None))
-                else:
-                    cur[k] = {}
-                    stack.append((indent + 2, cur[k], None))
-            else:
-                cur[k] = coerce(v)
-        i += 1
-    return root
-
-data = parse(text.splitlines())
+    print("NICHT NACHGEWIESEN: PyYAML fehlt", file=sys.stderr)
+    raise SystemExit(2)
+data = yaml.safe_load(text) or {}
 print(json.dumps(data))
 PY
 }
@@ -162,7 +90,18 @@ for f in "${files[@]}"; do
     bad=$((bad + 1))
     continue
   fi
-  yaml_to_json "$fm" >"$js"
+  yerr="${tmp}/yaml.err"
+  set +e
+  yaml_to_json "$fm" >"$js" 2>"$yerr"
+  yrc=$?
+  set -e
+  if (( yrc == 2 )); then
+    skip "PyYAML fehlt"
+  elif (( yrc != 0 )); then
+    printf 'FAIL %s: YAML-Parse\n' "$f"
+    bad=$((bad + 1))
+    continue
+  fi
   if ! npx -y -p ajv-cli@5 -p ajv-formats ajv validate \
       -s "$SCHEMA" -d "$js" --spec=draft2020 -c ajv-formats >/dev/null 2>&1; then
     printf 'FAIL %s: Schema\n' "$f"
