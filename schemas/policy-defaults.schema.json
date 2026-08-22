@@ -5,6 +5,17 @@
   "description": "Schema der Zahlen-SSoT config/policy-defaults.json (ADR-006, ADR-007 §3, ADR-009, AK-051 in der Fassung von ad1-v2-architecture.md §16). Jeder Zahlenwert braucht einen _provenance-Eintrag; die Vollstaendigkeit prueft scripts/lint-lawbook.sh --config-provenance-complete, weil JSON Schema keine Kreuzreferenz zwischen Pointer und Wert ausdruecken kann.",
   "type": "object",
   "additionalProperties": false,
+  "$defs": {
+    "effort_cap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_subagents", "max_tool_calls"],
+      "properties": {
+        "max_subagents": { "type": "integer", "minimum": 1 },
+        "max_tool_calls": { "type": "integer", "minimum": 1 }
+      }
+    }
+  },
   "required": ["version", "lawbook_version", "caps", "budgets", "cycles", "effort", "gc", "vcs", "enforcement", "_provenance"],
   "properties": {
     "$comment": { "type": "string" },
@@ -71,19 +82,18 @@
     },
     "effort": {
       "type": "object",
-      "description": "Effort-Budget je Triage-Klasse plus flag_bonus (ADR-003 §8). Die 6 Klassen sind Pflicht; AK-042 (Fassung §16) zaehlt die Eintraege ohne flag_bonus.",
+      "description": "Effort-Budget je Triage-Klasse plus flag_bonus und n3a-Zuschlag. Die 6 Klassen sind Pflicht; AK-042 zaehlt die Klasseneintraege ohne flag_bonus/n3a.",
       "additionalProperties": false,
-      "required": ["answer", "chore", "revert", "spike", "incident", "feature", "flag_bonus"],
-      "patternProperties": {
-        "^[a-z_]+$": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["max_subagents", "max_tool_calls"],
-          "properties": {
-            "max_subagents": { "type": "integer", "minimum": 1 },
-            "max_tool_calls": { "type": "integer", "minimum": 1 }
-          }
-        }
+      "required": ["answer", "chore", "revert", "spike", "incident", "feature", "flag_bonus", "n3a"],
+      "properties": {
+        "answer": { "$ref": "#/$defs/effort_cap" },
+        "chore": { "$ref": "#/$defs/effort_cap" },
+        "revert": { "$ref": "#/$defs/effort_cap" },
+        "spike": { "$ref": "#/$defs/effort_cap" },
+        "incident": { "$ref": "#/$defs/effort_cap" },
+        "feature": { "$ref": "#/$defs/effort_cap" },
+        "flag_bonus": { "$ref": "#/$defs/effort_cap" },
+        "n3a": { "$ref": "#/$defs/effort_cap" }
       }
     },
     "gc": {

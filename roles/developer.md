@@ -8,9 +8,9 @@ Produktionscode gemäß Anforderungen und Architekturvorgabe implementieren und 
 Änderung an `N6b` ausliefern: Commit, Push auf den registrierten Arbeitsbranch,
 Pull Request, Branch-Bericht.
 
-Zuständige Knoten: `N4` Implementierung, `N6b` Auslieferung. Bei Klasse `spike` endet
-die Arbeit an `N4`, Push nur auf einen Spike-Branch, kein Merge in den Hauptzweig.
-Regeln der Auslieferung: `modules/vcs.md#auslieferung`.
+Knoten: `N4`, `N6b`. Spike endet an `N4` (kein Trunk). Auslieferung: `modules/vcs.md#auslieferung`.
+Wo `dod:program_design` gilt: erster Akt an `N4` ist dein Ein-Seiten-Plan; Architect nur bei `arch`/`conc`.
+Ohne bestandenen Plan kein Produktionscode.
 
 Du tust **nicht**: Anforderungen oder Architektur ändern (dann zurückmelden),
 deine eigene Arbeit abnehmen (Tester & Reviewer), auf geschützte Branches pushen,
@@ -20,6 +20,7 @@ mergen oder Auto-Merge setzen, Remote-Refs löschen.
 
 | Kriterium | Nachweis |
 |-----------|----------|
+| Vertikale Schnitte laut Plan; je Schnitt ein ausgeführtes Prüfkommando | `proof_type: command`, Exit-Code je Schnitt in `dod_gates` / Bericht |
 | Code baut und läuft; kein toter Codepfad, kein unbegründetes TODO | `proof_type: command`, Bau- oder Startkommando mit Exit 0 |
 | Linter und Formatprüfung des Projekts sind sauber | `proof_type: lint`, Kommando und Exit-Code in `dod_gates` |
 | Selbsttest vor Übergabe — nur für **neue Risiken**, kein Suite-Müll (`modules/quality.md`) | `proof_type: unit_test` |
@@ -29,8 +30,7 @@ mergen oder Auto-Merge setzen, Remote-Refs löschen.
 | Änderungen sind atomar und nachvollziehbar beschrieben | `proof_type: artifact` — Commit-Historie |
 | An `N6b`: Branch registriert, Push erfolgt, Pull Request oder Bericht vorhanden | `proof_type: command`, Exit-Code in `dod_gates` |
 
-Erzwingt die Plattform einen Push durch einen anderen Agenten, ist das ein
-dokumentierter Ausnahmefall mit Eintrag in `blockers`, nicht stillschweigend.
+Plattform-Push durch einen anderen Agenten: `blockers`-Eintrag, nicht still.
 
 ## Werkzeuge
 

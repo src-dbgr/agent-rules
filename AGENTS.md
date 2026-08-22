@@ -1,6 +1,6 @@
 # Gesetzbuch für Multi-Agenten-Softwareentwicklung — Kern
 
-> Version: 2.0.1
+> Version: 2.1.0
 > Diese Datei ist die **einzige** Pflichtlektüre. Alles Weitere lädst du über eine
 > berechnete Leseliste — nicht aus dem Gedächtnis, nicht geraten.
 > Nach Compaction oder Rotation liest du sie erneut (`LAW-CONTEXT`).
@@ -27,8 +27,9 @@ das ist Orchestrator-Arbeit. Rollenwechsel in derselben Instanz ist verboten (`L
 3. **Einordnung** (`N2`): Klasse + Flags setzen; Leseliste berechnen.
 4. **Klärung** (`LAW-CLARIFY`): Bei blockierender Unsicherheit → Rückfrage an Auftraggeber,
    `phase: awaiting_user`, **kein** Weiterarbeiten. Keine Pseudo-Fragen
-   (`modules/clarification.md`).
+   (`modules/clarification.md`). Bei `dod:human_plan_review` gilt dasselbe für den Plan.
 5. **Delegieren**: Arbeit machen **nur** Sub-Agenten. Du aggregierst Kurz-Rückgaben (≤150 Zeilen).
+   Klasse `feature`: Programmentwurf vor `N4` (`dod:program_design`).
 6. **Abschluss** (`N7`): konsolidieren, GC, aufräumen, Terminalzustand setzen.
 
 ## Sofort-Ablauf (nur Sub-Agent)
@@ -62,7 +63,7 @@ das ist Orchestrator-Arbeit. Rollenwechsel in derselben Instanz ist verboten (`L
 | `LAW-MODELS` | Modellwahl nur nach `config/model-policy.json` (Entry Points + Leiter + Never); Aufstieg begründen. | `config/model-policy.json` |
 | `LAW-QUALITY` | Regression by Design; Tests nur mit Risiko-Mehrwert; keine Suite-Aufblähung. | `modules/quality.md` |
 | `LAW-ASSIGN` | Jede Delegation hat `task_id` (UUID) im Assignment-Ledger; Rückgaben ohne ID abweisen. | `modules/ops.md#ledger` |
-| `LAW-OPS` | Resume, Stall-Watchdog, `irrev`-Approval, Kosten-/Zeitbudget, Audit-Log. | `modules/ops.md` |
+| `LAW-OPS` | Resume, Stall-Watchdog, `irrev`-/Plan-Approval, Kosten-/Zeitbudget, Audit-Log. | `modules/ops.md` |
 
 Gesetze sind für Sub-Agenten nicht verhandelbar. Details nur in der genannten Datei.
 Unterregeln `LAW-MEMORY.1`–`.6`: `modules/memory.md`.
@@ -71,7 +72,7 @@ Unterregeln `LAW-MEMORY.1`–`.6`: `modules/memory.md`.
 
 1. `./scripts/context-budget.sh --reading-list --class <k> --node <n> --role <r>` gibt die Pfade zeilenweise aus.
 2. Lies genau diese Pfade und Anker in der ausgegebenen Reihenfolge, bis das Byte-Budget erschöpft ist:
-   je Delegation ≤ 32000 Bytes, je Lauf ≤ 120000 Bytes.
+   je Delegation ≤ 32000 Bytes, je Lauf ≤ 250000 Bytes.
 3. Anker-Ausschnitte sind der Normalfall. Ganze Module liest nur der Orchestrator an `N1`, `N2` und `N7`.
 4. Fehlt ein Pfad oder fehlt `jq`: Eintrag in `blockers` und `t_blocked`, keine Improvisation (`LAW-DOD`).
 
@@ -83,7 +84,7 @@ nicht als Kontext und du erfindest keine Pfade.
 Erste Treffer-Regel über sechs geordnete Klassen: `incident`, `revert`, `answer`,
 `spike`, `chore`, `feature` (Catch-all). Dazu neun orthogonale Flags: `sec`, `data`,
 `legal`, `ui`, `api`, `conc`, `arch`, `perf`, `irrev`.
-Gates sind die **Vereinigung** von Klassen-Gates und Flag-Gates (High-Water-Mark) —
+Gates sind die **Vereinigung** von Klassen-Gates, Flag-Gates und Extra-Regeln —
 keine Summe, kein Score. Auslöser, Gate-Matrix, DoD je Klasse und Effort-Budget:
 `modules/triage.md#gate-matrix`. Ohne gesetzte Klasse verlässt du `N2` nicht.
 
@@ -190,7 +191,7 @@ Karten entstehen nicht im Lauf.
 
 ## Version und Migration
 
-Gesetzbuch 2.0.1, `schema_version` 2.0.0. Alt-nach-Neu für Gesetzes-IDs, Knoten und
+Gesetzbuch 2.1.0, `schema_version` 2.0.0. Alt-nach-Neu für Gesetzes-IDs, Knoten und
 Tracks sowie die Anleitung für Zielprojekte: `docs/migration-v1-to-v2.md`.
 Release-Historie: `CHANGELOG.md`. Prüfe deine Arbeit mit
 `bash scripts/lint-lawbook.sh --all --strict` — SKIP zählt dort nicht als Erfolg.

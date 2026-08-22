@@ -169,6 +169,15 @@
       },
       "description": "AK-090: was ausdruecklich NICHT Auftrag ist (Dateimengen, Verbote)"
     },
+    "write_paths": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Erlaubte Schreibpfade; bei Parallelitaet disjunkt (modules/context.md#delegationsbrief)"
+    },
     "done_criteria": {
       "type": "array",
       "items": {

@@ -26,7 +26,10 @@ Maßgeblich und **allein** verbindlich: `config/model-policy.json` (`LAW-MODELS`
    Die Triage-Algebra ist deterministisch; die Erst-Klassifikation nicht.
 2. **Sub-Agenten:** Leiter von Rank 1 (Composer) aufwärts; Aufstieg nur mit kurzer
    Begründung im Handover.
-3. Einträge unter `never` sind hart verboten (inkl. Composer-as-Orchestrator).
+3. Einträge unter `never` sind hart verboten (inkl. Composer-as-Orchestrator),
+   außer der Auftraggeber nennt das Modell ausdrücklich. Dann: Override in
+   `model_usage[]` und Handover begründen. Fehlt eine Plattform-Voraussetzung
+   (etwa Fable-Retention-Ack), das **sagen** und den Fallback nennen — nie still tauschen.
 4. API für externe Modelle erschöpft: `fallback_when_external_api_exhausted`
    (Orchestrator bleibt auf Grok High; Sub-Agenten Composer→Grok).
 5. Gewähltes Modell in State `model_usage[]` protokollieren (`entry_point` setzen).

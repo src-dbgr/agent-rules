@@ -1,8 +1,8 @@
 {
   "$comment": "Zahlen-SSoT des Gesetzbuchs v2.0 (W-03/W-04, ADR-006/ADR-007/ADR-009). EINZIGE Quelle aller einstellbaren Zahlen. Normtexte nennen Werte nur als 'Default (siehe config)'. Zugriff ausschliesslich per jq (Annahme A-06). Provenienz jedes Zahlenwerts steht in _provenance, adressiert per JSON-Pointer; herkunft ist entweder 'belegt' (Quelle in quelle) oder 'setzung' (bewusste Festlegung mit Begruendung). Per-Dokument-Zeilencaps stehen NICHT hier, sondern in manifest.json#/documents (Struktur-SSoT); hier stehen nur die Klassen-Obergrenzen, gegen die manifest.json geprueft wird.",
   "$schema_ref": "schemas/policy-defaults.schema.json",
-  "version": "2.0.1",
-  "lawbook_version": "2.0.1",
+  "version": "2.1.0",
+  "lawbook_version": "2.1.0",
   "caps": {
     "bootstrap_mandatory_files": 1,
     "core_max_lines": 200,
@@ -16,7 +16,7 @@
     "handover_max_bytes": 12000,
     "subagent_return_max_lines": 150,
     "read_bytes_per_delegation_max": 32000,
-    "read_bytes_per_run_max": 120000,
+    "read_bytes_per_run_max": 250000,
     "bytes_per_token_proxy": 4,
     "bytes_per_line_proxy": 52,
     "stub_max_lines": 10,
@@ -49,7 +49,7 @@
   "effort": {
     "answer": {
       "max_subagents": 1,
-      "max_tool_calls": 10
+      "max_tool_calls": 20
     },
     "chore": {
       "max_subagents": 1,
@@ -74,6 +74,10 @@
     "flag_bonus": {
       "max_subagents": 1,
       "max_tool_calls": 15
+    },
+    "n3a": {
+      "max_subagents": 1,
+      "max_tool_calls": 25
     }
   },
   "gc": {
@@ -255,8 +259,8 @@
       "quelle": "BR1 NFR-4 / AK-013"
     },
     "/caps/read_bytes_per_run_max": {
-      "herkunft": "belegt",
-      "quelle": "BR1 NFR-5 / AK-014 (4 Agenten, Annahme A-13)"
+      "herkunft": "setzung",
+      "quelle": "v2.1.0: 250000 B. 120000 B (BR1 NFR-5 / AK-014) war kleiner als eine einzelne ernsthafte Recherchequelle; Ueberschreitung endete sonst in t_blocked"
     },
     "/caps/bytes_per_token_proxy": {
       "herkunft": "belegt",
@@ -340,7 +344,7 @@
     },
     "/effort": {
       "herkunft": "setzung",
-      "quelle": "BR1 NFR-17 / Annahme A-05: Startwerte aus Anthropics Research-Domaene (3-10 / 10-15 / > 10 Werkzeugaufrufe), nicht aus Coding-Messungen. Ausdruecklich kalibrierungsbeduerftig"
+      "quelle": "BR1 NFR-17 / Annahme A-05, v2.1.0: answer.max_tool_calls 20 (je Agent); n3a-Zuschlag 25, weil Recherche sonst den Klassen-Cap sprengt. Kalibrierungsbeduerftig"
     },
     "/gc/sweep/default_mode": {
       "herkunft": "belegt",

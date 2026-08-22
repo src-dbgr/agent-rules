@@ -146,7 +146,8 @@
         "N6a",
         "N6b",
         "N7",
-        "dod:rollback_snapshot"
+        "dod:rollback_snapshot",
+        "dod:program_design"
       ],
       "rationale": "Konfigurationsaenderung ohne Produktverhaltensaenderung; Geheimniswechsel ist sicherheitsrelevant und praktisch nicht folgenlos ruecknehmbar."
     },
@@ -165,7 +166,8 @@
         "N4",
         "N5a",
         "N6b",
-        "N7"
+        "N7",
+        "dod:program_design"
       ],
       "rationale": "Beleg fuer High-Water-Mark: die Klasse bleibt chore, das Gate-Niveau erreicht durch conc den Architekten (N3c) wie bei einem feature."
     },
@@ -207,7 +209,8 @@
         "N6b",
         "N7",
         "dod:revert_diff_only",
-        "dod:rollback_snapshot"
+        "dod:rollback_snapshot",
+        "dod:program_design"
       ],
       "rationale": "Rueckname einer Schemamigration: data und irrev, weil Datenverlust moeglich ist."
     },
@@ -322,7 +325,8 @@
         "N5a",
         "N5b",
         "N6b",
-        "N7"
+        "N7",
+        "dod:program_design"
       ],
       "rationale": "Catch-all feature; ui erzwingt visuelle Regression (N5b)."
     },
@@ -342,7 +346,8 @@
         "N5a",
         "N5c",
         "N6b",
-        "N7"
+        "N7",
+        "dod:program_design"
       ],
       "rationale": "Neue oeffentliche Schnittstelle."
     },
@@ -364,7 +369,9 @@
         "N5a",
         "N6a",
         "N6b",
-        "N7"
+        "N7",
+        "dod:human_plan_review",
+        "dod:program_design"
       ],
       "rationale": "Nebenlaeufigkeit und Persistenz: conc zieht N3c (mit Nebenlaeufigkeitsmodell, hier auch TLC), data zieht N6a."
     },
@@ -386,7 +393,9 @@
         "N5c",
         "N6a",
         "N6b",
-        "N7"
+        "N7",
+        "dod:human_plan_review",
+        "dod:program_design"
       ],
       "rationale": "Auth-Erweiterung mit neuer Schnittstelle."
     },
@@ -408,7 +417,9 @@
         "N6a",
         "N6b",
         "N7",
-        "dod:rollback_snapshot"
+        "dod:rollback_snapshot",
+        "dod:human_plan_review",
+        "dod:program_design"
       ],
       "rationale": "Schemamigration mit Datenwanderung."
     },
@@ -430,7 +441,9 @@
         "N5a",
         "N5c",
         "N6b",
-        "N7"
+        "N7",
+        "dod:human_plan_review",
+        "dod:program_design"
       ],
       "rationale": "Neue Komponentengrenze: arch zieht die Architektur-Autorschaft (ADR) vorab."
     },
@@ -452,7 +465,9 @@
         "N5a",
         "N6b",
         "N7",
-        "dod:perf_budget"
+        "dod:perf_budget",
+        "dod:human_plan_review",
+        "dod:program_design"
       ],
       "rationale": "Nebenlaeufigkeit mit Ordnungsgarantie plus Durchsatzziel."
     },
@@ -474,7 +489,9 @@
         "N5a",
         "N6a",
         "N6b",
-        "N7"
+        "N7",
+        "dod:human_plan_review",
+        "dod:program_design"
       ],
       "rationale": "Drei Flags, ein Zusatzknoten: sec, data und legal zeigen alle auf N6a, dessen DoD sich je Flag erweitert (Vereinigung, keine Addition)."
     },
@@ -496,7 +513,8 @@
         "N5b",
         "N6a",
         "N6b",
-        "N7"
+        "N7",
+        "dod:program_design"
       ],
       "rationale": "Grenzfall: sichtbare Aenderung ist kein chore; Barrierefreiheit ist zugleich rechtlich relevant."
     },
@@ -516,7 +534,9 @@
         "N5a",
         "N6b",
         "N7",
-        "dod:rollback_snapshot"
+        "dod:rollback_snapshot",
+        "dod:human_plan_review",
+        "dod:program_design"
       ],
       "rationale": "Codepfad-Entfernung aendert Verhalten und ist nicht per Flag zurueckdrehbar."
     },
@@ -538,7 +558,9 @@
         "N5c",
         "N6b",
         "N7",
-        "dod:rollback_snapshot"
+        "dod:rollback_snapshot",
+        "dod:human_plan_review",
+        "dod:program_design"
       ],
       "rationale": "Abschaltung einer oeffentlichen Schnittstelle."
     },
@@ -570,7 +592,8 @@
         "N4",
         "N5a",
         "N6b",
-        "N7"
+        "N7",
+        "dod:program_design"
       ],
       "rationale": "Zweiter High-Water-Mark-Beleg: Klasse bleibt chore, arch zieht N3c hinzu - Gate-Niveau eines feature ohne Klassenwechsel."
     }

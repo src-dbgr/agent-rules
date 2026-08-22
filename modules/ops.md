@@ -69,13 +69,17 @@ Wiederaufnahme:
    bzw. bis der neue Agent den Prompt übernommen hat.
 6. Nie Archiv-Handovers als Wahrheit — nur State + Index + aktive Assignments.
 
-## 3. Human-Approval bei `irrev` {#approval}
+## 3. Human-Approval bei `irrev` und Plan {#approval}
 
-Vor Ausführung einer als `irrev` beflaggten Änderung:
+Vor Ausführung einer als `irrev` beflaggten Änderung **oder** sobald
+`dod:human_plan_review` in Gates steht:
 
-- Orchestrator holt explizite Freigabe (`approval_token` im State oder Nutzerantwort).
+- Orchestrator holt explizite Freigabe (`approvals[]` im State oder Nutzerantwort).
 - Ohne Token: `phase: awaiting_user`, kein `N4`/`N6b` für diesen Teil.
+- Bei Plan-Review: Kurzfassung des Programmentwurfs (eine Seite) vorlegen, nicht den
+  gesamten Diff. Scope im Approval: `plan_review` bzw. `irrev`.
 - Gilt auch für Prod-Deploy, Datenlöschung, Schema-Break.
+- `feature` ohne die Flags aus `human_plan_review_on_flags`: Plan vorlegen, **nicht** warten.
 
 ## 4. Kosten- und Zeitbudget {#cost}
 

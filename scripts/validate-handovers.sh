@@ -36,34 +36,18 @@ extract_frontmatter() {
   ' "$f" >"$out"
 }
 
-# Minimal YAML→JSON for flat key: value frontmatter (strings/numbers/booleans)
-yaml_flat_to_json() {
+# Nested YAML→JSON. PyYAML ist Pflicht; ohne Parser kein PASS (LAW-DOD).
+yaml_to_json() {
   python3 - "$1" <<'PY'
-import json, sys, re
+import json, sys
 path = sys.argv[1]
-data = {}
-with open(path, encoding="utf-8") as fh:
-    for raw in fh:
-        line = raw.rstrip("\n")
-        if not line or line.lstrip().startswith("#"):
-            continue
-        if ":" not in line:
-            continue
-        k, v = line.split(":", 1)
-        k = k.strip()
-        v = v.strip().strip('"').strip("'")
-        if v.lower() in ("true", "false"):
-            data[k] = v.lower() == "true"
-        else:
-            try:
-                if re.fullmatch(r"-?\d+", v):
-                    data[k] = int(v)
-                elif re.fullmatch(r"-?\d+\.\d+", v):
-                    data[k] = float(v)
-                else:
-                    data[k] = v
-            except Exception:
-                data[k] = v
+text = open(path, encoding="utf-8").read()
+try:
+    import yaml
+except ImportError:
+    print("NICHT NACHGEWIESEN: PyYAML fehlt", file=sys.stderr)
+    raise SystemExit(2)
+data = yaml.safe_load(text) or {}
 print(json.dumps(data))
 PY
 }
@@ -106,7 +90,18 @@ for f in "${files[@]}"; do
     bad=$((bad + 1))
     continue
   fi
-  yaml_flat_to_json "$fm" >"$js"
+  yerr="${tmp}/yaml.err"
+  set +e
+  yaml_to_json "$fm" >"$js" 2>"$yerr"
+  yrc=$?
+  set -e
+  if (( yrc == 2 )); then
+    skip "PyYAML fehlt"
+  elif (( yrc != 0 )); then
+    printf 'FAIL %s: YAML-Parse\n' "$f"
+    bad=$((bad + 1))
+    continue
+  fi
   if ! npx -y -p ajv-cli@5 -p ajv-formats ajv validate \
       -s "$SCHEMA" -d "$js" --spec=draft2020 -c ajv-formats >/dev/null 2>&1; then
     printf 'FAIL %s: Schema\n' "$f"
