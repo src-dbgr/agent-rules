@@ -21,6 +21,7 @@ Versionierung semantisch (MAJOR.MINOR.PATCH) auf das Gesetzbuch als Ganzes.
 - Effort is per agent; `effort.answer.max_tool_calls` 10 → 20.
 - `caps.read_bytes_per_run_max` 120000 → 250000 (a single real research source already exceeded the old cap).
 - Approval (`modules/ops.md#approval`) covers plan review as well as `irrev`.
+- Handover templates match `schemas/handover.schema.json`; `validate-handovers.sh` parses nested YAML.
 
 ### Unchanged (bewusst)
 - Flag algebra still one Zusatz-Gate per flag (High-Water-Mark). SKIP ≠ PASS. Isolation, VCS bans, Quality anti-bloat.

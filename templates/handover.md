@@ -1,51 +1,48 @@
 ---
-handover_id: "<uuid>"
-task_id: "<uuid>"
-parent_agent_id: "<id>"
-child_agent_id: "<id-or-empty>"
-handover_type: delegation
-role_assigned: developer
-cfg_node: N4
-tree_depth: 2
-cycle_attempt: 1
-files_read: 0
-bytes_read: 0
-tool_calls: 0
-turns: 0
+handover_id: hv-xxxx
+task_id: "00000000-0000-4000-8000-000000000000"
+parent_agent_id: orc-xxxx
+agent_id: sub-xxxx
+role: developer
+depth: 1
+node: N4
+class: feature
+flags: []
+reason: delegation
+goal: "Einen Satz, unverändert vom globalen Ziel abgeleitet."
+output_format: "return-Handover, maximal 150 Zeilen, Nachweise als Pfad"
+tools_allowed:
+  - "modules/tools.md#developer"
+tools_forbidden:
+  - "git push --force"
+task_boundaries:
+  - "Keine Schreibrechte ausser write_paths"
+done_criteria:
+  - "DoD des Knotens mit Exit 0 nachgewiesen"
+start_point: "1. Leseliste 2. Befehl 3. erwartetes Ergebnis"
+budget:
+  files_read: 0
+  bytes_read: 0
+  tool_calls: 0
+  turns: 0
+reading_list:
+  - AGENTS.md
+artifacts: []
+open_gates:
+  - N4
+dead_ends: []
 created_at: "2026-08-07T00:00:00Z"
-schema_version: "2.0.0"
 ---
 
 # Handover
 
-## 1. Globales Ziel
-**Original-Prompt:** `[unverändert]`
-**Out-of-scope:** …
-**Klasse / Flags:** `feature` + `[…]`
-**task_id:** `[UUID — Pflicht, Korrelation zum Assignment-Ledger]`
+## Auftrag
+**Original-Prompt:** unverändert. **Out-of-scope / Grenzen:** siehe `task_boundaries`.
+**Klasse / Flags / task_id:** Frontmatter. **DoD:** `done_criteria`, Nachweis mit Exit 0.
 
-## 2. CFG-Knoten
-Knoten: `N?` | Vorher: … | Nächster bei Erfolg: …
-DoD: `- [ ] …` Nachweis: `` `befehl` `` → Exit 0
+## Erkenntnisse
+Artefakte nur als Pfad (`artifacts[]`). Sackgassen in `dead_ends[]`. Keine Logs inline.
 
-## 3. Artefakte (Pfade, keine Volltexte)
-| Artefakt | Pfad | Kurz |
-|----------|------|------|
-| … | `…` | … |
-
-## 4. Schreibrechte (Parallelität)
-`write_paths:` … (disjunkt zu Geschwistern) | sonst: Eskalation
-
-## 5. Sackgassen
-Keine | oder Tabelle Versuch / Warum verworfen / Log-Pfad
-
-## 6. Startpunkt (Empfänger)
-Rolle: …
-1. Lies: `[pfade]`
-2. Führe aus: `[befehl]`
-3. Erwarte: `[ergebnis]`
-Schreibzugriff: … | Nur lesen: … | Verboten: …
-
-## 7. Rückgabe
-An: `parent_agent_id` | Format: `handover_type: return` | Max. 150 Zeilen
-**Dieselbe `task_id` wiederholen** — sonst weist der Orchestrator ab.
+## Startpunkt
+Siehe `start_point`. Schreibzugriff nur laut Handover. Rückgabe an `parent_agent_id`,
+`reason: return`, **dieselbe `task_id`**.

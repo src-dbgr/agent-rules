@@ -104,7 +104,7 @@ Zusätzlich: Proxy-Caps (`bytes_read`, `files_read`, `tool_calls`, `turns`,
 ### Sub-Agent
 
 1. Dieselben Schwellen/Proxies.
-2. Pflicht-Handoff: `handover_type: context_rotation` oder `return` mit
+2. Pflicht-Handoff: `reason: context_rotation` oder `return` mit
    `context_exhausted`, **dieselbe `task_id`**, Kurzstand — kein stilles Weitermachen.
 3. Orchestrator: Nachfolger derselben Rolle (Rotation) oder neu planen.
 
