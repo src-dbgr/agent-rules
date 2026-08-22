@@ -16,7 +16,7 @@ bash scripts/verify-proofs.sh
 
 ## Deutsch — Gesetzbuch
 
-> **Version:** 2.0.1  
+> **Version:** 2.1.0  
 > **Status:** Verbindlich (normativ)
 
 Verfassung für Multi-Agenten-Arbeit: Hierarchie, Triage, Delegation, DoD mit

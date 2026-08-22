@@ -52,7 +52,7 @@ nennt die Art des Belegs; der ausgeführte Befehl und sein Exit-Code gehören na
 | `N3a` | jede Erkenntnis mit Quelle oder ausdrücklichem Unsicherheitsvermerk; bei Flag `sec` Schwachstellen-Recherche durchgeführt | Bericht unter `runtime/reports/` |
 | `N3b` | testbare Akzeptanzkriterien (Given/When/Then), je Kriterium **ein** Prüfkommando; keine offene Mehrdeutigkeit ohne dokumentierte Annahme | Bericht + Traceability-Tabelle |
 | `N3c` | mindestens ein Architekturentscheid mit Kontext, Optionen, Entscheidung, Konsequenzen; keine neue Abhängigkeitsrichtung ohne Entscheid; bei Flag `conc` zusätzlich Nebenläufigkeitsmodell | Bericht; bei `conc` Modellprüfung Exit 0 |
-| `N4` | Build und Lint grün; keine Geheimnisse im Diff; Schnittstellen eingehalten; Arbeitsbranch in `vcs.branches` registriert | projektspezifisch, Exit 0 |
+| `N4` | Programmentwurf liegt vor, wo `dod:program_design` in Gates; Umsetzung in **vertikalen Schnitten** laut Plan, je Schnitt ein ausgeführtes Prüfkommando mit Exit-Code; Build und Lint grün; keine Geheimnisse im Diff; Schnittstellen eingehalten; Arbeitsbranch in `vcs.branches` registriert | Plan-Artefakt + projektspezifisch Exit 0 |
 | `N5a` | jedes Akzeptanzkriterium hat mindestens einen Test; Suite Exit 0; Konformitätsprüfung gegen die bestehende Architektur bestanden (kein neuer Abhängigkeitszyklus, keine unbegründete Drift) außer bei Klasse `chore` und `revert`; bei Flag `perf` Budget geprüft | Suite Exit 0, Protokoll unter `proof-artifacts/` |
 | `N5b` | schmale Playwright-/E2E- und visuelle Regression Exit 0; bei komplexer UI bildbasiertes Review mit Artefaktpfaden; Barrierefreiheits-Mindestprüfung; Design-Konsistenz; keine Review-Captures committen (`modules/quality.md#ui`) | Suite/Snapshot Exit 0 + Pfade unter `proof-artifacts/` |
 | `N5c` | jede öffentlich sichtbare Änderung dokumentiert; Changelog-Eintrag vorhanden; keine Dokumentation widerspricht dem Verhalten | Diff enthält Doku-Änderung |
@@ -109,6 +109,10 @@ aus der Konfiguration (`cycles`). Ist das Limit erreicht, folgt **kein** weitere
 | N6b → N4 | Auslieferung abgelehnt (rote Prüfstrecke, zurückgewiesener Push, Konflikt) | `cycles.attempts.delivery_fix` | `cycles.delivery_fix_max` |
 | N5a → N3b | Anforderungslücke entdeckt | `cycles.one_shot_escalations.requirements_gap` | `cycles.one_shot_max` |
 | N5a → N3c | Architektur-Drift: echter Architekturbedarf (neue Komponente, neue Abhängigkeitsrichtung, Querschnittsbelang) | `cycles.one_shot_escalations.architecture_drift` | `cycles.one_shot_max` |
+
+**Schnittinterne Arbeit zählt nicht.** Iterationen *innerhalb* eines vertikalen Schnitts
+an `N4` (prüfen, nachziehen, erneut prüfen) sind keine Kante `N5a → N4` und erhöhen
+`cycles.attempts.test_fix` nicht. Der Zähler misst nur Rückweisungen aus `N5a`.
 
 **Zwei Kanten ohne Rangänderung.**
 

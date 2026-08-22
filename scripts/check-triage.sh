@@ -12,7 +12,7 @@
 # Geprueft wird (8 Pruefungen):
 #   1  ids-unique                 IDs der Faelle sind eindeutig
 #   2  vocabulary                 jede Klasse/jedes Flag steht im Manifest
-#   3  gate-derivation            Gates(Fall) = Gates(Klasse) u. Gates(Flags) u. {N3a}
+#   3  gate-derivation            Gates(Fall) = Gates(Klasse) u. Gates(Flags) u. Extra-Regeln
 #   4  first-match-order          also_matches hat stets die hoehere Regelnummer
 #   5  class-coverage             alle 6 Klassen belegt
 #   6  flag-coverage              alle 9 Flags belegt
@@ -109,15 +109,25 @@ unknown="$(jq -r --slurpfile m "$MANIFEST" '
 if [ -z "$unknown" ]; then pass "vocabulary (6 Klassen, 9 Flags aus $MANIFEST)"; else fail "vocabulary: $unknown"; fi
 
 # --- 3 Gate-Ableitung je Fall ------------------------------------------------
-# Gates = Gates(Klasse) u. { Gates(Flag) } u. ({N3a} falls needs_external_source)
+# Gates = Gates(Klasse) u. Gates(Flags) u. ({N3a} falls needs_external_source)
+#         u. extra_rules.program_design / human_plan_review
 derive_report="$(jq -r --slurpfile m "$MANIFEST" '
   ($m[0].triage.gate_matrix.classes) as $cg
   | ($m[0].triage.gate_matrix.flags) as $fg
+  | ($m[0].triage.gate_matrix.extra_rules) as $xr
   | .cases[]
   | . as $c
   | (($cg[$c.expected_class] // [])
      + [ $c.expected_flags[] | $fg[.] // "??unknown-flag-gate" ]
      + (if ($c.needs_external_source // false) then ["N3a"] else [] end)
+     + (if ((($xr.program_design_on_class // []) | index($c.expected_class)) != null)
+           or ([ $c.expected_flags[] | . as $fl
+                 | select((($xr.program_design_on_flags // []) | index($fl)) != null) ] | length) > 0
+        then ["dod:program_design"] else [] end)
+     + (if ($c.expected_class == ($xr.human_plan_review_on_class // ""))
+           and ([ $c.expected_flags[] | . as $fl
+                 | select((($xr.human_plan_review_on_flags // []) | index($fl)) != null) ] | length) > 0
+        then ["dod:human_plan_review"] else [] end)
      | unique) as $derived
   | ($c.expected_gates | unique) as $expected
   | if $derived == $expected

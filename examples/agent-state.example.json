@@ -131,6 +131,7 @@
     "N1": { "status": "passed", "proof_type": "lint", "proof_command": "./scripts/lint-lawbook.sh --version-consistency", "proof_exit_code": 0, "verified_at": "2026-08-05T10:05:00Z" },
     "N2": { "status": "passed", "proof_type": "unit_test", "proof_command": "./scripts/check-triage.sh", "proof_exit_code": 0, "verified_at": "2026-08-05T10:12:00Z" },
     "N3b": { "status": "passed", "proof_type": "manual_waiver", "verified_at": "2026-08-05T11:10:00Z" },
+    "dod:program_design": { "status": "passed", "proof_type": "artifact", "proof_artifact_path": "runtime/reports/br-dark-mode-program-design.md", "verified_at": "2026-08-05T11:12:00Z" },
     "N4": { "status": "pending" },
     "N5a": { "status": "pending" },
     "N5b": { "status": "pending" },

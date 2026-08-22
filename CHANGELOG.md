@@ -8,6 +8,23 @@ Das Regelwerk verlangt für jede Änderung eine **bewusste Versionserhöhung**
 Format angelehnt an [Keep a Changelog](https://keepachangelog.com/);
 Versionierung semantisch (MAJOR.MINOR.PATCH) auf das Gesetzbuch als Ganzes.
 
+## [2.1.0] — 2026-08-22
+
+### Added
+- `dod:program_design` for class `feature` and flags `arch`/`conc`/`data`/`irrev`: one-page plan (file tree, signatures, vertical slices with a check command each) before `N4`.
+- `dod:human_plan_review` for `feature` plus an elevated flag (`arch`/`conc`/`sec`/`data`/`irrev`): present the plan and wait (`awaiting_user`). Other classes do not wait.
+- `effort.n3a` bonus so research does not immediately hit the class cap.
+- Model-policy `user_override`: named model request may lift a `never` entry; platform blocks (Fable retention ack) must be stated, never silently swapped.
+
+### Changed
+- `N4` DoD: implement in vertical slices; in-slice retries do not increment `test_fix`.
+- Effort is per agent; `effort.answer.max_tool_calls` 10 → 20.
+- `caps.read_bytes_per_run_max` 120000 → 250000 (a single real research source already exceeded the old cap).
+- Approval (`modules/ops.md#approval`) covers plan review as well as `irrev`.
+
+### Unchanged (bewusst)
+- Flag algebra still one Zusatz-Gate per flag (High-Water-Mark). SKIP ≠ PASS. Isolation, VCS bans, Quality anti-bloat.
+
 ## [2.0.1] — 2026-08-15
 
 ### Changed

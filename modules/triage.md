@@ -77,10 +77,21 @@ DoD-Schlüssel der Form `dod:<name>`.
 | revert | `N1` `N2` `N4` `N5a` `N6b` `N7` `dod:revert_diff_only` | wie chore, zusätzlich Diff-Nachweis |
 | spike | `N1` `N2` `N3a` `N4` `N7` `dod:spike_disposal` | kein `N5a`, kein `N6b` in den Hauptzweig |
 | incident | `N1` `N2` `N4` `N5a` `N6b` `N7` `dod:followup_ref` | `N3b`, `N5c` und `N6a` dürfen `deferred` sein |
-| feature | `N1` `N2` `N3b` `N4` `N5a` `N6b` `N7` | Standardweg |
+| feature | `N1` `N2` `N3b` `N4` `N5a` `N6b` `N7` `dod:program_design` | Standardweg; Plan vor dem Bau |
 
 **Zusatzregel `N3a`.** Ist die Anfrage ohne externe Quelle nicht beantwortbar, wird `N3a` ergänzt.
 Das ist eine Knoten-Ergänzung, kein Klassenwechsel — auch eine Auskunft darf recherchieren.
+
+**Zusatzregel Programmentwurf.** `dod:program_design` gilt für Klasse `feature` und zusätzlich,
+sobald eines der Flags `arch`, `conc`, `data`, `irrev` gesetzt ist — auch auf `chore`.
+Artefakt unter `runtime/reports/`: Datei-Baum-Diff, neue oder geänderte Typen und Signaturen,
+Call-Stack-Baum bei Kontrollflussänderung, Liste vertikaler Schnitte **mit je einem
+ausführbaren Prüfkommando**. Kein Pflicht-ADR (das bleibt `N3c`).
+
+**Zusatzregel Plan-Review.** `dod:human_plan_review` gilt nur für Klasse `feature` **und**
+mindestens eines der Flags `arch`, `conc`, `sec`, `data`, `irrev`. Dann legt der Orchestrator
+den Plan vor, setzt `phase: awaiting_user` und wartet (`modules/ops.md#approval`).
+Ohne diese Flags: Plan vorlegen, **keine** Wartepflicht. Incidents warten nicht.
 
 **Beispiel für den High-Water-Mark:** `conc` oder `arch` auf einer Änderung der Klasse `chore` erreicht das Gate-Niveau von `feature`, ohne die Klasse zu wechseln.
 
@@ -117,15 +128,19 @@ bestimmen.
 
 #### DoD `feature`
 Jedes Akzeptanzkriterium aus `N3b` hat mindestens einen Test, und die Konformitätsprüfung gegen die
-bestehende Architektur an `N5a` ist bestanden.
+bestehende Architektur an `N5a` ist bestanden. `dod:program_design` ist `passed` **bevor**
+`N4` beginnt; bei erhöhtem Flag-Niveau zusätzlich `dod:human_plan_review`.
 
 ## 6. Aufwandsbudget
 
 Der Aufwand folgt der Klasse, nicht dem Ehrgeiz. Werte: `config/policy-defaults.json#/effort` —
-je Klasse `max_subagents` und `max_tool_calls`, je gesetztem Flag der Zuschlag aus
-`effort.flag_bonus`, hart begrenzt durch `budgets.max_total_spawned`. Ein Einzeiler kostet damit
-einen Sub-Agenten und keinen dreifachen Bootstrap. Überschreitung ist ein Blocker-Eintrag, keine
-stille Fortsetzung (`modules/context.md#budget`).
+**je Agent** `max_subagents` und `max_tool_calls`, je gesetztem Flag der Zuschlag aus
+`effort.flag_bonus`, bei `N3a` in Gates zusätzlich `effort.n3a`, hart begrenzt durch
+`budgets.max_total_spawned`. Ein Einzeiler kostet damit einen Sub-Agenten und keinen
+dreifachen Bootstrap. Überschreitung: zuerst den Zuschlag verbrauchen; reicht das nicht,
+Blocker-Eintrag und kein stilles Weiterlesen (`modules/context.md#budget`).
+Recherche endet nicht allein deshalb in `t_blocked`, weil die Pflichtquellen das
+Klassenbudget sprengen.
 
 **Mini-Tasks (Konsistenz ohne Bloat):** Bootstrap + Triage (`N1`/`N2`) bleiben Pflicht.
 Danach gilt die leichte Klasse — nicht „sicherheitshalber `feature`“:

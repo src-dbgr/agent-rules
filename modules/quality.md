@@ -12,7 +12,8 @@ Kleppmann (Datenmodelle, Idempotenz, Konsistenzgrenzen); Enterprise-/FAANG-Testk
 
 ## 1. Regression-Resistenz by Design {#by-design}
 
-Vor und während `N3c`/`N4` gilt:
+Vor und während `N3c`/`N4` gilt — und der Programmentwurf (`dod:program_design`)
+hält es fest, bevor gebaut wird:
 
 1. **Abhängigkeitsregel** — innere Schichten kennen keine äußeren Details
    (UI/Framework/DB hängen am Kern, nicht umgekehrt). Neue Rückwärtsabhängigkeit = Drift → `N5a→N3c`.
@@ -91,7 +92,7 @@ Sonst streichen oder auf die richtige Ebene heben.
 | Rolle | Pflicht |
 |-------|---------|
 | Architect (`N3c`) | Entwurf erfüllt §1; Verträge und Abhängigkeitsrichtung benannt |
-| Developer (`N4`) | Änderung driftfrei; Selbsttest nur für **neue** Risiken; keine Suite-Müllcommits |
+| Developer (`N4`) | Vertikale Schnitte laut Plan, je Schnitt ein Prüfkommando; Änderung driftfrei; Selbsttest nur für **neue** Risiken; keine Suite-Müllcommits |
 | Tester (`N5a`) | Traceability AK→Test; Konformitäts-Gate; **Test-Review**: Bloat ablehnen; fehlende Vertrags-/Regressionsfälle blockierend; bei `ui`: Playwright-/E2E-Disziplin + bildbasiertes Review (§2a) |
 | UX/UI (`N5b`) | Visuelle Regression + A11y-Mindestmaß; komplexe UI mit Screenshot-Evaluation; keine Review-Captures committen |
 

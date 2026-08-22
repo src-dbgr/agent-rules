@@ -342,10 +342,40 @@
             "extra_rules": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["n3a_on_external_source", "deferrable_gates_incident"],
+              "required": [
+                "n3a_on_external_source",
+                "deferrable_gates_incident",
+                "program_design_on_class",
+                "program_design_on_flags",
+                "human_plan_review_on_class",
+                "human_plan_review_on_flags"
+              ],
               "properties": {
                 "n3a_on_external_source": { "type": "string", "minLength": 20 },
-                "deferrable_gates_incident": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/node_id" } }
+                "deferrable_gates_incident": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/node_id" } },
+                "program_design_on_class": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": { "$ref": "#/$defs/change_class" },
+                  "description": "Klassen, die immer dod:program_design tragen (P0-1)"
+                },
+                "program_design_on_flags": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": { "$ref": "#/$defs/flag" },
+                  "description": "Flags, die dod:program_design auch ausserhalb der Pflichtklasse ausloesen"
+                },
+                "human_plan_review_on_class": {
+                  "$ref": "#/$defs/change_class",
+                  "description": "Nur diese Klasse wartet auf menschlichen Plan-Blick (P0-2)"
+                },
+                "human_plan_review_on_flags": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": { "$ref": "#/$defs/flag" },
+                  "description": "Erhoehtes Gate-Niveau: feature + eines dieser Flags => dod:human_plan_review"
+                }
               }
             }
           }
