@@ -8,6 +8,27 @@ Das Regelwerk verlangt für jede Änderung eine **bewusste Versionserhöhung**
 Format angelehnt an [Keep a Changelog](https://keepachangelog.com/);
 Versionierung semantisch (MAJOR.MINOR.PATCH) auf das Gesetzbuch als Ganzes.
 
+## [2.1.1] — 2026-09-06
+
+### Added
+- `schemas/model-policy.schema.json` (draft 2020-12, strict-compilable); CI validates `config/model-policy.json` against it.
+- Lint `model-policy-consistent`: ranks contiguous, ladder/never IDs unique, `never[]` IDs disjoint from ladder, fallback and exception IDs, entry points and degradation fallbacks reference known IDs only, `min_rank` equals the ladder rank of the default, default not in `not_for` for the entry-point roles, `roles_preferred` inside the role enum, `source_of_truth` fixed. Missing or broken policy is FAIL, never SKIP.
+- Lint `model-policy-no-literals`: versioned model IDs (family-digit pattern plus every exact ID from the policy) are reported outside the policy and the changelog; prompts are scanned including their code block. `lint_checks_total` 25 → 27, each with a self-test mutation.
+- `manifest.json#/model_policy_guard` (pattern, file set with `scan` mode, history exemption) and SSoT concept "Modellwahl: Entry Points, Leiter, Never-Liste" → `config/model-policy.json`.
+- `model_usage[].entry_point` (optional) in the state schema — demanded by the policy's `enforcement.orchestrator_must` and `modules/tools.md#llm`, previously rejected by `additionalProperties: false`.
+
+### Changed
+- `config/model-policy.json` 1.3.0 → 1.5.0 (2026-08-26 / 2026-09-06, committed directly on `main`): new ladder Composer 2.5 → GPT-5.6 Luna → Gemini 3.8 Flash High (orchestrator default) → Grok 4.6 → Claude Fable 5.1, Opus 5 as Fable fallback; degradation mode instead of a fixed Grok assignment when external providers are unavailable; IDs in Cursor format `name[key=value]`.
+- `modules/tools.md#llm`, `modules/triage.md` §9 and both prompts reference policy fields (`entry_points.orchestrator_main_thread.default_model_id`, `forbidden_at_entry`, `ladder[]`, `never`, `fallback_when_external_api_exhausted`) instead of model literals.
+- `manifest.json`: `config-model-policy.load_trigger` names the consuming scripts; `script-lint-lawbook.purpose` counts 27 checks.
+
+### Fixed
+- `modules/tools.md`, `modules/triage.md` and the prompts still named a main-thread default two market changes old; the policy is the only source (`LAW-MODELS`).
+- The state schema rejected `entry_point`, which policy and `modules/tools.md#llm` require in `model_usage[]`.
+
+### Unchanged (bewusst)
+- Ladder content, never list and rule texts of `config/model-policy.json`; state schema `2.0.0` (additive, precedent: 2.1.0 `write_paths` in the handover schema).
+
 ## [2.1.0] — 2026-08-22
 
 ### Added
