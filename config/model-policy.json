@@ -1,31 +1,34 @@
 {
   "$comment": "LLM-Nutzungsregeln — EINZIGE Quelle für Modellwahl. Normtexte verweisen nur hierher. Bei Marktwechsel diese Datei anpassen, nicht AGENTS.md.",
-  "version": "1.4.0",
-  "updated_at": "2026-08-26",
-  "policy_id": "model-policy-v1.4",
-
+  "version": "1.5.0",
+  "updated_at": "2026-09-06",
+  "policy_id": "model-policy-v1.5",
   "entry_points": {
     "$comment": "Die Triage-Algebra (Klasse→Gates) ist deterministisch; die Erst-Klassifikation der Nutzeranfrage an N2 ist es nicht. Fixtures prüfen Ableitung, nicht LLM-Klassifikation (Annahme A-12). Deshalb darf der Main-Thread/Orchestrator nicht auf Composer starten.",
     "orchestrator_main_thread": {
       "roles": ["orchestrator", "sub_orchestrator"],
       "nodes": ["N0", "N1", "N2", "N7"],
-      "default_model_id": "grok-4.6-high",
+      "default_model_id": "gemini-3.8-flash[effort=high,context=1m]",
       "min_rank": 3,
       "allowed_ids": [
-        "grok-4.6-high",
-        "claude-opus-5-high",
-        "claude-opus-5-xhigh"
+        "gemini-3.8-flash[effort=high,context=1m]",
+        "claude-fable-5-1[effort=xhigh,context=1m]",
+        "claude-opus-5[effort=max,context=1m]"
       ],
-      "forbidden_at_entry": ["composer-2.5", "gemini-3.7-flash-high", "grok-4.6-low"],
-      "rule": "Main-Thread startet immer mit grok-4.6-high (oder höher nach Dead-End). Composer, Gemini Flash und Grok Low sind für Orchestrator-Triage/Clarify/Aggregation verboten.",
-      "rationale": "Falsche Klasse/Flags an N2 → korrekte Algebra am falschen Ziel. Mitigation: starkes Modell am Eingang + LAW-CLARIFY; nicht Fixtures."
+      "forbidden_at_entry": [
+        "composer-2.5[fast=false]",
+        "gpt-5.6-luna[context=1m,reasoning=max,fast=false]",
+        "grok-4.6[effort=high,fast=false]",
+        "grok-4.6[effort=xhigh,fast=false]"
+      ],
+      "rule": "Main-Thread startet immer mit Gemini 3.8 Flash High bei explizit 1M Kontext. Composer und Luna sind für Orchestrator-Triage/Clarify/Aggregation verboten. Grok 4.6 ist wegen maximal 256k Kontext nicht für den Main-Thread zugelassen. Bei dokumentiertem Dead-End direkte Cross-Family-Eskalation auf Claude Fable 5.1 xHigh; falls Fable wegen Data-Retention/Plattformvoraussetzung nicht verfügbar ist, Claude Opus 5 Max.",
+      "rationale": "Falsche Klasse/Flags an N2 → korrekte Algebra am falschen Ziel. Mitigation: starkes Modell am Eingang + LAW-CLARIFY; nicht Fixtures. Zusätzlich benötigt der Main-Thread mindestens 1M verfügbaren Kontext; Gemini 3.8 Flash High bietet dafür aktuell das beste Verhältnis aus CursorBench-Qualität, Kontext und Kosten."
     }
   },
-
   "ladder": [
     {
       "rank": 1,
-      "id": "composer-2.5",
+      "id": "composer-2.5[fast=false]",
       "label": "Composer 2.5",
       "when": "Standard für Coding-, Test- und klar definierte Sub-Agenten-Arbeit (nicht Orchestrator/N2)",
       "roles_preferred": [
@@ -38,18 +41,20 @@
     },
     {
       "rank": 2,
-      "id": "gemini-3.7-flash-high",
-      "label": "Gemini 3.7 Flash High",
-      "when": "Nur Sub-Agenten: wenn Composer steckenbleibt oder breite Exploration / schneller Durchsatz nötig ist",
-      "requires": "documented_composer_stall_or_exploration_need",
-      "not_for": ["orchestrator_main_thread_entry"]
+      "id": "gpt-5.6-luna[context=1m,reasoning=max,fast=false]",
+      "label": "GPT-5.6 Luna Max",
+      "when": "Temporärer kostengünstiger 1M-Sub-Agent für lange Kontexte, Analyse und hohe Task-Volumina; wenn Composer steckenbleibt oder mehr als 200k Kontext benötigt werden",
+      "requires": "documented_composer_stall_or_long_context_need",
+      "not_for": ["orchestrator", "sub_orchestrator", "N2"],
+      "availability": "Temporär solange OpenAI-Modelle direkt über Cursor verfügbar sind; OpenAI hat als vorgeschlagenes Vertragsende den 2026-11-12 genannt, Cursor kann den Zugang früher beenden.",
+      "fallback_model_id": "gemini-3.8-flash[effort=medium,context=1m]"
     },
     {
       "rank": 3,
-      "id": "grok-4.6-high",
-      "label": "Grok 4.6 High",
-      "when": "Default für Orchestrator-Main-Thread (N0–N2, N7). Für Sub-Agenten: schwere/lange Aufgaben nach Composer-Versuch oder von Anfang an außergewöhnlich komplex",
-      "requires": "orchestrator_entry_or_composer_attempt_or_exceptional_complexity",
+      "id": "gemini-3.8-flash[effort=high,context=1m]",
+      "label": "Gemini 3.8 Flash High",
+      "when": "Default für Orchestrator-Main-Thread (N0–N2, N7). Für Sub-Agenten: schwere, große oder explorative Aufgaben nach Composer/Luna-Versuch oder von Anfang an außergewöhnlich komplex",
+      "requires": "orchestrator_entry_or_lower_rank_attempt_or_exceptional_complexity",
       "roles_preferred": [
         "orchestrator",
         "sub_orchestrator",
@@ -60,39 +65,48 @@
     },
     {
       "rank": 4,
-      "id": "claude-opus-5-high",
-      "label": "Claude Opus 5 High",
-      "when": "Eskalation: Wenn Grok High falschen Ansatz verfolgt, feststeckt oder komplexere Kontext-Synthese nötig ist",
-      "requires": "documented_grok_dead_end"
+      "id": "grok-4.6[effort=high,fast=false]",
+      "label": "Cursor Grok 4.6 High",
+      "when": "Cross-Family-Eskalation für schwere Sub-Agenten-Aufgaben, wenn Gemini einen falschen Ansatz verfolgt oder feststeckt und die Aufgabe auf höchstens 256k Kontext eingegrenzt werden kann",
+      "requires": "documented_gemini_dead_end_and_scope_le_256k",
+      "not_for": ["orchestrator_main_thread_entry"],
+      "exceptions": [
+        {
+          "id": "grok_xhigh_retry",
+          "when": "Grok High ist nahe an einer Lösung, benötigt aber mehr Reasoning; Aufgabe bleibt auf höchstens 256k Kontext eingegrenzt",
+          "model_id": "grok-4.6[effort=xhigh,fast=false]",
+          "note": "Same-family Reasoning-Eskalation vor dem deutlich teureren Fable-Last-Resort."
+        }
+      ]
     },
     {
       "rank": 5,
-      "id": "claude-opus-5-xhigh",
-      "label": "Claude Opus 5 xHigh",
-      "when": "Letzter Ausweg (höchstes Reasoning); Aufgabe eng eingrenzen",
-      "requires": "last_resort_narrow_scope",
+      "id": "claude-fable-5-1[effort=xhigh,context=1m]",
+      "label": "Claude Fable 5.1 xHigh",
+      "when": "Letzter Ausweg für dokumentierte Dead-Ends und anspruchsvolle langlaufende Agenten-Aufgaben; Aufgabe eng eingrenzen",
+      "requires": "last_resort_narrow_scope_and_fable_retention_ack",
       "exceptions": [
         {
           "id": "architect_review",
           "when": "Architect-Triage / Architektur-Review laut live_matrix model_policy.architect_review",
-          "model_id": "claude-opus-5-xhigh",
+          "model_id": "claude-fable-5-1[effort=xhigh,context=1m]",
           "note": "Ausnahme zur Leiter für gezieltes Architektur-Review — nicht Ersatz für Rank 1 bei Coding-Sub-Agenten"
+        },
+        {
+          "id": "fable_unavailable_or_retention_not_approved",
+          "when": "Fable 5.1 ist wegen Data-Retention-Ack, Plattformblock oder Provider-Verfügbarkeit nicht nutzbar",
+          "model_id": "claude-opus-5[effort=max,context=1m]",
+          "note": "Fallback für den Last-Resort-Pfad; Opus 5 ist günstiger pro Token als Fable 5.1, aber auf aktuellem CursorBench bei Max weniger effizient als Fable 5.1 xHigh."
         }
       ]
     }
   ],
-
   "never": [
     { "id": "composer-fast", "reason": "zu flach / Qualitätsrisiko" },
     { "id": "grok-fast", "reason": "zu flach / Qualitätsrisiko" },
-    { "id": "grok-4.6-extra-high", "reason": "Ineffizient (höherer Preis bei niedrigerem Benchmark-Index als Grok 4.6 High)" },
     {
       "id": "composer-as-orchestrator",
       "reason": "Composer nicht für Main-Thread/Triage (N2) — entry_points.orchestrator_main_thread"
-    },
-    {
-      "id": "gemini-flash-as-orchestrator",
-      "reason": "Gemini Flash nicht für Main-Thread/Triage (N2) — entry_points.orchestrator_main_thread"
     },
     {
       "id": "grok-low-as-orchestrator",
@@ -104,42 +118,45 @@
     },
     {
       "id": "sol-max",
-      "reason": "Kosten/Latenz-Übermaß ($1.01 bei Index 61, 119s Gesamtzeit)"
+      "reason": "Für diese Policy ineffizient: deutlich teurer als Gemini 3.8 Flash High und bei 1M-Long-Context zusätzlicher Preisaufschlag; zudem nur temporär direkt über Cursor verfügbar."
     },
     {
-      "id": "opus-max",
-      "reason": "Kosten/Übermaß ($2.34 bei gleichem Index 63 wie xhigh)"
+      "id": "gemini-3.7-flash",
+      "reason": "Durch Gemini 3.8 Flash ersetzt; 3.8 erzielt aktuell deutlich bessere CursorBench-Ergebnisse."
     },
     {
-      "id": "claude-fable",
-      "reason": "Extrem teuer ($3.14) und hohe Latenz (101s bei Index 62)"
+      "id": "claude-fable-5",
+      "reason": "Durch Claude Fable 5.1 ersetzt; gleicher Input/Output-Preis, aber deutlich günstigere Cache-Reads und neueres Modell."
     },
     {
       "id": "unlimited-cloud-jobs",
       "reason": "keine unbegrenzten Cloud-Aufträge"
     }
   ],
-
   "fallback_when_external_api_exhausted": {
     "description": "Wenn externe APIs ausgeschöpft oder blockiert sind: primär interne und Direct-Access-Stufen nutzen.",
-    "orchestrator_allowed_ids": ["grok-4.6-high"],
-    "subagent_allowed_ids": ["composer-2.5", "gemini-3.7-flash-high", "grok-4.6-high"],
-    "rule": "Orchestrator bleibt auf grok-4.6-high. Sub-Agenten nutzen Leiter 1→2→3. Ränge 4 und 5 entfallen bis externe Provider wieder ansprechbar sind."
+    "orchestrator_allowed_ids": [
+      "grok-4.6[effort=xhigh,fast=false]"
+    ],
+    "subagent_allowed_ids": [
+      "composer-2.5[fast=false]",
+      "grok-4.6[effort=high,fast=false]",
+      "grok-4.6[effort=xhigh,fast=false]"
+    ],
+    "rule": "DEGRADATION MODE: Wenn externe Provider nicht verfügbar sind, darf der Orchestrator auf Cursor Grok 4.6 xHigh wechseln. Die 1M-Kontext-Garantie entfällt in diesem Ausnahmezustand, da Grok 4.6 maximal 256k unterstützt. Sub-Agenten nutzen Composer → Grok High → Grok xHigh. Luna, Gemini, Fable und Opus entfallen bis externe Provider wieder ansprechbar sind."
   },
-
   "user_override": {
     "allowed": true,
     "requires": "Auftraggeber nennt das Modell namentlich; Eintrag in model_usage[] und Handover",
     "on_platform_block": "fehlende Voraussetzung (z. B. Fable Data-Retention-Ack) benennen und Fallback sagen; nie still ersetzen",
-    "fable_retention_ack_url": "https://cursor.com/dashboard/restricted_models/claude-fable-5"
+    "fable_retention_ack_url": "https://cursor.com/dashboard"
   },
-
   "enforcement": {
     "source_of_truth": "config/model-policy.json",
     "orchestrator_must": "Gewähltes Modell je Sub-Agent und für den Main-Thread in State unter model_usage[] protokollieren (id, rank, reason, entry_point).",
     "upgrade_requires": "Kurze Begründung im Handover (warum Rank n nicht reichte).",
     "downgrade_preferred": true,
-    "downgrade_exception": "Kein Downgrade des Main-Threads unter grok-4.6-high.",
+    "downgrade_exception": "Kein Downgrade des Main-Threads unter Gemini 3.8 Flash High mit 1M Kontext; einzige Ausnahme ist fallback_when_external_api_exhausted.",
     "hard_block_never_list": true,
     "hard_block_exception": "user_override"
   }
