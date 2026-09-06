@@ -198,8 +198,9 @@ Verfahren und Skript der Umstellung: `docs/migration-v1-to-v2.md`.
 - **Geprüfte Grenze, ausdrücklich:** nachgewiesen ist die Ableitung Klasse + Flags → Gates und die
   Ordnung der Regelliste. **Nicht** nachgewiesen ist, dass ein Modell aus einem gegebenen Prompt
   dieselbe Klasse wählt (Annahme A-12); Fixtures sind kein Ersatz für starke Erst-Klassifikation.
-  Deshalb: Main-Thread an `N2` laut `config/model-policy.json#/entry_points` (`grok-4.5-high`),
-  plus `LAW-CLARIFY` bei Unsicherheit — nicht Composer am Eingang.
+  Deshalb: Main-Thread an `N2` laut `config/model-policy.json#/entry_points`
+  (`orchestrator_main_thread.default_model_id`), plus `LAW-CLARIFY` bei Unsicherheit —
+  keine ID aus `forbidden_at_entry` am Eingang.
 - Drei belegte Grenzfälle als Lesehilfe: eine kaputte Prüfstrecke ist Wartungsarbeit (kein
   Vorfall); ein eiliger Produktionsausfall, der durch Rücknahme behoben wird, ist Regel 1 und nicht
   Regel 2; eine Kontrastkorrektur ist sichtbar und deshalb keine Wartungsarbeit.
