@@ -1,7 +1,7 @@
 {
   "$comment": "Struktur-SSoT des Gesetzbuchs v2.0 (ADR-001). Diese Datei wird von Agenten NICHT gelesen, sondern per Skript abgefragt (load_when=script_only). Alle einstellbaren ZAHLEN stehen dagegen in config/policy-defaults.json; hier stehen nur Dokument-Obergrenzen (max_lines/max_bytes), die der Linter gegen die Klassen-Caps der Konfiguration prueft. max_lines/max_bytes sind Obergrenzen, keine Messwerte (ADR-001 §4): gemessen wird mit wc, ein deklarierter Ist-Wert wuerde veralten. tokens_est_max ist abgeleitet: ceil((max_bytes oder max_lines*caps.bytes_per_line_proxy) / caps.bytes_per_token_proxy) - scripts/lint-lawbook.sh --budget rechnet das nach.",
   "$schema_ref": "schemas/manifest.schema.json",
-  "lawbook_version": "2.1.0",
+  "lawbook_version": "2.1.1",
   "state_schema_version": "2.0.0",
   "category_of_kind": {
     "core": "kern",
@@ -440,11 +440,25 @@
       "owner_wp": "WP-1"
     },
     {
+      "id": "schema-model-policy",
+      "path": "schemas/model-policy.schema.json",
+      "kind": "schema",
+      "category": "schema",
+      "purpose": "Schema der Modellwahl-SSoT config/model-policy.json (Entry Points, Leiter, Never-Liste)",
+      "load_when": "script_only",
+      "load_trigger": "nur ueber ajv in Skripten und CI",
+      "max_lines": null,
+      "max_bytes": null,
+      "tokens_est_max": null,
+      "required": true,
+      "owner_wp": "WP-1"
+    },
+    {
       "id": "script-lint-lawbook",
       "path": "scripts/lint-lawbook.sh",
       "kind": "script",
       "category": "skript",
-      "purpose": "24 deterministische Pruefungen, --all/--strict/--allow-skip",
+      "purpose": "27 deterministische Pruefungen, --all/--strict/--allow-skip/--self-test",
       "load_when": "script_only",
       "load_trigger": "N1, jedes WP-Ende, CI-Schritt 2",
       "max_lines": null,
@@ -1048,7 +1062,7 @@
       "category": "daten",
       "purpose": "LLM-Nutzungsleiter und Never-Liste",
       "load_when": "script_only",
-      "load_trigger": "nur per jq durch Skripte, CI und LAW-MODELS",
+      "load_trigger": "per jq/ajv durch scripts/lint-lawbook.sh, CI und LAW-MODELS",
       "max_lines": null,
       "max_bytes": null,
       "tokens_est_max": null,
@@ -2740,6 +2754,16 @@
       ]
     },
     {
+      "concept": "Modellwahl: Entry Points, Leiter, Never-Liste",
+      "normative_in": "config/model-policy.json",
+      "reference_allowed_in": [
+        "AGENTS.md",
+        "modules/tools.md",
+        "modules/triage.md",
+        "prompts/*.md"
+      ]
+    },
+    {
       "concept": "Dateiliste, Ladebedingungen, Leselisten",
       "normative_in": "manifest.json",
       "reference_allowed_in": [
@@ -2913,6 +2937,23 @@
       ]
     }
   ],
+  "model_policy_guard": {
+    "$comment": "Waechter fuer scripts/lint-lawbook.sh --model-policy-no-literals (LAW-MODELS): Modell-IDs mit Versionsziffer stehen nur in pointer_doc (der Modellwahl-SSoT) und in history_allowed_in (Changelog). pattern ist ein Python-Regex fuer das Familie-Ziffer-Muster; zusaetzlich meldet die Pruefung jede exakte ID aus pointer_doc (ladder, exceptions, fallback). scan=prose (Default) prueft Zeilen ausserhalb von Codebloecken, Inline-Code zaehlt; scan=all prueft jede Zeile und ist fuer Prompts noetig, die komplett in einem Codeblock stehen. Denselben pointer_doc prueft --model-policy-consistent auf Referenzintegritaet.",
+    "pointer_doc": "config/model-policy.json",
+    "pattern": "(?i)\\b(composer|grok|gemini|gpt|claude|opus|fable|sonnet|luna|sol)-[0-9]",
+    "files": [
+      { "glob": "AGENTS.md" },
+      { "glob": "modules/*.md" },
+      { "glob": "roles/*.md" },
+      { "glob": "prompts/*.md", "scan": "all" },
+      { "glob": "README.md" },
+      { "glob": "docs/*.md" },
+      { "glob": "templates/**/*.md" }
+    ],
+    "history_allowed_in": [
+      "CHANGELOG.md"
+    ]
+  },
   "migration": {
     "from_version": "1.3.1",
     "to_version": "2.0.0",

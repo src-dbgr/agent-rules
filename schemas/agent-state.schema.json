@@ -1203,6 +1203,10 @@
           "reason": {
             "type": "string"
           },
+          "entry_point": {
+            "type": "string",
+            "description": "Schluessel unter config/model-policy.json#/entry_points, wenn die Wahl ueber einen Entry Point erfolgte (z. B. orchestrator_main_thread)"
+          },
           "agent_role": {
             "type": "string"
           },

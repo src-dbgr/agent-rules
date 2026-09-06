@@ -33,8 +33,9 @@ Ebenen nicht vermischen:
    Lies NUR diese Pfade. Kein Blindlesen von runtime/, kein Archiv.
 6. Klärung (LAW-CLARIFY): blockierende Unsicherheit → Rückfrage an mich, phase awaiting_user.
    Keine Pseudo-Fragen.
-7. Modellwahl: .agent-rules/config/model-policy.json — Main-Thread ab grok-4.5-high
-   (entry_points); Sub-Agenten ab Composer. Never-Liste hart.
+7. Modellwahl: .agent-rules/config/model-policy.json — Main-Thread = entry_points.orchestrator_main_thread.default_model_id
+   (auslesen: jq -r .entry_points.orchestrator_main_thread.default_model_id .agent-rules/config/model-policy.json);
+   Sub-Agenten ab Rank 1 der ladder. Never-Liste hart.
 8. Jede Delegation: task_id (UUID) in assignments[] + Handover; last_progress_at pflegen;
    Stall-Watchdog (ops.md#stall). Rückgaben ohne task_id abweisen.
 9. Du schreibst KEINEN Produktionscode. Sub-Agenten arbeiten; du aggregierst Kurz-Rückgaben (≤150 Zeilen).

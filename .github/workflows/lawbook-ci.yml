@@ -121,6 +121,7 @@ jobs:
           done
           ajv validate -s schemas/manifest.schema.json -d manifest.json || rc=1
           ajv validate -s schemas/policy-defaults.schema.json -d config/policy-defaults.json || rc=1
+          ajv validate -s schemas/model-policy.schema.json -d config/model-policy.json || rc=1
           # Erwartungswerte je Fixture stehen in manifest.json#/test_expectations.
           while IFS=$'\t' read -r path expect; do
             if ajv validate -s schemas/agent-state.schema.json -d "$path" >/dev/null 2>&1; then

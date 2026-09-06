@@ -25,6 +25,7 @@
     "reading_lists",
     "ssot",
     "prose_number_guards",
+    "model_policy_guard",
     "migration"
   ],
   "$defs": {
@@ -498,6 +499,36 @@
           "pattern": { "type": "string", "minLength": 5, "description": "Python-Regex mit genau einer Gruppe, die die Zahl faengt" },
           "files": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
         }
+      }
+    },
+    "model_policy_guard": {
+      "type": "object",
+      "description": "Waechter fuer --model-policy-no-literals (LAW-MODELS): Modell-IDs mit Versionsziffer stehen nur in pointer_doc, der Modellwahl-SSoT; history_allowed_in nimmt die Historie aus. --model-policy-consistent prueft dasselbe pointer_doc auf Referenzintegritaet. Die Pruefung ist vollstaendig RELATIV zu pattern und den exakten IDs der Policy: Prosa-Umschreibungen und Familiennamen ohne Ziffer werden nicht erkannt (dokumentierte Grenze).",
+      "additionalProperties": false,
+      "required": ["pointer_doc", "pattern", "files", "history_allowed_in"],
+      "properties": {
+        "$comment": { "type": "string" },
+        "pointer_doc": { "type": "string", "minLength": 5, "description": "Pfad der Modellwahl-SSoT; identisch mit enforcement.source_of_truth in dieser Datei" },
+        "pattern": { "type": "string", "minLength": 5, "description": "Python-Regex fuer das Familie-Ziffer-Muster; gemeldet wird der ganze Treffer" },
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["glob"],
+            "properties": {
+              "glob": { "type": "string", "minLength": 1 },
+              "scan": {
+                "type": "string",
+                "enum": ["prose", "all"],
+                "default": "prose",
+                "description": "prose = Zeilen ausserhalb von Codebloecken (Inline-Code zaehlt); all = jede Zeile, noetig fuer Prompts, die komplett in einem Codeblock stehen"
+              }
+            }
+          }
+        },
+        "history_allowed_in": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
       }
     },
     "migration": {

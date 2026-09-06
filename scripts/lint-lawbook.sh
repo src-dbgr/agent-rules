@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # lint-lawbook.sh — Durchsetzung des Gesetzbuchs v2.0 (ADR-009).
 #
-# 25 deterministische Pruefungen: die 24 aus ADR-009 plus --fixtures-declared
-# (in WP-1 ergaenzt, siehe "Ergaenzung" unten). Alle Pruefungen lesen ihre
-# Sollwerte aus den beiden SSoT-Dateien — manifest.json (Struktur) und
-# config/policy-defaults.json (Zahlen) — und niemals aus einer Kopie im Skript.
+# 27 deterministische Pruefungen: die 24 aus ADR-009 plus drei Ergaenzungen
+# (--fixtures-declared aus WP-1, --model-policy-consistent und
+# --model-policy-no-literals aus 2.1.1; siehe "Ergaenzungen" unten). Alle
+# Pruefungen lesen ihre Sollwerte aus den SSoT-Dateien — manifest.json
+# (Struktur), config/policy-defaults.json (Zahlen), config/model-policy.json
+# (Modellwahl) — und niemals aus einer Kopie im Skript.
 #
 # Sprache: Bash-Rahmen + eingebettetes python3. Begruendung: die Haelfte der
 # Pruefungen ist Textanalyse mit Zeilennummern (Anker, Verweise, Prosa-Zahlen);
@@ -32,11 +34,23 @@
 #    Prosa-Umschreibungen ("vom Test zurueck zur Implementierung") nicht.
 #  * --model-coverage/--migration-table-complete pruefen specs/coverage.md
 #    und docs/migration-v1-to-v2.md. Fehlen sie, ist das FAIL, kein SKIP.
+#  * --model-policy-no-literals erkennt Modell-IDs nur ueber das registrierte
+#    Familie-Ziffer-Muster (manifest.json#/model_policy_guard/pattern) und ueber
+#    exakte IDs aus der Policy. Prosa-Umschreibungen ("das schnelle Modell")
+#    und Familiennamen ohne Versionsziffer entgehen ihr.
 #
-# Ergaenzung gegenueber ADR-009: --fixtures-declared. Ohne sie kann eine Fixture
-# im Baum liegen, die keine Stufe validiert ("stumme Pruefung") — genau der
-# Fehlertyp, den WP-1 ausschliessen soll. Zaehler in
-# config/policy-defaults.json#/enforcement/lint_checks_total ist deshalb 25.
+# Ergaenzungen gegenueber ADR-009:
+#  * --fixtures-declared (WP-1). Ohne sie kann eine Fixture im Baum liegen, die
+#    keine Stufe validiert ("stumme Pruefung") — genau der Fehlertyp, den WP-1
+#    ausschliessen soll.
+#  * --model-policy-consistent (2.1.1). config/model-policy.json ist laut
+#    LAW-MODELS die einzige Quelle der Modellwahl, hatte aber keine maschinelle
+#    Pruefung: Entry Points, Fallbacks und Raenge konnten still auseinanderlaufen.
+#  * --model-policy-no-literals (2.1.1). Normtexte und Prompts nannten zwei
+#    Marktwechsel lang einen veralteten Modellnamen; der Waechter erzwingt
+#    Feldverweise statt Literale ausserhalb der Policy und der Historie.
+# Zaehler in config/policy-defaults.json#/enforcement/lint_checks_total ist
+# deshalb 27.
 set -uo pipefail
 
 ROOT="."
@@ -59,13 +73,15 @@ ALL_CHECKS=(
   model-coverage
   migration-table-complete
   fixtures-declared
+  model-policy-consistent
+  model-policy-no-literals
 )
 
 usage() {
   cat <<'EOF'
 Aufruf: scripts/lint-lawbook.sh [--all | --<pruefung> ...] [Optionen]
 
-Pruefungen (25 = 24 aus ADR-009 + 1 Ergaenzung):
+Pruefungen (27 = 24 aus ADR-009 + 3 Ergaenzungen):
   Groesse     --budget                        Zeilen/Bytes je Dateiklasse gegen config; Summe der Normtexte
               --toc                           jede .md ueber dem Schwellwert hat "## Inhalt"
   Struktur    --manifest-complete             jede versionierte Datei im Manifest und umgekehrt
@@ -91,6 +107,8 @@ Pruefungen (25 = 24 aus ADR-009 + 1 Ergaenzung):
   Modell      --model-coverage                jeder Knoten/jede Kante in specs/coverage.md
   Migration   --migration-table-complete      jede v1.3.1-Datei in der Umzugstabelle
   Fixtures    --fixtures-declared             jede Fixture hat einen Erwartungswert (Ergaenzung)
+  Modellwahl  --model-policy-consistent       Referenzintegritaet der Modellwahl-SSoT (Ergaenzung)
+              --model-policy-no-literals      Modell-IDs nur in der Policy und der Historie (Ergaenzung)
 
 Optionen:
   --all           alle Pruefungen
@@ -1065,6 +1083,141 @@ def chk_fixtures_declared(c):
         c.bad("manifest.json", "kein einziger Negativfall — Pruefungen waeren nur stumm bestaetigt")
     c.detail = "%d Fixtures im Baum, %d deklariert, davon %d Negativfaelle" % (found, len(declared), negatives)
 
+# --- Modellwahl-SSoT: gemeinsame Helfer fuer 26 und 27 ----------------------
+def model_policy_doc():
+    """Pfad der Modellwahl-SSoT laut manifest.json#/model_policy_guard/pointer_doc."""
+    return MAN["model_policy_guard"]["pointer_doc"]
+
+def model_policy_ids(pol):
+    """Bekannte Modell-IDs: ladder[].id, ladder[].exceptions[].model_id, ladder[].fallback_model_id.
+    Liefert ausserdem id -> Rang: Leiter-IDs tragen ihren eigenen Rang; Fallback- und Ausnahme-IDs
+    erben den Rang der ersten Stufe, die sie nennt, ueberschreiben aber nie eine Leiter-ID."""
+    steps = [s for s in ((pol.get("ladder") or []) if isinstance(pol, dict) else []) if isinstance(s, dict)]
+    known, rank_of = set(), {}
+    for step in steps:
+        if step.get("id"):
+            known.add(step["id"])
+            rank_of.setdefault(step["id"], step.get("rank"))
+    for step in steps:
+        for mid in [step.get("fallback_model_id")] + \
+                   [x.get("model_id") for x in step.get("exceptions") or [] if isinstance(x, dict)]:
+            if mid:
+                known.add(mid)
+                rank_of.setdefault(mid, step.get("rank"))
+    return known, rank_of
+
+# --- 26 model-policy-consistent (Ergaenzung) --------------------------------
+def chk_model_policy(c):
+    rel = model_policy_doc()
+    pol = read_json(rel)
+    if pol is None:
+        c.bad(rel, "Pflichtdatei fehlt (LAW-MODELS) — Modellwahl ohne Quelle")
+        c.detail = "Datei fehlt"
+        return
+    if not isinstance(pol, dict) or "__parse_error__" in pol:
+        c.bad(rel, "kein gueltiges JSON: %s" % (pol.get("__parse_error__") if isinstance(pol, dict) else "kein Objekt"))
+        return
+    ladder = [s for s in (pol.get("ladder") or []) if isinstance(s, dict)]
+    if not ladder:
+        c.bad(rel + "#/ladder", "Leiter ist leer — kein Sub-Agent haette ein erlaubtes Modell")
+    ranks = [s.get("rank") for s in ladder]
+    if sorted(r for r in ranks if isinstance(r, int)) != list(range(1, len(ladder) + 1)):
+        c.bad(rel + "#/ladder", "Raenge %s sind nicht lueckenlos 1..%d" % (ranks, len(ladder)))
+    ids = [s.get("id") for s in ladder]
+    for dup in sorted({x for x in ids if x and ids.count(x) > 1}):
+        c.bad(rel + "#/ladder", "Leiter-ID %s mehrfach" % dup)
+    known, rank_of = model_policy_ids(pol)
+    ladder_by_id = {s.get("id"): s for s in ladder}
+    schema = read_json("schemas/agent-state.schema.json")
+    enum = set(pointer(schema, "/$defs/role/enum") or []) if isinstance(schema, dict) and "__parse_error__" not in schema else set()
+    if not enum:
+        c.bad("schemas/agent-state.schema.json", "Rollen-Enum nicht lesbar — roles_preferred/roles nicht pruefbar")
+    def check_roles(where, field, roles):
+        for r in roles or []:
+            if enum and r not in enum:
+                c.bad(where, "%s nennt %s ausserhalb des Rollen-Enums" % (field, r))
+    eps = {k: v for k, v in (pol.get("entry_points") or {}).items() if isinstance(v, dict)}
+    if not eps:
+        c.bad(rel + "#/entry_points", "kein Entry Point — der Main-Thread haette kein Startmodell")
+    for name, ep in sorted(eps.items()):
+        where = "%s#/entry_points/%s" % (rel, name)
+        default = ep.get("default_model_id")
+        allowed = ep.get("allowed_ids") or []
+        forbidden = ep.get("forbidden_at_entry") or []
+        if default not in allowed:
+            c.bad(where, "default_model_id %s steht nicht in allowed_ids" % default)
+        both = sorted(set(allowed) & set(forbidden))
+        if both:
+            c.bad(where, "allowed_ids und forbidden_at_entry ueberschneiden sich: %s" % both)
+        for field, vals in (("default_model_id", [default]), ("allowed_ids", allowed), ("forbidden_at_entry", forbidden)):
+            for mid in vals:
+                if mid not in known:
+                    c.bad(where, "%s nennt unbekannte Modell-ID %s (weder Leiter, Ausnahme noch Fallback)" % (field, mid))
+        if default in rank_of and ep.get("min_rank") != rank_of[default]:
+            c.bad(where, "min_rank %s, Leiter-Rang von %s ist %s" % (ep.get("min_rank"), default, rank_of[default]))
+        step = ladder_by_id.get(default)
+        if step is not None:
+            clash = sorted(set(ep.get("roles") or []) & set(step.get("not_for") or []))
+            if clash:
+                c.bad(where, "Default %s fuehrt Entry-Point-Rollen in not_for: %s" % (default, clash))
+        check_roles(where, "roles", ep.get("roles"))
+    fb = pol.get("fallback_when_external_api_exhausted") or {}
+    for field in ("orchestrator_allowed_ids", "subagent_allowed_ids"):
+        for mid in fb.get(field) or []:
+            if mid not in known:
+                c.bad("%s#/fallback_when_external_api_exhausted/%s" % (rel, field), "unbekannte Modell-ID %s" % mid)
+    never = [n for n in (pol.get("never") or []) if isinstance(n, dict)]
+    nids = [n.get("id") for n in never]
+    for dup in sorted({x for x in nids if x and nids.count(x) > 1}):
+        c.bad(rel + "#/never", "Never-ID %s mehrfach" % dup)
+    for nid in nids:
+        if nid in known:
+            c.bad(rel + "#/never", "Never-ID %s ist zugleich Leiter-/Fallback-/Ausnahme-ID (Widerspruch)" % nid)
+    for step in ladder:
+        check_roles("%s#/ladder/rank-%s" % (rel, step.get("rank")), "roles_preferred", step.get("roles_preferred"))
+    sot = (pol.get("enforcement") or {}).get("source_of_truth")
+    if sot != rel:
+        c.bad(rel + "#/enforcement/source_of_truth", "%r, erwartet %r" % (sot, rel))
+    c.detail = "%d Leiter-Stufen, %d Entry Points, %d Never-Eintraege" % (len(ladder), len(eps), len(never))
+
+# --- 27 model-policy-no-literals (Ergaenzung) -------------------------------
+def chk_model_literals(c):
+    guard = MAN["model_policy_guard"]
+    rel = guard["pointer_doc"]
+    try:
+        rx = re.compile(guard["pattern"])
+    except re.error as exc:
+        c.bad("manifest.json#/model_policy_guard/pattern", "kein gueltiger Regex: %s" % exc)
+        return
+    pol = read_json(rel)
+    known, _ = model_policy_ids(pol)
+    if not known:
+        c.note("%s nicht lesbar oder ohne Leiter — nur Muster-Scan (Befund steht bei --model-policy-consistent)" % rel)
+    exempt = [glob_re(rel)] + [glob_re(g) for g in guard.get("history_allowed_in", [])]
+    mode_of = {}
+    for spec in guard["files"]:
+        gx = glob_re(spec["glob"])
+        mode = spec.get("scan", "prose")
+        for f in scope_files():
+            if not gx.match(f) or any(e.match(f) for e in exempt):
+                continue
+            # "all" gewinnt: ein Prompt steht komplett im Codeblock und waere sonst blind.
+            mode_of[f] = "all" if "all" in (mode, mode_of.get(f)) else "prose"
+    hits = 0
+    tail_rx = re.compile(r"[^\s`'\"()]*")
+    for f in sorted(mode_of):
+        rows = list(enumerate(lines_of(f), 1)) if mode_of[f] == "all" else code_stripped(f)
+        for no, ln in rows:
+            # Gemeldet wird das ganze Token um den Treffer (die vollstaendige ID), nicht nur Familie-Ziffer.
+            found = [(m.group(0) + tail_rx.match(ln, m.end()).group(0)).rstrip(".,;:") for m in rx.finditer(ln)]
+            if not found:
+                found = [mid for mid in sorted(known) if mid in ln]
+            for tok in found:
+                hits += 1
+                c.bad("%s:%d" % (f, no), "Modell-Literal %r — nur in %s erlaubt, sonst Feldverweis (LAW-MODELS)" % (tok, rel))
+    c.detail = "%d Dateien gescannt, %d bekannte IDs, %d Treffer" % (len(mode_of), len(known), hits)
+    c.note("Grenze: erkennt Familie-Ziffer-Muster und exakte IDs; Prosa-Umschreibungen nicht")
+
 REGISTRY = {
     "budget": chk_budget,
     "toc": chk_toc,
@@ -1091,6 +1244,8 @@ REGISTRY = {
     "model-coverage": chk_model_coverage,
     "migration-table-complete": chk_migration_table,
     "fixtures-declared": chk_fixtures_declared,
+    "model-policy-consistent": chk_model_policy,
+    "model-policy-no-literals": chk_model_literals,
 }
 
 def main():
@@ -1244,6 +1399,14 @@ elif check == "migration-table-complete":
     write("docs/migration-v1-to-v2.md", "# Migration\n\nNur ein Satz, keine Tabelle.\n")
 elif check == "fixtures-declared":
     write("tests/fixtures/zz-selftest.json", "{}\n")
+elif check == "model-policy-consistent":
+    p = jload(M)["model_policy_guard"]["pointer_doc"]
+    d = jload(p)
+    ep = next(k for k, v in d["entry_points"].items() if isinstance(v, dict))
+    d["entry_points"][ep]["default_model_id"] = "zz-selftest-model"
+    jdump(p, d)
+elif check == "model-policy-no-literals":
+    append("AGENTS.md", "\nDer Main-Thread startet mit grok-9.9-high.\n")
 else:
     sys.exit("keine Mutation fuer %s definiert" % check)
 MUTEOF

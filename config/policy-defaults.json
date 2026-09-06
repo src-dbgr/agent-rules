@@ -1,8 +1,8 @@
 {
   "$comment": "Zahlen-SSoT des Gesetzbuchs v2.0 (W-03/W-04, ADR-006/ADR-007/ADR-009). EINZIGE Quelle aller einstellbaren Zahlen. Normtexte nennen Werte nur als 'Default (siehe config)'. Zugriff ausschliesslich per jq (Annahme A-06). Provenienz jedes Zahlenwerts steht in _provenance, adressiert per JSON-Pointer; herkunft ist entweder 'belegt' (Quelle in quelle) oder 'setzung' (bewusste Festlegung mit Begruendung). Per-Dokument-Zeilencaps stehen NICHT hier, sondern in manifest.json#/documents (Struktur-SSoT); hier stehen nur die Klassen-Obergrenzen, gegen die manifest.json geprueft wird.",
   "$schema_ref": "schemas/policy-defaults.schema.json",
-  "version": "2.1.0",
-  "lawbook_version": "2.1.0",
+  "version": "2.1.1",
+  "lawbook_version": "2.1.1",
   "caps": {
     "bootstrap_mandatory_files": 1,
     "core_max_lines": 200,
@@ -199,7 +199,7 @@
   },
   "enforcement": {
     "ci_min_steps": 6,
-    "lint_checks_total": 25,
+    "lint_checks_total": 27,
     "triage_fixtures_min": 20,
     "skip_exit_code_strict": 2,
     "fail_exit_code": 1,
@@ -412,7 +412,7 @@
     },
     "/enforcement/lint_checks_total": {
       "herkunft": "setzung",
-      "quelle": "ADR-009 spezifiziert 24 Pruefungen; WP-1 ergaenzt --fixtures-declared (Erwartungswert je Fixture, Tautologie-Schutz). 24 + 1 = 25; scripts/lint-lawbook.sh vergleicht diesen Wert mit der Zahl registrierter Pruefungen und meldet Abweichung als FAIL"
+      "quelle": "ADR-009 spezifiziert 24 Pruefungen; WP-1 ergaenzt --fixtures-declared (Erwartungswert je Fixture, Tautologie-Schutz); 2.1.1 ergaenzt --model-policy-consistent (Referenzintegritaet der Modellwahl-SSoT config/model-policy.json) und --model-policy-no-literals (Modell-IDs nur in der Policy und der Historie, LAW-MODELS). 24 + 3 = 27; scripts/lint-lawbook.sh vergleicht diesen Wert mit der Zahl registrierter Pruefungen und meldet Abweichung als FAIL"
     },
     "/enforcement/triage_fixtures_min": {
       "herkunft": "belegt",
