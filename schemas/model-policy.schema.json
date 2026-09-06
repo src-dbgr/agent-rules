@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-rules.local/schemas/model-policy.schema.json",
+  "title": "ModelPolicy",
+  "description": "Schema der Modellwahl-SSoT config/model-policy.json (LAW-MODELS): Entry Points, Leiter, Never-Liste, Degradation Mode, Override, Enforcement. Was JSON Schema NICHT ausdruecken kann, prueft scripts/lint-lawbook.sh --model-policy-consistent: lueckenlose Raenge, eindeutige IDs, Referenzintegritaet zwischen entry_points/fallback und ladder, min_rank gegen den Leiter-Rang des Defaults, roles_preferred gegen das Rollen-Enum des State-Schemas. Modell-IDs sind absichtlich nur nicht-leere Strings: das Plattformformat (z. B. name[key=value,...]) darf sich aendern, ohne dass dieses Schema nachzieht.",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "model_id": { "type": "string", "minLength": 1 },
+    "model_id_list": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/model_id" }
+    },
+    "label_list": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "node_id": { "type": "string", "pattern": "^N[0-7][a-c]?$" },
+    "entry_point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["roles", "nodes", "default_model_id", "min_rank", "allowed_ids", "forbidden_at_entry", "rule"],
+      "properties": {
+        "$comment": { "type": "string" },
+        "roles": { "type": "array", "$ref": "#/$defs/label_list", "minItems": 1 },
+        "nodes": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/node_id" } },
+        "default_model_id": { "$ref": "#/$defs/model_id" },
+        "min_rank": { "type": "integer", "minimum": 1 },
+        "allowed_ids": { "type": "array", "$ref": "#/$defs/model_id_list", "minItems": 1 },
+        "forbidden_at_entry": { "$ref": "#/$defs/model_id_list" },
+        "rule": { "type": "string", "minLength": 1 },
+        "rationale": { "type": "string" }
+      }
+    },
+    "exception": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "when", "model_id"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+        "when": { "type": "string", "minLength": 1 },
+        "model_id": { "$ref": "#/$defs/model_id" },
+        "note": { "type": "string" }
+      }
+    },
+    "ladder_step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rank", "id", "label", "when"],
+      "properties": {
+        "$comment": { "type": "string" },
+        "rank": { "type": "integer", "minimum": 1 },
+        "id": { "$ref": "#/$defs/model_id" },
+        "label": { "type": "string", "minLength": 1 },
+        "when": { "type": "string", "minLength": 1 },
+        "requires": { "type": "string", "minLength": 1 },
+        "roles_preferred": { "$ref": "#/$defs/label_list" },
+        "not_for": {
+          "$ref": "#/$defs/label_list",
+          "description": "Freie Sperrliste: Rollen, Knoten oder Entry-Point-Namen. Der Linter prueft nur die Schnittmenge mit entry_points.<name>.roles."
+        },
+        "exceptions": { "type": "array", "items": { "$ref": "#/$defs/exception" } },
+        "availability": { "type": "string", "minLength": 1 },
+        "fallback_model_id": { "$ref": "#/$defs/model_id" }
+      }
+    }
+  },
+  "required": [
+    "version",
+    "updated_at",
+    "policy_id",
+    "entry_points",
+    "ladder",
+    "never",
+    "fallback_when_external_api_exhausted",
+    "user_override",
+    "enforcement"
+  ],
+  "properties": {
+    "$comment": { "type": "string" },
+    "$schema_ref": { "type": "string" },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "updated_at": { "type": "string", "format": "date" },
+    "policy_id": { "type": "string", "minLength": 1 },
+    "entry_points": {
+      "type": "object",
+      "description": "Ein Eintrag je Eingangspunkt; Schluessel ist der Name, den model_usage[].entry_point im State referenziert.",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": { "$comment": { "type": "string" } },
+      "patternProperties": { "^[a-z][a-z0-9_]*$": { "$ref": "#/$defs/entry_point" } }
+    },
+    "ladder": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/ladder_step" }
+    },
+    "never": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "reason"],
+        "properties": {
+          "$comment": { "type": "string" },
+          "id": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "fallback_when_external_api_exhausted": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["orchestrator_allowed_ids", "subagent_allowed_ids", "rule"],
+      "properties": {
+        "description": { "type": "string" },
+        "orchestrator_allowed_ids": { "type": "array", "$ref": "#/$defs/model_id_list", "minItems": 1 },
+        "subagent_allowed_ids": { "type": "array", "$ref": "#/$defs/model_id_list", "minItems": 1 },
+        "rule": { "type": "string", "minLength": 1 }
+      }
+    },
+    "user_override": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowed", "requires", "on_platform_block"],
+      "properties": {
+        "allowed": { "type": "boolean" },
+        "requires": { "type": "string", "minLength": 1 },
+        "on_platform_block": { "type": "string", "minLength": 1 }
+      },
+      "patternProperties": {
+        "^[a-z][a-z0-9_]*_url$": { "type": "string", "format": "uri", "description": "Plattform-Voraussetzung mit Fundstelle (z. B. Data-Retention-Ack)" }
+      }
+    },
+    "enforcement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_of_truth", "orchestrator_must", "upgrade_requires", "downgrade_preferred", "hard_block_never_list", "hard_block_exception"],
+      "properties": {
+        "source_of_truth": { "type": "string", "const": "config/model-policy.json", "description": "LAW-MODELS: die Policy ist die einzige Quelle der Modellwahl" },
+        "orchestrator_must": { "type": "string", "minLength": 1 },
+        "upgrade_requires": { "type": "string", "minLength": 1 },
+        "downgrade_preferred": { "type": "boolean" },
+        "downgrade_exception": { "type": "string", "minLength": 1 },
+        "hard_block_never_list": { "type": "boolean", "const": true, "description": "Never-Liste ist hart (modules/tools.md#llm Punkt 3); die einzige Ausnahme benennt hard_block_exception" },
+        "hard_block_exception": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

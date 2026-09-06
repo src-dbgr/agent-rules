@@ -199,7 +199,7 @@
   },
   "enforcement": {
     "ci_min_steps": 6,
-    "lint_checks_total": 25,
+    "lint_checks_total": 27,
     "triage_fixtures_min": 20,
     "skip_exit_code_strict": 2,
     "fail_exit_code": 1,
@@ -412,7 +412,7 @@
     },
     "/enforcement/lint_checks_total": {
       "herkunft": "setzung",
-      "quelle": "ADR-009 spezifiziert 24 Pruefungen; WP-1 ergaenzt --fixtures-declared (Erwartungswert je Fixture, Tautologie-Schutz). 24 + 1 = 25; scripts/lint-lawbook.sh vergleicht diesen Wert mit der Zahl registrierter Pruefungen und meldet Abweichung als FAIL"
+      "quelle": "ADR-009 spezifiziert 24 Pruefungen; WP-1 ergaenzt --fixtures-declared (Erwartungswert je Fixture, Tautologie-Schutz); 2.1.1 ergaenzt --model-policy-consistent (Referenzintegritaet der Modellwahl-SSoT config/model-policy.json) und --model-policy-no-literals (Modell-IDs nur in der Policy und der Historie, LAW-MODELS). 24 + 3 = 27; scripts/lint-lawbook.sh vergleicht diesen Wert mit der Zahl registrierter Pruefungen und meldet Abweichung als FAIL"
     },
     "/enforcement/triage_fixtures_min": {
       "herkunft": "belegt",
