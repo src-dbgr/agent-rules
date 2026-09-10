@@ -1,16 +1,17 @@
 {
   "$comment": "LLM-Nutzungsregeln — EINZIGE Quelle für Modellwahl. Normtexte verweisen nur hierher. Bei Marktwechsel diese Datei anpassen, nicht AGENTS.md.",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "updated_at": "2026-09-10",
-  "policy_id": "model-policy-v1.7",
+  "policy_id": "model-policy-v1.8",
   "entry_points": {
     "$comment": "Die Triage-Algebra (Klasse→Gates) ist deterministisch; die Erst-Klassifikation der Nutzeranfrage an N2 ist es nicht. Fixtures prüfen Ableitung, nicht LLM-Klassifikation (Annahme A-12). Deshalb darf der Main-Thread/Orchestrator nicht auf Composer starten.",
     "orchestrator_main_thread": {
       "roles": ["orchestrator", "sub_orchestrator"],
       "nodes": ["N0", "N1", "N2", "N7"],
-      "default_model_id": "muse-spark-1.3[effort=max,context=1m]",
+      "default_model_id": "muse-spark-1.3[effort=xhigh,context=1m]",
       "min_rank": 3,
       "allowed_ids": [
+        "muse-spark-1.3[effort=xhigh,context=1m]",
         "muse-spark-1.3[effort=max,context=1m]",
         "gemini-3.8-flash[effort=high,context=1m]",
         "claude-fable-5-1[effort=high,context=1m]",
@@ -19,12 +20,11 @@
       ],
       "forbidden_at_entry": [
         "composer-2.5[fast=false]",
-        "gpt-5.6-luna[effort=high,context=1m,fast=false]",
         "grok-4.6[effort=high,fast=false]",
         "grok-4.6[effort=xhigh,fast=false]"
       ],
-      "rule": "Main-Thread startet immer mit Muse Spark 1.3 Max bei explizit 1M Kontext. Composer und Luna sind für Orchestrator-Triage/Clarify/Aggregation verboten. Grok 4.6 ist wegen maximal 256k Kontext nicht für den Main-Thread zugelassen. Gemini 3.8 Flash High ist die schnelle 1M-Route bei explizitem Latenz-/Explorationsbedarf oder Muse-Providerproblemen. Bei einem dokumentierten schwierigen 1M-Dead-End wird zunächst auf Claude Fable 5.1 High eskaliert; Fable 5.1 xHigh ist nur letzter Ausweg. Falls Fable wegen Data-Retention/Plattformvoraussetzung nicht verfügbar ist, Claude Opus 5 High.",
-      "rationale": "Falsche Klasse/Flags an N2 → korrekte Algebra am falschen Ziel. Mitigation: starkes Modell am Eingang + LAW-CLARIFY; nicht Fixtures. Zusätzlich benötigt der Main-Thread mindestens 1M verfügbaren Kontext. Muse Spark 1.3 Max bietet aktuell ein besonders starkes Gesamtverhältnis aus allgemeiner Intelligenz, agentischer Coding-Qualität, niedrigen Kosten und 1M-Kontext. Geschwindigkeit wird für explorative Arbeit gezielt über Gemini 3.8 Flash High priorisiert."
+      "rule": "Main-Thread startet immer mit Muse Spark 1.3 xHigh bei explizit 1M Kontext. Muse max nur über die Ausnahme muse_max_deep_reasoning (dokumentiertes Dead-End, Provider bietet die max-Stufe an). Composer ist für Orchestrator-Triage/Clarify/Aggregation verboten; Grok 4.6 wegen maximal 256k Kontext nicht für den Main-Thread zugelassen. Gemini 3.8 Flash High ist der 1M-Fallback des Main-Threads ausschließlich bei Muse-Provider-/Plattformproblemen (muse_provider_unavailable); Exploration ist Sub-Agenten-Arbeit auf Rank 2, kein Main-Thread-Downgrade. Bei dokumentiertem 1M-Dead-End Eskalation auf Claude Fable 5.1 High; Fable 5.1 xHigh nur letzter Ausweg; ohne Fable-Retention-Ack Claude Opus 5 High.",
+      "rationale": "Falsche Klasse/Flags an N2 → korrekte Algebra am falschen Ziel; Mitigation ist ein starkes Modell am Eingang plus LAW-CLARIFY, nicht Fixtures. Main-Thread braucht 1M verfügbaren Kontext. Muse Spark 1.3 bietet das beste Verhältnis aus allgemeiner Intelligenz, agentischer Coding-Qualität, Kosten und 1M-Kontext; Preis der xhigh-Stufe 1,25 $/M Input, 4,25 $/M Output, 0,15 $/M Cache-Read (Stand 2026-09-10). Die max-Stufe ist Stand 2026-09-10 Partner-Preview ohne veröffentlichten Preis und darum kein Default: ein nicht verfügbarer Default würde still auf den Fallback degradieren. Datenbasis der Leiter (CursorBench / Artificial Analysis, Stand 2026-09-09, Recherche des Auftraggebers): Grok 4.6 xHigh 70,8 % bei 2,81 $/Run (256k), Claude Fable 5.1 High 69,4 % bei 4,80 $/Run (1M), Gemini 3.8 Flash High 69,2 % bei 2,38 $/Run (1M, ca. 305 tok/s, ca. 14 s je Durchlauf gegen ca. 40 s Muse und ca. 50 s Grok). Geschwindigkeit ist Sub-Agenten-Anliegen und wird durch Rank 2 abgedeckt."
     }
   },
   "ladder": [
@@ -43,39 +43,31 @@
     },
     {
       "rank": 2,
-      "id": "gpt-5.6-luna[effort=high,context=1m,fast=false]",
-      "label": "GPT-5.6 Luna High",
-      "when": "Temporärer extrem kostengünstiger und schneller 1M-Sub-Agent für klar definierte, risikoarme Analyse, Bulk-Arbeit, hohe Task-Volumina und lange Kontexte. Nicht als allgemeiner Reasoning-Eskalationsschritt verwenden.",
-      "requires": "cost_sensitive_long_context_or_high_volume_need",
-      "not_for": ["orchestrator", "sub_orchestrator", "N2"],
-      "availability": "Temporär solange OpenAI-Modelle direkt über Cursor verfügbar sind; OpenAI hat als vorgeschlagenes Vertragsende den 2026-11-12 genannt, Cursor kann den Zugang früher beenden.",
-      "fallback_model_id": "gemini-3.8-flash[effort=medium,context=1m]"
+      "id": "gemini-3.8-flash[effort=high,context=1m]",
+      "label": "Gemini 3.8 Flash High",
+      "when": "Schnelle 1M-Stufe für Recherche, Anforderungsanalyse, breite Repo-Exploration, unabhängige Analyse und parallele Sub-Agenten mit hohem Durchsatz; ohne Begründung nutzbar (Rank ≤ ops.max_model_rank_default). Für den Main-Thread nur als Fallback über muse_provider_unavailable.",
+      "roles_preferred": ["researcher", "business_analyst", "memory_curator"],
+      "not_for": ["orchestrator_main_thread_default", "N2"]
     },
     {
       "rank": 3,
-      "id": "muse-spark-1.3[effort=max,context=1m]",
-      "label": "Muse Spark 1.3 Max",
-      "when": "Default für Orchestrator-Main-Thread (N0–N2, N7). Für Sub-Agenten: schwere, große, langlaufende oder außergewöhnlich komplexe Aufgaben sowie Aufgaben mit hohem Kontextbedarf. Nicht unnötig für triviale oder klar abgegrenzte Arbeit verwenden.",
+      "id": "muse-spark-1.3[effort=xhigh,context=1m]",
+      "label": "Muse Spark 1.3 xHigh",
+      "when": "Default für Orchestrator-Main-Thread (N0–N2, N7) und Sub-Orchestratoren. Für Sub-Agenten: Architektur sowie schwere, große, langlaufende oder außergewöhnlich komplexe Aufgaben und hoher Kontextbedarf, wenn Rank 2 nicht ausreicht. Nicht für triviale oder klar abgegrenzte Arbeit.",
       "requires": "orchestrator_entry_or_lower_rank_attempt_or_exceptional_complexity",
-      "roles_preferred": [
-        "orchestrator",
-        "sub_orchestrator",
-        "business_analyst",
-        "architect",
-        "researcher"
-      ],
+      "roles_preferred": ["orchestrator", "sub_orchestrator", "architect"],
       "exceptions": [
         {
-          "id": "fast_exploration_route",
-          "when": "Breite Exploration, große Repo-Suche, unabhängige Analyse oder parallele Sub-Agenten-Arbeit, bei der niedrige Latenz und hoher Durchsatz wichtig sind",
-          "model_id": "gemini-3.8-flash[effort=high,context=1m]",
-          "note": "Bevorzugte schnelle 1M-Route. Gemini 3.8 Flash High ist besonders für Exploration und parallele Sub-Agenten vorgesehen; kein genereller Ersatz für Muse Spark 1.3 Max als Main-Thread-Default."
+          "id": "muse_max_deep_reasoning",
+          "model_id": "muse-spark-1.3[effort=max,context=1m]",
+          "when": "Dokumentiertes Dead-End auf Muse xHigh bei korrekt eingegrenzter Aufgabe und der Provider bietet die max-Stufe an.",
+          "note": "Same-family Reasoning-Eskalation vor dem Familienwechsel auf Rank 4. Stand 2026-09-10 ist die max-Stufe Partner-Preview ohne veröffentlichten Preis; Nichtverfügbarkeit im Handover benennen, nie still ersetzen."
         },
         {
           "id": "muse_provider_unavailable",
-          "when": "Muse Spark 1.3 ist wegen Provider- oder Plattformverfügbarkeit nicht nutzbar",
           "model_id": "gemini-3.8-flash[effort=high,context=1m]",
-          "note": "Schneller 1M-Fallback für den Main-Thread ohne Absenkung auf ein Modell mit kleinerem Kontextfenster."
+          "when": "Muse Spark 1.3 ist wegen Provider- oder Plattformverfügbarkeit nicht nutzbar",
+          "note": "1M-Fallback für den Main-Thread ohne Absenkung auf ein Modell mit kleinerem Kontextfenster; Nichtverfügbarkeit im Handover benennen."
         }
       ]
     },
@@ -99,8 +91,8 @@
       "rank": 5,
       "id": "claude-fable-5-1[effort=high,context=1m]",
       "label": "Claude Fable 5.1 High",
-      "when": "Letzte reguläre Eskalationsstufe für dokumentierte Dead-Ends, besonders anspruchsvolle langlaufende Agenten-Aufgaben oder schwierige Fälle, die mehr als 256k Kontext benötigen; Aufgabe möglichst eng eingrenzen",
-      "requires": "documented_dead_end_or_hard_long_context_case_and_fable_retention_ack",
+      "when": "Letzte reguläre Eskalationsstufe, nur wenn (a) die Aufgabe nachweislich mehr als 256k Kontext benötigt und Rank 3 einschließlich muse_max_deep_reasoning gescheitert ist, oder (b) nach dokumentiertem Grok-xHigh-Dead-End ein Wechsel der Modellfamilie nötig ist. Bei höchstens 256k ohne Grok-Dead-End ist Rank 4 die letzte Stufe. Aufgabe eng eingrenzen.",
+      "requires": "documented_dead_end_with_context_gt_256k_or_grok_xhigh_dead_end_and_fable_retention_ack",
       "exceptions": [
         {
           "id": "fable_xhigh_last_resort",
@@ -110,7 +102,7 @@
         },
         {
           "id": "architect_review",
-          "when": "Architect-Triage / Architektur-Review laut live_matrix model_policy.architect_review",
+          "when": "Gezieltes Architektur-Review (ADR, dod:program_design, Konformitätsprüfung an N5a bei Flag arch) als Zweitmeinung aus einer anderen Modellfamilie; vom Orchestrator im Handover begründet.",
           "model_id": "claude-fable-5-1[effort=xhigh,context=1m]",
           "note": "Ausnahme zur Leiter für gezieltes Architektur-Review — nicht Ersatz für Rank 1 bei Coding-Sub-Agenten"
         },
@@ -139,12 +131,12 @@
       "reason": "Grok nicht für triviale Coding-Sub-Tasks — Composer nutzen"
     },
     {
-      "id": "luna-max",
-      "reason": "Trotz extrem niedriger Kosten für den normalen Flow zu langsam; Luna High bietet das bessere Verhältnis aus Kosten und Geschwindigkeit."
+      "id": "gpt-5.6-luna",
+      "reason": "Nicht mehr in der Leiter: lateral Billigroute statt Eskalationsschritt, in Cursor-Sub-Agenten-Katalogen nicht durchgängig verfügbar, angekündigtes Vertragsende 2026-11-12; Bulk-/Billigarbeit läuft über Rank 2."
     },
     {
       "id": "sol-max",
-      "reason": "Für diese Policy ineffizient: deutlich teurer als Muse Spark 1.3 Max und Gemini 3.8 Flash High; zudem nur temporär direkt über Cursor verfügbar."
+      "reason": "Für diese Policy ineffizient: deutlich teurer als Muse Spark 1.3 xHigh und Gemini 3.8 Flash High; zudem nur temporär direkt über Cursor verfügbar."
     },
     {
       "id": "fable-max",
@@ -177,7 +169,7 @@
       "grok-4.6[effort=high,fast=false]",
       "grok-4.6[effort=xhigh,fast=false]"
     ],
-    "rule": "DEGRADATION MODE: Wenn externe Provider nicht verfügbar sind, darf der Orchestrator auf Cursor Grok 4.6 xHigh wechseln. Die 1M-Kontext-Garantie entfällt in diesem Ausnahmezustand, da Grok 4.6 maximal 256k unterstützt. Sub-Agenten nutzen Composer → Grok High → Grok xHigh. Luna, Gemini, Muse, Fable und Opus entfallen bis externe Provider wieder ansprechbar sind."
+    "rule": "DEGRADATION MODE: Wenn externe Provider nicht verfügbar sind, darf der Orchestrator auf Cursor Grok 4.6 xHigh wechseln. Die 1M-Kontext-Garantie entfällt in diesem Ausnahmezustand, da Grok 4.6 maximal 256k unterstützt. Sub-Agenten nutzen Composer → Grok High → Grok xHigh. Gemini, Muse, Fable und Opus entfallen bis externe Provider wieder ansprechbar sind."
   },
   "user_override": {
     "allowed": true,
@@ -190,7 +182,7 @@
     "orchestrator_must": "Gewähltes Modell je Sub-Agent und für den Main-Thread in State unter model_usage[] protokollieren (id, rank, reason, entry_point).",
     "upgrade_requires": "Kurze Begründung im Handover (warum Rank n nicht reichte).",
     "downgrade_preferred": true,
-    "downgrade_exception": "Kein Downgrade des Main-Threads unter Muse Spark 1.3 Max mit 1M Kontext; ausgenommen sind die explizite fast_exploration_route, muse_provider_unavailable und fallback_when_external_api_exhausted.",
+    "downgrade_exception": "Kein Downgrade des Main-Threads unter Muse Spark 1.3 xHigh mit 1M Kontext; ausgenommen sind ausschließlich muse_provider_unavailable und fallback_when_external_api_exhausted.",
     "hard_block_never_list": true,
     "hard_block_exception": "user_override"
   }
