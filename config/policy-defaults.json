@@ -1,8 +1,8 @@
 {
   "$comment": "Zahlen-SSoT des Gesetzbuchs v2.0 (W-03/W-04, ADR-006/ADR-007/ADR-009). EINZIGE Quelle aller einstellbaren Zahlen. Normtexte nennen Werte nur als 'Default (siehe config)'. Zugriff ausschliesslich per jq (Annahme A-06). Provenienz jedes Zahlenwerts steht in _provenance, adressiert per JSON-Pointer; herkunft ist entweder 'belegt' (Quelle in quelle) oder 'setzung' (bewusste Festlegung mit Begruendung). Per-Dokument-Zeilencaps stehen NICHT hier, sondern in manifest.json#/documents (Struktur-SSoT); hier stehen nur die Klassen-Obergrenzen, gegen die manifest.json geprueft wird.",
   "$schema_ref": "schemas/policy-defaults.schema.json",
-  "version": "2.1.1",
-  "lawbook_version": "2.1.1",
+  "version": "2.1.2",
+  "lawbook_version": "2.1.2",
   "caps": {
     "bootstrap_mandatory_files": 1,
     "core_max_lines": 200,

@@ -1,6 +1,6 @@
 # Gesetzbuch für Multi-Agenten-Softwareentwicklung — Kern
 
-> Version: 2.1.1
+> Version: 2.1.2
 > Diese Datei ist die **einzige** Pflichtlektüre. Alles Weitere lädst du über eine
 > berechnete Leseliste — nicht aus dem Gedächtnis, nicht geraten.
 > Nach Compaction oder Rotation liest du sie erneut (`LAW-CONTEXT`).
@@ -191,7 +191,7 @@ Karten entstehen nicht im Lauf.
 
 ## Version und Migration
 
-Gesetzbuch 2.1.1, `schema_version` 2.0.0. Alt-nach-Neu für Gesetzes-IDs, Knoten und
+Gesetzbuch 2.1.2, `schema_version` 2.0.0. Alt-nach-Neu für Gesetzes-IDs, Knoten und
 Tracks sowie die Anleitung für Zielprojekte: `docs/migration-v1-to-v2.md`.
 Release-Historie: `CHANGELOG.md`. Prüfe deine Arbeit mit
 `bash scripts/lint-lawbook.sh --all --strict` — SKIP zählt dort nicht als Erfolg.
