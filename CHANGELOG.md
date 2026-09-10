@@ -8,6 +8,24 @@ Das Regelwerk verlangt für jede Änderung eine **bewusste Versionserhöhung**
 Format angelehnt an [Keep a Changelog](https://keepachangelog.com/);
 Versionierung semantisch (MAJOR.MINOR.PATCH) auf das Gesetzbuch als Ganzes.
 
+## [2.1.2] — 2026-09-10
+
+### Added
+- `config/model-policy.json` 1.8.0: reine Eskalationsleiter — Gemini 3.8 Flash High auf Rank 2 (ohne `requires`), Muse Spark 1.3 xHigh als Main-Thread-Default auf Rank 3; `muse_max_deep_reasoning` als Same-Family-Ausnahme vor Rank 4; `gpt-5.6-luna` in `never[]`.
+- `manifest.json#/model_policy_guard/pattern` um `muse|spark` ergänzt (Lint `model-policy-no-literals`).
+
+### Changed
+- **Model-Policy 1.6.0** (nachdokumentiert, Zwischenstand vor Muse): Rank 2 von Luna Max auf Luna High (`gpt-5.6-luna[effort=high,context=1m,fast=false]`) mit `cost_sensitive_long_context_or_high_volume_need`; Rank 5 Default von Fable xHigh auf Fable High mit `fable_xhigh_last_resort`-Ausnahme; `never[]` um `luna-max`, `fable-max`, `opus-max` erweitert; Opus-Fallback von Max auf High.
+- **Model-Policy 1.7.0** (Commit auf `main`, 2026-09-10): Main-Thread-Default `muse-spark-1.3[effort=max,context=1m]`; Rank 3 Muse Max mit `fast_exploration_route` und `muse_provider_unavailable`; Gemini aus Rank 3 in Ausnahme; Rank-4-`requires` auf `documented_rank3_dead_end_and_scope_le_256k`; Degradation-Regel nennt Muse.
+- **Model-Policy 1.8.0**: Luna vollständig aus der Leiter (`never`); Gemini Rank 2 als schnelle 1M-Stufe; Muse xHigh Default, max nur über `muse_max_deep_reasoning`; Rank-5-`when`/`requires` geschärft (`documented_dead_end_with_context_gt_256k_or_grok_xhigh_dead_end_and_fable_retention_ack`); `architect_review` ohne `live_matrix`-Verweis; `downgrade_exception` und Degradation-Regel ohne Luna.
+- Gesetzbuch-Version 2.1.1 → 2.1.2 in `AGENTS.md`, `manifest.json`, `config/policy-defaults.json`, `README.md`.
+
+### Fixed
+- `fast_exploration_route` als Main-Thread-Downgrade-Pfad entfernt — Exploration ist Sub-Agenten-Arbeit auf Rank 2, kein Orchestrator-Downgrade.
+
+### Unchanged (bewusst)
+- State schema `2.0.0`; Ladder-Ränge 1–5 zusammenhängend; Rank 1 und Rank 4 unverändert.
+
 ## [2.1.1] — 2026-09-06
 
 ### Added
